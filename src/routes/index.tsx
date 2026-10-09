@@ -862,35 +862,6 @@ function MainAppContent() {
                       </Button>
                     </div>
 
-                    {/* Social Action Pill Buttons (Styled Exactly Like User Screenshot) */}
-                    <div className="flex items-center gap-3 pt-2">
-                      {/* Facebook Button: Deep dark navy pill with bright blue border and glow */}
-                      <a
-                        href="https://www.facebook.com/share/1DkpxegDgy/"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2.5 rounded-full border border-[#2563EB] bg-[#0c1b33]/90 hover:bg-[#12284c] text-white px-5 sm:px-6 py-2.5 sm:py-3 font-sans text-sm sm:text-base font-bold shadow-lg shadow-blue-950/60 transition-all hover:scale-105 hover:border-blue-400 active:scale-95 backdrop-blur-md"
-                        title="Follow Anima's Kitchen on Facebook"
-                      >
-                        <Facebook className="size-4 sm:size-4.5 text-[#1877F2] fill-[#1877F2]" />
-                        <span className="tracking-wide">Facebook</span>
-                        <ExternalLink className="size-3.5 sm:size-4 text-white/70" />
-                      </a>
-
-                      {/* Instagram Button: Deep dark purple-pink gradient pill with bright magenta border and glow */}
-                      <a
-                        href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2.5 rounded-full border border-[#D946EF] bg-gradient-to-r from-[#2a0824]/90 to-[#450a2e]/90 hover:from-[#3a0b32] hover:to-[#570d3a] text-white px-5 sm:px-6 py-2.5 sm:py-3 font-sans text-sm sm:text-base font-bold shadow-lg shadow-pink-950/60 transition-all hover:scale-105 hover:border-pink-400 active:scale-95 backdrop-blur-md"
-                        title="Follow Anima's Kitchen on Instagram"
-                      >
-                        <Instagram className="size-4 sm:size-4.5 text-[#E1306C]" />
-                        <span className="tracking-wide">Instagram</span>
-                        <ExternalLink className="size-3.5 sm:size-4 text-white/70" />
-                      </a>
-                    </div>
-
                     {/* Metrics Bar */}
                     <div className="flex flex-wrap items-center gap-3 pt-2 text-white/90 font-mono text-[11px]">
                       <div className="flex items-center gap-2 rounded-xl bg-white/10 px-2.5 py-1 backdrop-blur-md border border-white/10">
