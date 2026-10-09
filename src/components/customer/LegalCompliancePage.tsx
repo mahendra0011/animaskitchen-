@@ -243,18 +243,18 @@ export function LegalCompliancePage({
               <div className="border-b border-ink/10 pb-4">
                 <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-rose-500/10 text-rose-600 font-mono text-[11px] font-bold mb-2">
                   <AlertCircle className="size-3.5" />
-                  <span>Perishable Food Item — Strict Policy</span>
+                  <span>Perishable Cooked Food — Strict Non-Cancellable Policy</span>
                 </div>
                 <h2 className="font-display text-2xl font-black text-ink flex items-center gap-2.5">
                   <RefreshCw className="size-6 text-spice" />
                   Strict No Return &amp; No Cancellation Policy
                 </h2>
                 <p className="text-xs text-ink/60 mt-1">
-                  Freshly Prepared Homemade Meals · Made Exclusively On-Demand Per Order
+                  Freshly Cooked Homestyle Meals · Prepared Exclusively On-Demand Per Order
                 </p>
               </div>
 
-              {/* Bold Strict Banner */}
+              {/* Bold Strict Warning Banner */}
               <div className="p-5 rounded-2xl bg-gradient-to-r from-rose-50 via-rose-100/50 to-amber-50 border-2 border-rose-300 shadow-xs">
                 <div className="flex items-start gap-3">
                   <div className="size-8 rounded-xl bg-rose-600 text-white flex items-center justify-center shrink-0 mt-0.5 font-bold">
@@ -262,10 +262,10 @@ export function LegalCompliancePage({
                   </div>
                   <div>
                     <h3 className="font-display text-base font-black text-rose-950">
-                      Ek Baar Order Confirm Ho Gaya Toh Lena Hi Padega (Mandatory Acceptance)
+                      Orders Once Confirmed Are Final &amp; Mandatory to Receive
                     </h3>
                     <p className="mt-1 text-xs text-rose-900 leading-relaxed">
-                      Anima’s Kitchen me har ek thali, roti, daal aur sabzi <strong>aapke order karne ke turant baad taazi aur garam</strong> banayi jaati hai. Yeh koi pre-packaged sealed packet nahi hai. Isliye <strong>order place hone ke baad na toh cancel hoga aur na hi return liya jayega</strong>.
+                      At Anima’s Kitchen, every thali, curry, daal, and bread is <strong>prepared fresh and piping hot immediately upon receiving your order</strong>. Because these are perishable, customized food items and not pre-packaged goods, <strong>orders cannot be cancelled, modified, or returned once placed</strong>.
                     </p>
                   </div>
                 </div>
@@ -275,40 +275,40 @@ export function LegalCompliancePage({
                 <div>
                   <h3 className="font-bold text-base text-ink mb-1.5 flex items-center gap-2">
                     <span className="size-2 rounded-full bg-rose-500" />
-                    1. No Return Policy (Khaana Wapas Nahi Hoga)
+                    1. No Return Policy (Cooked Food Returns Not Accepted)
                   </h3>
                   <p className="text-xs text-ink/75 leading-relaxed">
-                    Food Safety Standards (FSSAI) aur hygiene protocols ke anusaar, cooked food ek perishable (kharab hone wali) item hai. Kitchen se dispatch hone ke baad health &amp; safety reasons se koi bhi food item wapas kitchen me nahi liya ja sakta.
+                    Under Food Safety and Standards Authority of India (FSSAI) hygiene mandates, cooked food is a perishable consumable item. Once dispatched from our cloud kitchen facility, items cannot be returned under any circumstances for public health and sanitation safety.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-bold text-base text-ink mb-1.5 flex items-center gap-2">
                     <span className="size-2 rounded-full bg-rose-500" />
-                    2. No Order Cancellation (Order Cancel Nahi Hoga)
+                    2. No Order Cancellation (Instant Kitchen Preparation)
                   </h3>
                   <p className="text-xs text-ink/75 leading-relaxed">
-                    Jaise hi aap "Confirm &amp; Pay" ya COD select karke order button dabate hain, kitchen me cook hone ke liye ingredients nikaal liye jaate hain. Isliye order place hone ke baad cancellation ki koi suvidha uplabdh nahi hai.
+                    As soon as you click "Confirm &amp; Pay" or select Cash on Delivery, our kitchen initiates raw ingredient preparation and cooking immediately. Therefore, we do not accommodate order cancellations once the order request is submitted.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-bold text-base text-ink mb-1.5 flex items-center gap-2">
                     <span className="size-2 rounded-full bg-rose-500" />
-                    3. Customer Doorstep Availability (Rider Se Receive Karna Anivarya Hai)
+                    3. Customer Doorstep Availability (Mandatory Acceptance)
                   </h3>
                   <p className="text-xs text-ink/75 leading-relaxed">
-                    Customer ka phone chalu hona aur diye gaye address par parcel receive karna mandatory hai. Agar customer phone nahi uthata ya lene se inkar karta hai, toh bhi poora bill charge hoga aur Cash on Delivery (COD) wale customers ka phone number aur address future orders ke liye permanent block kar diya jayega.
+                    Customers must keep their contact phone reachable and ensure someone is available at the provided delivery address to receive the parcel. If a customer refuses to accept the delivery or remains unreachable, the full order amount remains payable. For Cash on Delivery (COD) orders, refusal to accept will result in permanent blacklisting of the customer's phone number and address from future orders.
                   </p>
                 </div>
 
                 <div>
                   <h3 className="font-bold text-base text-ink mb-1.5 flex items-center gap-2">
                     <span className="size-2 rounded-full bg-emerald-600" />
-                    4. Keval Transit Damage Ya Missing Item Par Help
+                    4. Transit Damage or Missing Item Support
                   </h3>
                   <p className="text-xs text-ink/75 leading-relaxed">
-                    Agar delivery boy se transit me parcel phat gaya ya koi dish packet me kam mili, toh rider ke samne packet check karke turant photo ke saath WhatsApp support (+91 70049 60724) par bhejein. Hamari kitchen team turant missing item fresh deliver karwayegi.
+                    In the rare event of transit spillage caused by the courier or a missing dish in your package, please verify in front of the delivery partner and immediately share photographic proof via WhatsApp (+91 70049 60724). Our kitchen team will promptly dispatch the missing or replaced item.
                   </p>
                 </div>
               </div>

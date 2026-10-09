@@ -1046,7 +1046,7 @@ export const CheckoutModal: React.FC = () => {
                   className="mt-0.5 size-3.5 rounded border-rose-400 text-rose-600 focus:ring-rose-500 cursor-pointer accent-[#e05320]"
                 />
                 <label htmlFor="checkout-agree-terms" className="leading-tight cursor-pointer">
-                  Mai sehmat hoon ki <strong>freshly prepared khana order confirm hone ke baad na toh cancel hoga aur na hi return hoga</strong>, aur mujhe doorstep par receive karna anivarya hai.
+                  I understand and agree that <strong>orders for freshly cooked food cannot be cancelled or returned once placed</strong>, and receiving the parcel upon arrival is mandatory.
                 </label>
               </div>
 
