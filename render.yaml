@@ -1,9 +1,19 @@
-# Render Blueprint Specification (Separated Frontend & Backend)
+# Render Blueprint Specification (Separated Frontend, Backend & Managed PostgreSQL Database)
 # Documentation: https://render.com/docs/blueprint-spec
+
+databases:
+  # ==============================================================================
+  # MANAGED POSTGRESQL DATABASE (ACID Financial Transactions & Order Ledgers)
+  # ==============================================================================
+  - name: animas-kitchen-postgres
+    databaseName: animaskitchen
+    user: animas_user
+    plan: free
+    region: singapore
 
 services:
   # ==============================================================================
-  # 1. BACKEND SERVICE (Node API & Database Engine)
+  # 1. BACKEND SERVICE (Node API, MongoDB Atlas + Managed PostgreSQL Engine)
   # ==============================================================================
   - type: web
     name: animas-kitchen-backend
@@ -26,8 +36,11 @@ services:
         value: 10000
       - key: APP_URL
         value: "https://animas-kitchen-frontend.onrender.com"
+      # Auto-link Render Managed Postgres connection string directly
       - key: DATABASE_URL
-        value: "postgresql://postgres:postgres@localhost:5432/animaskitchen"
+        fromDatabase:
+          name: animas-kitchen-postgres
+          property: connectionString
       - key: MONGODB_URI
         value: "mongodb+srv://animaskitchen228_db_user:9iBjDA236rriSouP@cluster0.0g9qbud.mongodb.net/animaskitchen?retryWrites=true&w=majority"
       - key: MONGODB_USERNAME
