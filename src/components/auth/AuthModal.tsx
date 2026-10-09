@@ -606,6 +606,40 @@ export const AuthModal: React.FC = () => {
                 <span>Continue with Google</span>
               </button>
 
+              {/* ONE-TAP QUICK DEMO / TESTING LOGINS */}
+              <div className="pt-2 border-t border-dashed border-ink/20 space-y-2">
+                <span className="block text-[10px] font-mono uppercase tracking-wider font-bold text-ink/50 text-center">
+                  🛠️ Instant Testing Accounts
+                </span>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loginAsRole("admin", { identifier: "admin@animaskitchen.com" });
+                      setAuthModalOpen(false);
+                      toast.success("Welcome back, Master Admin!");
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-spice/10 hover:bg-spice/20 border border-spice/30 text-spice font-bold text-[11px] transition-all hover:scale-[1.02] active:scale-95 shadow-xs"
+                  >
+                    <Shield className="size-3.5" />
+                    <span>Demo Admin</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      loginAsRole("delivery", { identifier: "delivery@animaskitchen.com" });
+                      setAuthModalOpen(false);
+                      toast.success("Welcome, Delivery Hero!");
+                    }}
+                    className="flex items-center justify-center gap-1.5 py-2 px-2.5 rounded-xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-800 font-bold text-[11px] transition-all hover:scale-[1.02] active:scale-95 shadow-xs"
+                  >
+                    <Bike className="size-3.5" />
+                    <span>Demo Rider</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="pt-2 text-center">
                 <span className="text-[11px] text-ink/60">Don't have an account? </span>
                 <button
