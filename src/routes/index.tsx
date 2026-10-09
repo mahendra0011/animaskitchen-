@@ -1419,64 +1419,89 @@ function MainAppContent() {
                     <span>Hot · Warm · Homemade</span>
                   </div>
 
-                  {/* ─── AGENCY BRANDING & CREDITS: APEXTECHERA.ONLINE ─── */}
-                  <div className="mt-6 border-t border-cream/5 pt-5 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs">
-                    <div className="flex items-center gap-2 text-cream/70">
-                      <span className="text-cream/50 text-[11px] font-mono uppercase tracking-wider">
-                        Designed & Engineered by
-                      </span>
-                      <a
-                        href="https://apextechera.online"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-bold text-saffron hover:text-white transition-colors flex items-center gap-1 font-display tracking-wide"
-                      >
-                        <span>apextechera.online</span>
-                        <ExternalLink className="size-3" />
-                      </a>
-                    </div>
+                  {/* ─── AGENCY BRANDING & CREDITS: APEXTECHERA.ONLINE (PREMIUM SHOWCASE) ─── */}
+                  <div className="mt-8 pt-6 border-t border-cream/10">
+                    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cream/[0.04] via-cream/[0.08] to-cream/[0.04] p-5 md:p-6 border border-cream/15 backdrop-blur-md shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
+                      {/* Left: Agency Identity & Badge */}
+                      <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-3.5">
+                        <div className="relative flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-saffron to-amber-600 text-ink shadow-lg shadow-saffron/20 ring-2 ring-saffron/40 font-display font-black text-lg tracking-tighter">
+                          AT
+                          <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
+                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                            <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+                          </span>
+                        </div>
+                        <div>
+                          <div className="flex items-center justify-center sm:justify-start gap-2">
+                            <span className="text-[10px] uppercase font-mono tracking-[0.2em] text-cream/50">
+                              Crafted & Engineered By
+                            </span>
+                            <span className="inline-flex items-center gap-1 rounded-full bg-saffron/15 px-2 py-0.5 text-[9px] font-mono font-semibold text-saffron ring-1 ring-saffron/30">
+                              Tech Partner
+                            </span>
+                          </div>
+                          <a
+                            href="https://apextechera.online"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="group mt-0.5 inline-flex items-center gap-1.5 text-base sm:text-lg font-bold text-cream hover:text-saffron transition-all duration-300 font-display tracking-tight"
+                          >
+                            <span className="bg-gradient-to-r from-white via-cream to-saffron bg-clip-text text-transparent group-hover:from-saffron group-hover:to-amber-300">
+                              Apex Tech Era
+                            </span>
+                            <span className="text-xs font-mono text-saffron/80 font-normal">
+                              (apextechera.online)
+                            </span>
+                            <ExternalLink className="size-3.5 text-saffron/70 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                          </a>
+                          <p className="text-[11px] text-cream/50 font-sans mt-0.5">
+                            High-Performance Web Apps, Cloud Architecture & Custom Software
+                          </p>
+                        </div>
+                      </div>
 
-                    {/* Agency Quick Links (Website, Instagram, Email, Phone) */}
-                    <div className="flex flex-wrap items-center justify-center gap-4 text-[11px] font-mono text-cream/60">
-                      <a
-                        href="https://apextechera.online"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 hover:text-saffron transition-colors"
-                        title="Agency Website"
-                      >
-                        <Globe className="size-3 text-saffron" />
-                        <span>Website</span>
-                      </a>
+                      {/* Right: Quick Action Contact Pills */}
+                      <div className="flex flex-wrap items-center justify-center gap-2.5 text-xs font-mono">
+                        <a
+                          href="https://apextechera.online"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cream/5 hover:bg-saffron hover:text-ink text-cream/80 border border-cream/10 transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
+                          title="Official Website"
+                        >
+                          <Globe className="size-3.5 text-saffron group-hover:text-ink" />
+                          <span>Website</span>
+                        </a>
 
-                      <a
-                        href="https://instagram.com/apextechera.online"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="flex items-center gap-1 hover:text-rose-400 transition-colors"
-                        title="Agency Instagram"
-                      >
-                        <Instagram className="size-3 text-rose-400" />
-                        <span>@apextechera.online</span>
-                      </a>
+                        <a
+                          href="https://instagram.com/apextechera.online"
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cream/5 hover:bg-rose-500 hover:text-white text-cream/80 border border-cream/10 transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
+                          title="Follow on Instagram"
+                        >
+                          <Instagram className="size-3.5 text-rose-400 group-hover:text-white" />
+                          <span>@apextechera.online</span>
+                        </a>
 
-                      <a
-                        href="mailto:mahendrapra0077@gmail.com"
-                        className="flex items-center gap-1 hover:text-saffron transition-colors"
-                        title="Contact Email"
-                      >
-                        <Mail className="size-3 text-saffron" />
-                        <span>mahendrapra0077@gmail.com</span>
-                      </a>
+                        <a
+                          href="mailto:mahendrapra0077@gmail.com"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-cream/5 hover:bg-saffron hover:text-ink text-cream/80 border border-cream/10 transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
+                          title="Direct Inquiries Email"
+                        >
+                          <Mail className="size-3.5 text-saffron" />
+                          <span>Email</span>
+                        </a>
 
-                      <a
-                        href="tel:+917724822660"
-                        className="flex items-center gap-1 hover:text-leaf transition-colors font-semibold text-cream/80"
-                        title="Agency Phone"
-                      >
-                        <Phone className="size-3 text-leaf" />
-                        <span>+91 77248 22660</span>
-                      </a>
+                        <a
+                          href="tel:+917724822660"
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500 hover:text-white text-emerald-300 border border-emerald-500/30 font-semibold transition-all duration-200 hover:shadow-md hover:scale-105 active:scale-95"
+                          title="Call or WhatsApp Agency"
+                        >
+                          <Phone className="size-3.5 text-emerald-400 group-hover:text-white" />
+                          <span>+91 77248 22660</span>
+                        </a>
+                      </div>
                     </div>
                   </div>
                 </div>
