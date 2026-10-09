@@ -80,6 +80,9 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
 }) => {
   const {
     currentUser,
+    isAuthenticated,
+    setAuthModalOpen,
+    setAuthModalTab,
     orders,
     activeOrder,
     setActiveOrderId,
@@ -327,20 +330,52 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
             )}
           </div>
 
-          {/* User mini card */}
-          <div className="mt-4 flex items-center gap-3 p-3 rounded-2xl bg-cream/80 border border-ink/5">
-            <div className="size-10 rounded-full bg-spice text-cream grid place-items-center font-display font-bold text-sm">
-              {(currentUser?.name || customerProfile.name).charAt(0)}
+          {/* User card or Login prompt */}
+          {isAuthenticated ? (
+            <div className="mt-4 flex items-center gap-3 p-3 rounded-2xl bg-cream/80 border border-ink/5">
+              <div className="size-10 rounded-full bg-spice text-cream grid place-items-center font-display font-bold text-sm">
+                {(currentUser?.name || "Customer").charAt(0)}
+              </div>
+              <div className="min-w-0 flex-1">
+                <span className="font-display text-sm font-bold text-ink truncate block">
+                  {currentUser?.name || "Customer"}
+                </span>
+                <span className="text-[11px] text-ink/60 font-mono block truncate">
+                  {currentUser?.phone || currentUser?.email || "Member"}
+                </span>
+              </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <span className="font-display text-sm font-bold text-ink truncate block">
-                {currentUser?.name || customerProfile.name}
-              </span>
-              <span className="text-[11px] text-ink/60 font-mono block truncate">
-                {currentUser?.phone || customerProfile.phone}
-              </span>
+          ) : (
+            <div className="mt-4 p-3 rounded-2xl bg-spice/10 border border-spice/20 text-left space-y-2">
+              <div>
+                <span className="font-display text-xs font-bold text-spice block">Not Signed In</span>
+                <p className="text-[11px] text-ink/70">Login to save addresses, track orders & view wallet.</p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setAuthModalTab("login");
+                    setAuthModalOpen(true);
+                  }}
+                  className="w-full rounded-xl bg-spice hover:bg-ink text-cream text-[11px] font-bold h-7.5"
+                >
+                  Sign In
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setAuthModalTab("signup");
+                    setAuthModalOpen(true);
+                  }}
+                  className="w-full rounded-xl border-spice/40 text-spice hover:bg-spice/10 text-[11px] font-bold h-7.5"
+                >
+                  Register
+                </Button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Nav List */}
           <nav className="mt-5 space-y-1">
@@ -380,16 +415,30 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
           </nav>
         </div>
 
-        {/* Footer Logout */}
+        {/* Footer Logout / Login */}
         <div className="pt-4 border-t border-ink/10 mt-6">
-          <Button
-            variant="ghost"
-            onClick={logout}
-            className="w-full justify-start text-xs text-ink/70 hover:text-red-600 hover:bg-red-50 rounded-xl gap-2 font-semibold"
-          >
-            <LogOut className="size-4" />
-            <span>Sign Out</span>
-          </Button>
+          {isAuthenticated ? (
+            <Button
+              variant="ghost"
+              onClick={logout}
+              className="w-full justify-start text-xs text-ink/70 hover:text-red-600 hover:bg-red-50 rounded-xl gap-2 font-semibold"
+            >
+              <LogOut className="size-4" />
+              <span>Sign Out</span>
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              onClick={() => {
+                setAuthModalTab("login");
+                setAuthModalOpen(true);
+              }}
+              className="w-full justify-center text-xs text-spice border-spice/30 hover:bg-spice hover:text-cream rounded-xl gap-2 font-bold"
+            >
+              <User className="size-4" />
+              <span>Sign In to Account</span>
+            </Button>
+          )}
         </div>
       </aside>
 
@@ -473,24 +522,45 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
 
         {/* Mobile menu dropdown */}
         {mobileMenuOpen && (
-          <div className="border-b border-ink/10 bg-frost p-4 lg:hidden grid grid-cols-2 gap-2 shadow-md">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => {
-                  setActiveTab(item.id);
-                  setMobileMenuOpen(false);
-                }}
-                className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all ${
-                  activeTab === item.id
-                    ? "bg-ink text-cream font-bold"
-                    : "bg-cream text-ink/80 hover:text-spice"
-                }`}
-              >
-                {item.icon}
-                <span className="truncate">{item.label}</span>
-              </button>
-            ))}
+          <div className="border-b border-ink/10 bg-frost p-4 lg:hidden space-y-3 shadow-md animate-in slide-in-from-top-2 duration-150">
+            {!isAuthenticated && (
+              <div className="p-3 rounded-2xl bg-spice/10 border border-spice/20 flex items-center justify-between">
+                <div>
+                  <span className="font-display text-xs font-bold text-spice block">Welcome Guest!</span>
+                  <span className="text-[10px] text-ink/70">Sign in to save addresses & track orders</span>
+                </div>
+                <Button
+                  size="sm"
+                  onClick={() => {
+                    setAuthModalTab("login");
+                    setAuthModalOpen(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  className="rounded-xl bg-spice text-cream hover:bg-ink text-xs font-bold px-3 h-8"
+                >
+                  Sign In
+                </Button>
+              </div>
+            )}
+            <div className="grid grid-cols-2 gap-2">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => {
+                    setActiveTab(item.id);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center gap-2 p-2.5 rounded-xl text-xs font-semibold transition-all ${
+                    activeTab === item.id
+                      ? "bg-ink text-cream font-bold"
+                      : "bg-cream text-ink/80 hover:text-spice"
+                  }`}
+                >
+                  {item.icon}
+                  <span className="truncate">{item.label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
@@ -506,23 +576,41 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
                     <Sparkles className="size-3.5" />
                     <span>Pure Cow Desi Ghee Cloud Kitchen</span>
                   </div>
-                  <h1 className="font-display text-3xl sm:text-4xl font-black text-ink mt-1">
-                    {getGreeting()}, {(currentUser?.name || customerProfile.name).split(" ")[0]} 👋
+                  <h1 className="font-display text-2xl sm:text-4xl font-black text-ink mt-1">
+                    {isAuthenticated ? (
+                      `${getGreeting()}, ${(currentUser?.name || "Customer").split(" ")[0]} 👋`
+                    ) : (
+                      "Namaste! Welcome to Anima’s Kitchen 🙏"
+                    )}
                   </h1>
                   <p className="text-xs sm:text-sm text-ink/70 mt-1">
-                    Everything for your daily meals, live order tracking, subscriptions & wallet in
-                    one place.
+                    {isAuthenticated
+                      ? "Everything for your daily meals, live order tracking, subscriptions & wallet in one place."
+                      : "Sign in to save multiple delivery addresses, track live brass handi cooking & enjoy wallet cashbacks."}
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Button
-                    onClick={() => setActiveTab("menu")}
-                    className="rounded-full bg-spice text-cream hover:bg-ink text-xs font-bold px-5 h-10 shadow-sm gap-1.5"
-                  >
-                    <UtensilsCrossed className="size-3.5" />
-                    <span>Quick Order Now</span>
-                  </Button>
+                  {!isAuthenticated ? (
+                    <Button
+                      onClick={() => {
+                        setAuthModalTab("login");
+                        setAuthModalOpen(true);
+                      }}
+                      className="rounded-full bg-spice text-cream hover:bg-ink text-xs font-bold px-5 h-10 shadow-sm gap-1.5"
+                    >
+                      <User className="size-3.5" />
+                      <span>Sign In / Register</span>
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={() => setActiveTab("menu")}
+                      className="rounded-full bg-spice text-cream hover:bg-ink text-xs font-bold px-5 h-10 shadow-sm gap-1.5"
+                    >
+                      <UtensilsCrossed className="size-3.5" />
+                      <span>Quick Order Now</span>
+                    </Button>
+                  )}
                 </div>
               </div>
 

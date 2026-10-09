@@ -560,7 +560,12 @@ function MainAppContent() {
                     <div className="flex flex-col gap-1 font-body text-sm font-semibold">
                       <button
                         onClick={() => {
-                          setCustomerPage("dashboard");
+                          if (isAuthenticated) {
+                            setCustomerPage("dashboard");
+                          } else {
+                            setAuthModalTab("login");
+                            setAuthModalOpen(true);
+                          }
                           setMobileNavOpen(false);
                         }}
                         className={`flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors ${
@@ -571,7 +576,7 @@ function MainAppContent() {
                       >
                         <span className="flex items-center gap-2.5">
                           <User className="size-4 text-spice" />
-                          <span>👤 My Customer Dashboard</span>
+                          <span>👤 {isAuthenticated ? "My Customer Dashboard" : "Sign In / Customer Account"}</span>
                         </span>
                         <ArrowRight className="size-3.5 opacity-50" />
                       </button>
@@ -1856,15 +1861,23 @@ function MainAppContent() {
               </button>
 
               <button
-                onClick={() => setCustomerPage("dashboard")}
+                onClick={() => {
+                  if (isAuthenticated) {
+                    setCustomerPage("dashboard");
+                  } else {
+                    setAuthModalTab("login");
+                    setAuthModalOpen(true);
+                  }
+                }}
                 className={`flex flex-col items-center gap-1 px-3 py-1 text-[11px] font-medium transition-colors ${
                   customerPage === "dashboard"
                     ? "text-spice font-bold"
                     : "text-ink/60 hover:text-ink"
                 }`}
+                aria-label={isAuthenticated ? "Customer Dashboard" : "Sign In"}
               >
                 <User className="size-4" />
-                <span>Account</span>
+                <span>{isAuthenticated ? "Account" : "Sign In"}</span>
               </button>
             </nav>
           )}
