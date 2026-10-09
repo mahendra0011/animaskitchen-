@@ -24,12 +24,20 @@ services:
         value: production
       - key: PORT
         value: 10000
+      - key: APP_URL
+        value: "https://animas-kitchen-frontend.onrender.com"
+      - key: DATABASE_URL
+        value: "postgresql://postgres:postgres@localhost:5432/animaskitchen"
       - key: MONGODB_URI
         value: "mongodb+srv://animaskitchen228_db_user:9iBjDA236rriSouP@cluster0.0g9qbud.mongodb.net/animaskitchen?retryWrites=true&w=majority"
+      - key: MONGODB_USERNAME
+        value: "animaskitchen228_db_user"
+      - key: MONGODB_PASSWORD
+        value: "9iBjDA236rriSouP"
       - key: SESSION_SECRET
-        generateValue: true
+        value: "animas_kitchen_super_secret_session_key_min_32_chars_long_2026"
       - key: OTP_PEPPER
-        generateValue: true
+        value: "animas_kitchen_otp_pepper_salt_string_min_32_chars_long_2026"
       - key: BREVO_API_KEY
         value: "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"
       - key: BREVO_SENDER_EMAIL
@@ -38,6 +46,12 @@ services:
         value: "Anima's Kitchen <animaskitchen228@gmail.com>"
       - key: CLOUDINARY_URL
         value: "cloudinary://159691887182116:YHaKl6q3hHGM5utG4vdbl93iGug@qsqpuyac"
+      - key: CLOUDINARY_CLOUD_NAME
+        value: "qsqpuyac"
+      - key: CLOUDINARY_API_KEY
+        value: "159691887182116"
+      - key: CLOUDINARY_API_SECRET
+        value: "YHaKl6q3hHGM5utG4vdbl93iGug"
       - key: RAZORPAY_KEY_ID
         value: "rzp_test_1234567890abcdef"
       - key: RAZORPAY_KEY_SECRET
@@ -48,6 +62,16 @@ services:
         value: "Animaskitchen24@gmail.com"
       - key: ADMIN_PASSWORD
         value: "K9!xM7#qL2"
+      - key: ADMIN_NAME
+        value: "Anima Kitchen Admin"
+      - key: RIDER_EMAIL
+        value: "Sanjay.k.singh2003@gmail.com"
+      - key: RIDER_PASSWORD
+        value: "R8@vP5!zT9"
+      - key: RIDER_NAME
+        value: "Sanjay K Singh"
+      - key: RIDER_PHONE
+        value: "+91 98450 12345"
       - key: GOOGLE_CLIENT_ID
         value: "345998307885-p2l0rn1hhslnnkbm1381f2adu3u6m3gn.apps.googleusercontent.com"
       - key: GOOGLE_CLIENT_SECRET
@@ -87,5 +111,11 @@ services:
         value: production
       - key: VITE_BACKEND_URL
         value: https://animas-kitchen-backend.onrender.com
+      - key: VITE_APP_NAME
+        value: "Anima's Kitchen"
+      - key: VITE_APP_TAGLINE
+        value: "Hot, Warm, Homemade Indian Food & Tiffin"
+      - key: VITE_KITCHEN_LOCATION
+        value: "Vikash Nagar, Kurji, Patna, Bihar, India"
       - key: VITE_GOOGLE_CLIENT_ID
         value: "345998307885-p2l0rn1hhslnnkbm1381f2adu3u6m3gn.apps.googleusercontent.com"
