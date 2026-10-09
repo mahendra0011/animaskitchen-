@@ -1037,16 +1037,16 @@ export const CheckoutModal: React.FC = () => {
               )}
 
               {/* Customer Checkout Agreement Checkbox */}
-              <div className="pt-1 flex items-start gap-2 text-[11px] text-ink/75">
+              <div className="pt-1 p-2 rounded-xl bg-rose-50/80 border border-rose-200/60 flex items-start gap-2 text-[11px] text-ink/80">
                 <input
                   type="checkbox"
                   id="checkout-agree-terms"
                   checked={agreeTermsCheckout}
                   onChange={(e) => setAgreeTermsCheckout(e.target.checked)}
-                  className="mt-0.5 size-3.5 rounded border-ink/30 text-spice focus:ring-spice cursor-pointer accent-[#e05320]"
+                  className="mt-0.5 size-3.5 rounded border-rose-400 text-rose-600 focus:ring-rose-500 cursor-pointer accent-[#e05320]"
                 />
                 <label htmlFor="checkout-agree-terms" className="leading-tight cursor-pointer">
-                  I agree to the <span className="font-bold text-spice">Food Delivery Terms</span> &amp; <span className="font-bold text-spice">Cancellation Policy</span>.
+                  Mai sehmat hoon ki <strong>freshly prepared khana order confirm hone ke baad na toh cancel hoga aur na hi return hoga</strong>, aur mujhe doorstep par receive karna anivarya hai.
                 </label>
               </div>
 
