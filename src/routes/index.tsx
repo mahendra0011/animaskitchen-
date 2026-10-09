@@ -49,6 +49,7 @@ import { AboutUsPage } from "@/components/customer/AboutUsPage";
 import { ReviewsPage } from "@/components/customer/ReviewsPage";
 import { FaqPage } from "@/components/customer/FaqPage";
 import { ContactPage } from "@/components/customer/ContactPage";
+import { LegalCompliancePage } from "@/components/customer/LegalCompliancePage";
 import { CustomerProfileDrawer } from "@/components/customer/CustomerProfileDrawer";
 import { CustomerDashboardView } from "@/components/customer/CustomerDashboardView";
 import { DeliveryPartnerView } from "@/components/delivery/DeliveryPartnerView";
@@ -201,6 +202,11 @@ function MainAppContent() {
             />
           ) : customerPage === "contact" ? (
             <ContactPage
+              onBack={() => setCustomerPage("home")}
+              onExploreMenu={() => setCustomerPage("menu")}
+            />
+          ) : customerPage === "legal" ? (
+            <LegalCompliancePage
               onBack={() => setCustomerPage("home")}
               onExploreMenu={() => setCustomerPage("menu")}
             />
@@ -1412,11 +1418,78 @@ function MainAppContent() {
                         </li>
                       </ul>
                     </div>
+
+                    {/* Column 3: Legal & Food Governance */}
+                    <div>
+                      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-cream/40">
+                        Legal & Compliance
+                      </p>
+                      <ul className="mt-4 space-y-2 font-body text-sm text-cream/70">
+                        <li>
+                          <button
+                            onClick={() => setCustomerPage("legal")}
+                            className="hover:text-saffron transition-colors text-left flex items-center gap-1.5"
+                          >
+                            <span>Privacy Policy (DPDP 2023)</span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => setCustomerPage("legal")}
+                            className="hover:text-saffron transition-colors text-left flex items-center gap-1.5"
+                          >
+                            <span>Terms of Service & Delivery</span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => setCustomerPage("legal")}
+                            className="hover:text-saffron transition-colors text-left flex items-center gap-1.5"
+                          >
+                            <span>Refund & Cancellation Policy</span>
+                          </button>
+                        </li>
+                        <li>
+                          <button
+                            onClick={() => setCustomerPage("legal")}
+                            className="hover:text-saffron transition-colors text-left flex items-center gap-1.5"
+                          >
+                            <span>FSSAI License & Hygiene</span>
+                          </button>
+                        </li>
+                      </ul>
+                    </div>
                   </div>
 
                   <div className="mt-12 flex flex-col gap-2 border-t border-cream/10 pt-6 font-mono text-[11px] uppercase tracking-[0.15em] text-cream/40 md:flex-row md:justify-between items-center">
-                    <span>© 2026 Anima’s Kitchen · Authentic Homestyle Food</span>
-                    <span>Hot · Warm · Homemade</span>
+                    <div className="flex flex-wrap items-center gap-3">
+                      <span>© 2026 Anima’s Kitchen · Patna</span>
+                      <span className="text-cream/20">|</span>
+                      <button
+                        onClick={() => setCustomerPage("legal")}
+                        className="hover:text-saffron transition-colors lowercase"
+                      >
+                        Privacy Policy
+                      </button>
+                      <span className="text-cream/20">·</span>
+                      <button
+                        onClick={() => setCustomerPage("legal")}
+                        className="hover:text-saffron transition-colors lowercase"
+                      >
+                        Terms of Service
+                      </button>
+                      <span className="text-cream/20">·</span>
+                      <button
+                        onClick={() => setCustomerPage("legal")}
+                        className="hover:text-saffron transition-colors lowercase"
+                      >
+                        Refunds
+                      </button>
+                    </div>
+                    <span className="text-emerald-400/90 font-semibold flex items-center gap-1">
+                      <span className="size-1.5 rounded-full bg-emerald-400 inline-block animate-pulse" />
+                      100% Homestyle · FSSAI Hygiene Compliant
+                    </span>
                   </div>
 
                   {/* ─── AGENCY BRANDING & CREDITS: APEXTECHERA.ONLINE (PREMIUM SHOWCASE) ─── */}

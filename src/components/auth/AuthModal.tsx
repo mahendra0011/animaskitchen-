@@ -44,10 +44,15 @@ export const AuthModal: React.FC = () => {
   const [newPassword, setNewPassword] = useState("");
   const [otp, setOtp] = useState("");
   const [cooldown, setCooldown] = useState(0);
+  const [agreeTerms, setAgreeTerms] = useState(true);
 
   // 1. SIGNUP: Name, Email, Contact Number, Password -> Triggers Email Verification OTP
   const handleSignupSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!agreeTerms) {
+      toast.error("Please agree to the Terms of Service & Privacy Policy to create an account.");
+      return;
+    }
     if (!name.trim() || !email.trim() || !phone.trim() || !password) {
       toast.error("Please fill in all registration fields.");
       return;
@@ -678,6 +683,22 @@ export const AuthModal: React.FC = () => {
                 <span>
                   One-time 6-digit OTP code will be sent to your email to verify your account.
                 </span>
+              </div>
+
+              {/* User Agreement & Legal Consent Checkbox */}
+              <div className="pt-1 flex items-start gap-2.5 text-[11px] text-ink/70">
+                <input
+                  type="checkbox"
+                  id="signup-agree-terms"
+                  checked={agreeTerms}
+                  onChange={(e) => setAgreeTerms(e.target.checked)}
+                  className="mt-0.5 size-4 rounded border-ink/30 text-spice focus:ring-spice cursor-pointer accent-[#e05320]"
+                />
+                <label htmlFor="signup-agree-terms" className="leading-tight cursor-pointer">
+                  I agree to Anima’s Kitchen{" "}
+                  <span className="font-bold text-spice underline">Terms of Service</span>,{" "}
+                  <span className="font-bold text-spice underline">Privacy Policy</span>, and food hygiene guidelines.
+                </label>
               </div>
 
               <Button

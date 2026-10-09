@@ -63,6 +63,7 @@ export const CheckoutModal: React.FC = () => {
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking" | "cod">("upi");
   const [upiId, setUpiId] = useState("rahul@okhdfcbank");
   const [isProcessing, setIsProcessing] = useState(false);
+  const [agreeTermsCheckout, setAgreeTermsCheckout] = useState(true);
 
   const selectedAddress =
     customerProfile.savedAddresses.find((a) => a.id === selectedAddressId) ||
@@ -1035,9 +1036,24 @@ export const CheckoutModal: React.FC = () => {
                 </div>
               )}
 
+              {/* Customer Checkout Agreement Checkbox */}
+              <div className="pt-1 flex items-start gap-2 text-[11px] text-ink/75">
+                <input
+                  type="checkbox"
+                  id="checkout-agree-terms"
+                  checked={agreeTermsCheckout}
+                  onChange={(e) => setAgreeTermsCheckout(e.target.checked)}
+                  className="mt-0.5 size-3.5 rounded border-ink/30 text-spice focus:ring-spice cursor-pointer accent-[#e05320]"
+                />
+                <label htmlFor="checkout-agree-terms" className="leading-tight cursor-pointer">
+                  I agree to the <span className="font-bold text-spice">Food Delivery Terms</span> &amp; <span className="font-bold text-spice">Cancellation Policy</span>.
+                </label>
+              </div>
+
               <Button
                 disabled={
                   isProcessing ||
+                  !agreeTermsCheckout ||
                   (!selectedAddress && orderType === "delivery") ||
                   (orderType === "delivery" && cartTotal < 250)
                 }
