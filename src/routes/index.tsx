@@ -1059,7 +1059,10 @@ function MainAppContent() {
 
               {/* Complete Interactive Menu Section with Add-ons Bar */}
               <CustomerMenuSection
-                onOpenDishPage={(id) => setSelectedDishPageId(id)}
+                onOpenDishPage={(id) => {
+                  const targetItem = menuItems.find((m) => m.id === id);
+                  if (targetItem) setThaliModalItem(targetItem);
+                }}
                 onViewFullMenu={() => setCustomerPage("menu")}
               />
 

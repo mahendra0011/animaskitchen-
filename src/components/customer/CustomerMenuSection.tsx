@@ -235,17 +235,11 @@ export const CustomerMenuSection: React.FC<{
 
         {/* Menu Grid */}
         <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-          {filteredItems.map((item, index) => (
-            <motion.article
+          {filteredItems.map((item) => (
+            <article
               key={item.id}
-              initial={{ opacity: 0, y: 25, scale: 0.97 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, margin: "-50px" }}
-              transition={{ duration: 0.45, delay: (index % 3) * 0.07, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -6, transition: { duration: 0.2 } }}
-              whileTap={{ scale: 0.97 }}
               onClick={() => handleOpenDish(item)}
-              className={`group flex flex-col justify-between overflow-hidden rounded-3xl border border-ink/10 bg-frost/95 shadow-xs backdrop-blur-xl transition-all duration-300 hover:shadow-2xl hover:border-spice/50 hover:bg-white cursor-pointer relative ${
+              className={`group flex flex-col justify-between overflow-hidden rounded-3xl border border-ink/10 bg-frost/95 shadow-xs backdrop-blur-xl transition-all duration-200 hover:shadow-2xl hover:border-spice/50 hover:bg-white hover:-translate-y-1.5 active:scale-[0.98] cursor-pointer relative ${
                 !item.isAvailable ? "opacity-60 grayscale-[40%]" : ""
               }`}
             >
@@ -392,7 +386,7 @@ export const CustomerMenuSection: React.FC<{
                   </Button>
                 </div>
               </div>
-            </motion.article>
+            </article>
           ))}
         </div>
 
