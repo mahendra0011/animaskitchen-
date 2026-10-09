@@ -138,13 +138,7 @@ export const AppDownloadSection: React.FC = () => {
           </div>
 
           {/* Right Column: Realistic 3D Mobile Phone Mockup Template */}
-          <motion.div
-            initial={{ opacity: 0, y: 15 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, margin: "0px" }}
-            transition={{ duration: 0.35, ease: "easeOut" }}
-            className="lg:col-span-5 flex justify-center"
-          >
+          <div className="lg:col-span-5 flex justify-center">
             {/* Phone Frame */}
             <div className="relative w-[290px] sm:w-[320px] rounded-[48px] border-[10px] border-[#382B20] bg-black p-2.5 shadow-2xl shadow-orange-950/60 ring-1 ring-white/10">
               {/* Speaker / Dynamic Notch */}
@@ -273,7 +267,7 @@ export const AppDownloadSection: React.FC = () => {
                 </div>
               </div>
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

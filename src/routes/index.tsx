@@ -1361,12 +1361,7 @@ function MainAppContent() {
               >
                 <div className="mx-auto max-w-6xl px-5">
                   <div className="grid items-center gap-8 md:grid-cols-[1.15fr_0.85fr]">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6 }}
-                    >
+                    <div>
                       <img
                         src={rotiImage}
                         alt="Fresh puffed rotis on a hot iron tawa with ghee"
@@ -1375,13 +1370,8 @@ function MainAppContent() {
                         loading="lazy"
                         className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-xl shadow-ink/10 hover:scale-102 transition-transform duration-500"
                       />
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                    >
+                    </div>
+                    <div>
                       <p className="font-mono text-xs uppercase tracking-[0.3em] text-spice">
                         (d) — straight off the tawa
                       </p>
@@ -1404,7 +1394,7 @@ function MainAppContent() {
                       >
                         Add Desi Ghee Rotis · ₹60 <Plus className="size-4 ml-1" />
                       </Button>
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -1413,13 +1403,7 @@ function MainAppContent() {
               <section id="comfort" className="bg-cream py-16 overflow-hidden">
                 <div className="mx-auto max-w-6xl px-5">
                   <div className="grid items-center gap-8 md:grid-cols-2">
-                    <motion.div
-                      initial={{ opacity: 0, x: -30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6 }}
-                      className="order-2 md:order-1"
-                    >
+                    <div className="order-2 md:order-1">
                       <p className="font-mono text-xs uppercase tracking-[0.3em] text-leaf font-bold">
                         (e) — ghar jaisa lunch
                       </p>
@@ -1446,14 +1430,8 @@ function MainAppContent() {
                           Add to Order <Plus className="size-4 ml-1" />
                         </Button>
                       </div>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                      className="order-1 md:order-2"
-                    >
+                    </div>
+                    <div className="order-1 md:order-2">
                       <img
                         src={rajmaImage}
                         alt="Rajma chawal with onion salad and pickle in a brass thali"
@@ -1462,7 +1440,7 @@ function MainAppContent() {
                         loading="lazy"
                         className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-xl hover:scale-102 transition-transform duration-500"
                       />
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -1471,12 +1449,7 @@ function MainAppContent() {
               <section id="kitchen" className="bg-ink text-cream py-16 overflow-hidden">
                 <div className="mx-auto max-w-6xl px-5">
                   <div className="grid items-center gap-8 md:grid-cols-[0.85fr_1.15fr]">
-                    <motion.div
-                      initial={{ opacity: 0, x: -30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6 }}
-                    >
+                    <div>
                       <p className="font-mono text-xs uppercase tracking-[0.3em] text-saffron">
                         (f) — the kitchen standard
                       </p>
@@ -1500,13 +1473,8 @@ function MainAppContent() {
                           shortcuts
                         </span>
                       </div>
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                    >
+                    </div>
+                    <div>
                       <img
                         src={spiceKitchenImage}
                         alt="Whole Indian spices beside a simmering copper cooking pot"
@@ -1515,7 +1483,7 @@ function MainAppContent() {
                         loading="lazy"
                         className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-2xl shadow-black/40 hover:scale-102 transition-transform duration-500"
                       />
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </section>
@@ -1524,12 +1492,7 @@ function MainAppContent() {
               <section id="sweet" className="bg-saffron/20 py-16 overflow-hidden">
                 <div className="mx-auto max-w-6xl px-5">
                   <div className="grid items-center gap-8 md:grid-cols-2">
-                    <motion.div
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6 }}
-                    >
+                    <div>
                       <img
                         src={gulabJamunImage}
                         alt="Warm gulab jamun topped with pistachio and saffron"
@@ -1538,13 +1501,8 @@ function MainAppContent() {
                         loading="lazy"
                         className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-xl hover:scale-102 transition-transform duration-500"
                       />
-                    </motion.div>
-                    <motion.div
-                      initial={{ opacity: 0, x: 30 }}
-                      whileInView={{ opacity: 1, x: 0 }}
-                      viewport={{ once: true, margin: "-100px" }}
-                      transition={{ duration: 0.6, delay: 0.1 }}
-                    >
+                    </div>
+                    <div>
                       <p className="font-mono text-xs uppercase tracking-[0.3em] text-spice">
                         (h) — end on a sweet note
                       </p>
@@ -1567,7 +1525,7 @@ function MainAppContent() {
                       >
                         Add Dessert · ₹90 <Plus className="size-4 ml-1" />
                       </Button>
-                    </motion.div>
+                    </div>
                   </div>
                 </div>
               </section>
