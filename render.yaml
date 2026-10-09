@@ -1,19 +1,9 @@
-# Render Blueprint Specification (Separated Frontend, Backend & Managed PostgreSQL Database)
+# Render Blueprint Specification (Separated Frontend & Backend with Neon PostgreSQL)
 # Documentation: https://render.com/docs/blueprint-spec
-
-databases:
-  # ==============================================================================
-  # MANAGED POSTGRESQL DATABASE (ACID Financial Transactions & Order Ledgers)
-  # ==============================================================================
-  - name: animas-kitchen-postgres
-    databaseName: animaskitchen
-    user: animas_user
-    plan: free
-    region: singapore
 
 services:
   # ==============================================================================
-  # 1. BACKEND SERVICE (Node API, MongoDB Atlas + Managed PostgreSQL Engine)
+  # 1. BACKEND SERVICE (Node API, MongoDB Atlas + Neon PostgreSQL Engine)
   # ==============================================================================
   - type: web
     name: animas-kitchen-backend
@@ -36,13 +26,10 @@ services:
         value: 10000
       - key: APP_URL
         value: "https://animas-kitchen-frontend.onrender.com"
-      # Auto-link Render Managed Postgres connection string directly
       - key: DATABASE_URL
-        fromDatabase:
-          name: animas-kitchen-postgres
-          property: connectionString
+        value: "postgresql://neondb_owner:npg_vuX3xjir1LWn@ep-broad-dust-b5rjkoxr-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require"
       - key: REDIS_URL
-        value: "redis://localhost:6379"
+        value: "redis://red-db4fp6lg1s2s7399sitg:6379"
       - key: MONGODB_URI
         value: "mongodb+srv://animaskitchen228_db_user:9iBjDA236rriSouP@cluster0.0g9qbud.mongodb.net/animaskitchen?retryWrites=true&w=majority"
       - key: MONGODB_USERNAME
