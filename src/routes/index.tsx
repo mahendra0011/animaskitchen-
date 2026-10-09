@@ -119,6 +119,8 @@ function MainAppContent() {
     addToCart,
     homepageCustomization,
     wishlistIds,
+    socialPosts,
+    daySpecialMeal,
   } = useDemoStore();
 
   const [areaChecked, setAreaChecked] = useState(false);
@@ -817,6 +819,31 @@ function MainAppContent() {
                         <span>Download APK</span>
                         <Download className="size-3 text-emerald-400" />
                       </Button>
+
+                      {/* Social Action Buttons requested by user */}
+                      <a
+                        href="https://www.facebook.com/share/1DkpxegDgy/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/50 bg-blue-900/40 hover:bg-blue-800/60 hover:border-blue-300 text-white px-3.5 sm:px-4 py-3 font-body text-xs sm:text-sm font-bold backdrop-blur-md transition-all hover:scale-105 active:scale-95 shadow-md"
+                        title="Follow Anima's Kitchen on Facebook"
+                      >
+                        <Facebook className="size-3.5 text-blue-400 fill-blue-400" />
+                        <span>Facebook</span>
+                        <ExternalLink className="size-3 opacity-60" />
+                      </a>
+
+                      <a
+                        href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 rounded-full border border-pink-400/50 bg-gradient-to-r from-purple-900/50 via-pink-900/50 to-orange-900/50 hover:border-pink-300 text-white px-3.5 sm:px-4 py-3 font-body text-xs sm:text-sm font-bold backdrop-blur-md transition-all hover:scale-105 active:scale-95 shadow-md"
+                        title="Follow Anima's Kitchen on Instagram"
+                      >
+                        <Instagram className="size-3.5 text-pink-400" />
+                        <span>Instagram</span>
+                        <ExternalLink className="size-3 opacity-60" />
+                      </a>
                     </div>
 
                     {/* Metrics Bar */}
@@ -912,11 +939,226 @@ function MainAppContent() {
               {/* 📲 Official Mobile App Download Section (Hero Section Ke Baad) */}
               <AppDownloadSection />
 
+              {/* 🌟 Day Special Meal Section (Admin Editable on Day-Basis) */}
+              {daySpecialMeal.active && (
+                <section id="day-special" className="py-8 px-4 sm:px-6 bg-gradient-to-b from-amber-500/10 via-cream to-cream">
+                  <div className="mx-auto max-w-6xl">
+                    <div className="relative overflow-hidden rounded-3xl border-2 border-spice/30 bg-gradient-to-r from-ink via-stone-900 to-amber-950 p-6 sm:p-8 text-cream shadow-2xl">
+                      {/* Decorative ambient backdrop */}
+                      <div className="absolute -right-20 -bottom-20 w-80 h-80 rounded-full bg-spice/20 blur-3xl pointer-events-none" />
+                      <div className="absolute top-0 right-0 bg-gradient-to-l from-spice/20 to-transparent w-full h-full pointer-events-none" />
+
+                      <div className="relative z-10 grid grid-cols-1 md:grid-cols-[1.2fr_0.8fr] gap-6 items-center">
+                        <div className="space-y-4">
+                          <div className="flex flex-wrap items-center gap-2.5">
+                            <span className="inline-flex items-center gap-1.5 rounded-full bg-spice px-3 py-1 text-[11px] font-mono font-bold uppercase tracking-wider text-white shadow-md">
+                              <Sparkles className="size-3.5" />
+                              {daySpecialMeal.badge || "TODAY'S SPECIAL"}
+                            </span>
+                            <span className="rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-1 text-[11px] font-mono font-semibold text-amber-300">
+                              📅 {daySpecialMeal.day === "Daily" ? "Fresh Today" : `${daySpecialMeal.day} Special`}
+                            </span>
+                            {daySpecialMeal.isVeg && (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/60 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
+                                🟢 100% Pure Veg
+                              </span>
+                            )}
+                          </div>
+
+                          <div>
+                            <h2 className="font-display text-2xl sm:text-3xl md:text-4xl font-extrabold text-white leading-tight">
+                              {daySpecialMeal.dishName}
+                            </h2>
+                            <p className="mt-2 font-body text-xs sm:text-sm text-cream/80 max-w-xl leading-relaxed">
+                              {daySpecialMeal.description}
+                            </p>
+                          </div>
+
+                          {/* Items Included Badges */}
+                          {daySpecialMeal.itemsIncluded && daySpecialMeal.itemsIncluded.length > 0 && (
+                            <div className="flex flex-wrap items-center gap-2 pt-1">
+                              {daySpecialMeal.itemsIncluded.map((item, idx) => (
+                                <span
+                                  key={idx}
+                                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-medium text-cream/90 backdrop-blur-sm border border-white/10"
+                                >
+                                  <Check className="size-3 text-emerald-400" />
+                                  {item}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Pricing & Order CTA */}
+                          <div className="flex flex-wrap items-center gap-4 pt-2">
+                            <div className="flex items-baseline gap-2">
+                              <span className="font-display text-3xl font-black text-spice">
+                                ₹{daySpecialMeal.price}
+                              </span>
+                              {daySpecialMeal.originalPrice && daySpecialMeal.originalPrice > daySpecialMeal.price && (
+                                <span className="text-sm font-mono text-cream/50 line-through">
+                                  ₹{daySpecialMeal.originalPrice}
+                                </span>
+                              )}
+                              <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
+                                Limited Daily Batches
+                              </span>
+                            </div>
+
+                            <Button
+                              className="rounded-full bg-gradient-to-r from-spice to-orange-500 hover:from-orange-600 hover:to-spice text-white font-bold px-6 py-2.5 text-xs sm:text-sm shadow-lg shadow-orange-950/40 hover:scale-105 active:scale-95 transition-all gap-2"
+                              onClick={() => {
+                                // Add as custom meal item to cart
+                                const specialMenuItem = {
+                                  id: `special-${daySpecialMeal.id}`,
+                                  name: daySpecialMeal.dishName,
+                                  description: daySpecialMeal.description,
+                                  price: daySpecialMeal.price,
+                                  category: "Thali",
+                                  image: daySpecialMeal.imageUrl,
+                                  isVeg: daySpecialMeal.isVeg,
+                                  isAvailable: true,
+                                  rating: 5.0,
+                                  prepTimeMinutes: 20,
+                                  calories: 620,
+                                  customizable: false,
+                                  spiceLevel: "medium" as const,
+                                };
+                                addToCart(specialMenuItem as any);
+                              }}
+                            >
+                              <Utensils className="size-4" />
+                              <span>Order Special Meal</span>
+                              <Plus className="size-4 ml-1" />
+                            </Button>
+                          </div>
+                        </div>
+
+                        {/* Dish Visual Card */}
+                        <div className="relative aspect-[4/3] rounded-2xl overflow-hidden border-2 border-amber-500/30 shadow-2xl group">
+                          <img
+                            src={daySpecialMeal.imageUrl}
+                            alt={daySpecialMeal.dishName}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent pointer-events-none" />
+                          <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-xs">
+                            <span className="rounded-md bg-black/60 backdrop-blur-md px-2.5 py-1 text-white font-mono font-bold border border-white/20">
+                              🔥 Cooked Fresh Today
+                            </span>
+                            <span className="rounded-md bg-emerald-600/90 px-2.5 py-1 text-white font-mono font-bold">
+                              ₹{daySpecialMeal.price} Only
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </section>
+              )}
+
               {/* Complete Interactive Menu Section with Add-ons Bar */}
               <CustomerMenuSection
                 onOpenDishPage={(id) => setSelectedDishPageId(id)}
                 onViewFullMenu={() => setCustomerPage("menu")}
               />
+
+              {/* 📸 Instagram & Social Feed Section (Directly after Menu) */}
+              <section id="kitchen-stories" className="py-14 sm:py-20 bg-gradient-to-b from-cream via-amber-500/5 to-cream border-t border-ink/10">
+                <div className="mx-auto max-w-6xl px-4 sm:px-6">
+                  {/* Header */}
+                  <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
+                    <div>
+                      <div className="inline-flex items-center gap-1.5 rounded-full bg-pink-100 border border-pink-300/60 px-3 py-1 text-xs font-mono font-bold text-pink-700 mb-2">
+                        <Instagram className="size-3.5 text-pink-600" />
+                        <span>@sanjaysingh1599 • LIVE KITCHEN STORIES</span>
+                      </div>
+                      <h2 className="font-display text-3xl sm:text-4xl font-extrabold text-ink tracking-tight">
+                        From Our Kitchen To Your Feed
+                      </h2>
+                      <p className="mt-1 text-xs sm:text-sm text-ink/70 max-w-xl">
+                        See real daily cooking behind the scenes, fresh ingredients, and customer love updated regularly.
+                      </p>
+                    </div>
+
+                    <div className="flex items-center gap-2.5 shrink-0">
+                      <a
+                        href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 hover:opacity-95 text-white px-5 py-2.5 text-xs sm:text-sm font-bold shadow-md hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <Instagram className="size-4" />
+                        <span>View All Posts</span>
+                        <ExternalLink className="size-3.5 opacity-70" />
+                      </a>
+                      <a
+                        href="https://www.facebook.com/share/1DkpxegDgy/"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 text-xs sm:text-sm font-bold shadow-md hover:scale-105 active:scale-95 transition-all"
+                      >
+                        <Facebook className="size-4 fill-white" />
+                        <span>Facebook</span>
+                      </a>
+                    </div>
+                  </div>
+
+                  {/* Posts Grid */}
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+                    {socialPosts.map((post) => (
+                      <div
+                        key={post.id}
+                        className="group flex flex-col rounded-2xl border border-ink/10 bg-frost/90 overflow-hidden shadow-xs hover:shadow-xl transition-all hover:-translate-y-1 backdrop-blur-md"
+                      >
+                        {/* Image */}
+                        <div className="relative aspect-square overflow-hidden bg-ink/5">
+                          <img
+                            src={post.imageUrl}
+                            alt={post.caption}
+                            className="w-full h-full object-cover group-hover:scale-108 transition-transform duration-500"
+                            loading="lazy"
+                          />
+                          <div className="absolute top-2.5 right-2.5 rounded-full bg-black/60 backdrop-blur-md p-1.5 text-white">
+                            {post.platform === "facebook" ? (
+                              <Facebook className="size-3.5 fill-white" />
+                            ) : (
+                              <Instagram className="size-3.5 text-pink-400" />
+                            )}
+                          </div>
+                          <div className="absolute bottom-2.5 left-2.5 rounded-md bg-black/60 backdrop-blur-md px-2 py-0.5 text-[10px] font-mono text-white/90">
+                            {post.createdAt}
+                          </div>
+                        </div>
+
+                        {/* Content */}
+                        <div className="p-4 flex flex-col flex-1 justify-between gap-3">
+                          <p className="font-body text-xs text-ink/80 leading-relaxed line-clamp-3">
+                            {post.caption}
+                          </p>
+
+                          <div className="flex items-center justify-between pt-2 border-t border-ink/10 text-[11px] font-mono text-ink/60">
+                            <span className="flex items-center gap-1 text-red-500 font-semibold">
+                              <Heart className="size-3.5 fill-red-500 text-red-500" />
+                              {post.likesCount || 120} likes
+                            </span>
+                            <a
+                              href={post.postUrl || "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="font-bold text-spice hover:underline inline-flex items-center gap-1"
+                            >
+                              <span>View Post</span>
+                              <ExternalLink className="size-3" />
+                            </a>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </section>
+
 
               {/* Delivery Guarantee Section (Placed immediately after Menu for high visibility) */}
               <section

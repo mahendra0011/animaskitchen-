@@ -441,3 +441,30 @@ export interface HomepageCustomization {
   ctaButtonText: string;
   festivalCouponCode?: string;
 }
+
+export interface SocialPost {
+  id: string;
+  imageUrl: string;
+  caption: string;
+  postUrl: string;
+  platform?: "instagram" | "facebook";
+  likesCount?: number;
+  commentsCount?: number;
+  createdAt: string;
+}
+
+export interface DaySpecialMeal {
+  id: string;
+  day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday" | "Daily";
+  active: boolean;
+  title: string;
+  badge: string;
+  dishName: string;
+  description: string;
+  price: number;
+  originalPrice?: number;
+  imageUrl: string;
+  isVeg: boolean;
+  itemsIncluded: string[];
+}
+

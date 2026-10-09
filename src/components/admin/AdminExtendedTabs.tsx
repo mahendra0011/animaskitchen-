@@ -28,6 +28,9 @@ import {
   Building,
   Lock,
   Loader2,
+  Instagram,
+  Facebook,
+  ExternalLink,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -1330,6 +1333,410 @@ export const AdminHomepageCustomizerTab: React.FC = () => {
           </span>
         </div>
       </form>
+
+      {/* 4. Day Special Meal Manager (Day-wise meal plan control) */}
+      <AdminDaySpecialMealSection />
+
+      {/* 5. Instagram & Social Feed Manager */}
+      <AdminSocialPostsSection />
     </div>
   );
 };
+
+/* =========================================================================
+   9. Day Special Meal Manager Component
+   ========================================================================= */
+const AdminDaySpecialMealSection: React.FC = () => {
+  const { daySpecialMeal, updateDaySpecialMeal } = useDemoStore();
+
+  const [form, setForm] = useState({
+    active: daySpecialMeal.active,
+    day: daySpecialMeal.day,
+    title: daySpecialMeal.title,
+    badge: daySpecialMeal.badge,
+    dishName: daySpecialMeal.dishName,
+    description: daySpecialMeal.description,
+    price: daySpecialMeal.price,
+    originalPrice: daySpecialMeal.originalPrice || 220,
+    imageUrl: daySpecialMeal.imageUrl,
+    isVeg: daySpecialMeal.isVeg,
+    itemsText: (daySpecialMeal.itemsIncluded || []).join(", "),
+  });
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    const items = form.itemsText
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+
+    updateDaySpecialMeal({
+      active: form.active,
+      day: form.day as any,
+      title: form.title,
+      badge: form.badge,
+      dishName: form.dishName,
+      description: form.description,
+      price: Number(form.price),
+      originalPrice: Number(form.originalPrice),
+      imageUrl: form.imageUrl,
+      isVeg: form.isVeg,
+      itemsIncluded: items,
+    });
+  };
+
+  const daysList: Array<typeof daySpecialMeal.day> = [
+    "Daily",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday",
+  ];
+
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-frost/90 p-5 space-y-4 shadow-xs mt-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Sparkles className="size-4 text-spice" />
+            <h3 className="font-display text-base font-bold text-ink">
+              4. Day Special Meal (Daily Kitchen Special)
+            </h3>
+          </div>
+          <p className="text-xs text-ink/60">
+            Control the featured daily meal box shown prominently right above the customer menu.
+          </p>
+        </div>
+        <label className="flex items-center gap-2 cursor-pointer">
+          <span className="text-xs font-semibold text-ink">Special Meal Visible</span>
+          <input
+            type="checkbox"
+            checked={form.active}
+            onChange={(e) => setForm({ ...form, active: e.target.checked })}
+            className="size-4 rounded accent-spice cursor-pointer"
+          />
+        </label>
+      </div>
+
+      <form onSubmit={handleSave} className="space-y-4 text-xs">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink">Schedule Day</label>
+            <select
+              value={form.day}
+              onChange={(e) => setForm({ ...form, day: e.target.value as any })}
+              className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs font-semibold"
+            >
+              {daysList.map((d) => (
+                <option key={d} value={d}>
+                  {d}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink">Badge Label</label>
+            <input
+              type="text"
+              value={form.badge}
+              onChange={(e) => setForm({ ...form, badge: e.target.value })}
+              placeholder="e.g. CHEF'S SIGNATURE"
+              className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink">Diet Type</label>
+            <div className="flex items-center gap-3 pt-2">
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="mealIsVeg"
+                  checked={form.isVeg}
+                  onChange={() => setForm({ ...form, isVeg: true })}
+                  className="accent-emerald-600"
+                />
+                <span className="text-xs font-bold text-emerald-700">Pure Veg 🟢</span>
+              </label>
+              <label className="flex items-center gap-1.5 cursor-pointer">
+                <input
+                  type="radio"
+                  name="mealIsVeg"
+                  checked={!form.isVeg}
+                  onChange={() => setForm({ ...form, isVeg: false })}
+                  className="accent-red-600"
+                />
+                <span className="text-xs font-bold text-red-700">Non-Veg 🔴</span>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink">Special Dish Name</label>
+            <input
+              type="text"
+              value={form.dishName}
+              onChange={(e) => setForm({ ...form, dishName: e.target.value })}
+              placeholder="e.g. Shahi Rajma Masala & Jeera Rice Deluxe Thali"
+              className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs font-bold"
+              required
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="space-y-1.5">
+              <label className="font-semibold text-ink">Offer Price (₹)</label>
+              <input
+                type="number"
+                value={form.price}
+                onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
+                className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs font-bold"
+                required
+              />
+            </div>
+            <div className="space-y-1.5">
+              <label className="font-semibold text-ink">Original Price (₹)</label>
+              <input
+                type="number"
+                value={form.originalPrice}
+                onChange={(e) => setForm({ ...form, originalPrice: Number(e.target.value) })}
+                className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs"
+              />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-1.5">
+          <label className="font-semibold text-ink">Description</label>
+          <textarea
+            rows={2}
+            value={form.description}
+            onChange={(e) => setForm({ ...form, description: e.target.value })}
+            placeholder="Special meal items and cooking description..."
+            className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs"
+            required
+          />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink">Included Items (comma separated)</label>
+            <input
+              type="text"
+              value={form.itemsText}
+              onChange={(e) => setForm({ ...form, itemsText: e.target.value })}
+              placeholder="e.g. Rajma, Jeera Rice, 3 Ghee Rotis, Raita, Salad"
+              className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs"
+            />
+          </div>
+
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink">Dish Image URL</label>
+            <input
+              type="text"
+              value={form.imageUrl}
+              onChange={(e) => setForm({ ...form, imageUrl: e.target.value })}
+              placeholder="https://..."
+              className="w-full rounded-xl border border-ink/15 bg-cream/70 px-3 py-2 text-ink text-xs font-mono"
+            />
+          </div>
+        </div>
+
+        <div className="pt-1">
+          <Button
+            type="submit"
+            className="rounded-xl bg-spice hover:bg-ink text-cream text-xs font-bold h-9 px-5 gap-1.5 shadow-md"
+          >
+            <Check className="size-3.5" />
+            <span>Update Day Special Meal</span>
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+};
+
+/* =========================================================================
+   10. Social Posts & Instagram Feed Manager Component
+   ========================================================================= */
+const AdminSocialPostsSection: React.FC = () => {
+  const { socialPosts, addSocialPost, deleteSocialPost } = useDemoStore();
+
+  const [newPost, setNewPost] = useState({
+    imageUrl: "",
+    caption: "",
+    postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    platform: "instagram" as const,
+    likesCount: 150,
+  });
+
+  const handleAddPost = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newPost.imageUrl || !newPost.caption) {
+      toast.error("Please provide both an image URL and a caption");
+      return;
+    }
+
+    addSocialPost({
+      imageUrl: newPost.imageUrl,
+      caption: newPost.caption,
+      postUrl: newPost.postUrl,
+      platform: newPost.platform,
+      likesCount: Number(newPost.likesCount),
+    });
+
+    setNewPost({
+      imageUrl: "",
+      caption: "",
+      postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+      platform: "instagram",
+      likesCount: 150,
+    });
+  };
+
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-frost/90 p-5 space-y-5 shadow-xs mt-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <div className="flex items-center gap-2">
+            <Instagram className="size-4 text-pink-600" />
+            <h3 className="font-display text-base font-bold text-ink">
+              5. Instagram & Kitchen Stories Feed Manager
+            </h3>
+          </div>
+          <p className="text-xs text-ink/60">
+            Publish photos and updates to the social grid directly below the menu.
+          </p>
+        </div>
+        <a
+          href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-pink-600 hover:underline"
+        >
+          <span>Open Instagram</span>
+          <ExternalLink className="size-3" />
+        </a>
+      </div>
+
+      {/* New Post Form */}
+      <form onSubmit={handleAddPost} className="p-4 rounded-xl border border-ink/10 bg-cream/50 space-y-3 text-xs">
+        <h4 className="font-bold text-ink flex items-center gap-1.5">
+          <Plus className="size-3.5 text-spice" />
+          <span>Publish New Social Post</span>
+        </h4>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="font-semibold text-ink">Image URL</label>
+            <input
+              type="text"
+              value={newPost.imageUrl}
+              onChange={(e) => setNewPost({ ...newPost, imageUrl: e.target.value })}
+              placeholder="https://images.unsplash.com/... or uploaded URL"
+              className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-mono"
+              required
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="font-semibold text-ink">Instagram / Post Link</label>
+            <input
+              type="text"
+              value={newPost.postUrl}
+              onChange={(e) => setNewPost({ ...newPost, postUrl: e.target.value })}
+              placeholder="https://www.instagram.com/p/..."
+              className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-mono"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-1">
+          <label className="font-semibold text-ink">Caption / Story Description</label>
+          <textarea
+            rows={2}
+            value={newPost.caption}
+            onChange={(e) => setNewPost({ ...newPost, caption: e.target.value })}
+            placeholder="e.g. Freshly puffed rotis right off the iron tawa! Made with pure desi ghee..."
+            className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs"
+            required
+          />
+        </div>
+
+        <div className="flex items-center justify-between pt-1">
+          <div className="flex items-center gap-4">
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="radio"
+                name="postPlatform"
+                checked={newPost.platform === "instagram"}
+                onChange={() => setNewPost({ ...newPost, platform: "instagram" })}
+                className="accent-pink-600"
+              />
+              <span className="text-xs font-medium text-ink">Instagram</span>
+            </label>
+            <label className="flex items-center gap-1.5 cursor-pointer">
+              <input
+                type="radio"
+                name="postPlatform"
+                checked={newPost.platform === "facebook"}
+                onChange={() => setNewPost({ ...newPost, platform: "facebook" })}
+                className="accent-blue-600"
+              />
+              <span className="text-xs font-medium text-ink">Facebook</span>
+            </label>
+          </div>
+
+          <Button
+            type="submit"
+            className="rounded-xl bg-pink-600 hover:bg-pink-700 text-white text-xs font-bold h-9 px-4 gap-1.5 shadow-md"
+          >
+            <Plus className="size-3.5" />
+            <span>Publish Post</span>
+          </Button>
+        </div>
+      </form>
+
+      {/* Existing Posts List */}
+      <div className="space-y-2">
+        <h4 className="font-bold text-xs text-ink/70">
+          Current Active Posts ({socialPosts.length})
+        </h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
+          {socialPosts.map((post) => (
+            <div
+              key={post.id}
+              className="rounded-xl border border-ink/10 bg-cream/70 p-2.5 flex flex-col justify-between gap-2 text-xs"
+            >
+              <div className="aspect-square rounded-lg overflow-hidden relative">
+                <img src={post.imageUrl} alt="" className="w-full h-full object-cover" />
+                <span className="absolute bottom-1 right-1 rounded bg-black/60 px-1.5 py-0.5 text-[9px] text-white font-mono">
+                  {post.platform}
+                </span>
+              </div>
+              <p className="line-clamp-2 text-[11px] text-ink/80">{post.caption}</p>
+              <div className="flex items-center justify-between pt-1 border-t border-ink/10">
+                <span className="text-[10px] text-ink/50">{post.createdAt}</span>
+                <button
+                  type="button"
+                  onClick={() => deleteSocialPost(post.id)}
+                  className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+                  title="Delete post"
+                >
+                  <Trash2 className="size-3.5" />
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+

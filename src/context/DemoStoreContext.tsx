@@ -45,6 +45,8 @@ import type {
   CustomerWallet,
   WhatsAppLog,
   HomepageCustomization,
+  SocialPost,
+  DaySpecialMeal,
 } from "@/types/kitchen";
 import { toast } from "sonner";
 
@@ -131,6 +133,15 @@ interface DemoStoreContextType {
   // Dynamic Homepage Customization (Festival / Event Themes)
   homepageCustomization: HomepageCustomization;
   updateHomepageCustomization: (settings: Partial<HomepageCustomization>) => void;
+
+  // Instagram / Social Posts Feed
+  socialPosts: SocialPost[];
+  addSocialPost: (post: Omit<SocialPost, "id" | "createdAt">) => void;
+  deleteSocialPost: (postId: string) => void;
+
+  // Day Special Meal Flow (Admin Daily Controlled)
+  daySpecialMeal: DaySpecialMeal;
+  updateDaySpecialMeal: (meal: Partial<DaySpecialMeal>) => void;
 
   // Data
   menuItems: MenuItem[];
@@ -254,6 +265,84 @@ const DEFAULT_HOMEPAGE_CUSTOMIZATION: HomepageCustomization = {
   festivalCouponCode: "FESTIVE20",
 };
 
+const DEFAULT_SOCIAL_POSTS: SocialPost[] = [
+  {
+    id: "post-1",
+    imageUrl:
+      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80",
+    caption:
+      "Hot, pure desi ghee Dal Tadka with piping hot rotis right off the iron tawa! Made with love daily at Anima's Kitchen. 🍛✨",
+    postUrl:
+      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    platform: "instagram",
+    likesCount: 342,
+    commentsCount: 28,
+    createdAt: "2 hours ago",
+  },
+  {
+    id: "post-2",
+    imageUrl:
+      "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&auto=format&fit=crop&q=80",
+    caption:
+      "Fresh melt-in-mouth Paneer cubes simmered in hand-ground spices and organic tomato gravy. No food coloring, 100% natural. 🧆❤️",
+    postUrl:
+      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    platform: "instagram",
+    likesCount: 519,
+    commentsCount: 45,
+    createdAt: "Yesterday",
+  },
+  {
+    id: "post-3",
+    imageUrl:
+      "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80",
+    caption:
+      "Dum Handi Biryani slow cooked with fragrant aged basmati rice and roasted spices. The aroma fills the entire street! 🍲🔥",
+    postUrl:
+      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    platform: "instagram",
+    likesCount: 884,
+    commentsCount: 67,
+    createdAt: "3 days ago",
+  },
+  {
+    id: "post-4",
+    imageUrl:
+      "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=800&auto=format&fit=crop&q=80",
+    caption:
+      "Behind the scenes in our kitchen: Every roti is hand-rolled and puffed fresh for lunch dispatch. Zero stale food ever! 🫓",
+    postUrl:
+      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    platform: "instagram",
+    likesCount: 620,
+    commentsCount: 39,
+    createdAt: "5 days ago",
+  },
+];
+
+const DEFAULT_DAY_SPECIAL_MEAL: DaySpecialMeal = {
+  id: "day-special-today",
+  day: "Daily",
+  active: true,
+  title: "Today's Chef Special Meal",
+  badge: "CHEF'S SIGNATURE",
+  dishName: "Shahi Rajma Masala & Jeera Rice Deluxe Thali",
+  description:
+    "Slow-cooked Kashmiri Rajma with whole spices, served with aromatic Jeera Basmati Rice, 3 hot Desi Ghee Tawa Rotis, fresh cucumber-onion salad, and home-churned Boondi Raita.",
+  price: 169,
+  originalPrice: 220,
+  imageUrl:
+    "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80",
+  isVeg: true,
+  itemsIncluded: [
+    "Slow-Simmered Shahi Rajma",
+    "Fragrant Jeera Basmati Rice",
+    "3 Hand-rolled Ghee Rotis",
+    "Chilled Boondi Raita",
+    "Spiced Pickle & Onion Salad",
+  ],
+};
+
 const DemoStoreContext = createContext<DemoStoreContextType | undefined>(undefined);
 
 export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -268,6 +357,27 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return DEFAULT_HOMEPAGE_CUSTOMIZATION;
     }
   });
+
+  const [socialPosts, setSocialPosts] = useState<SocialPost[]>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_social_posts`);
+    if (!saved) return DEFAULT_SOCIAL_POSTS;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return DEFAULT_SOCIAL_POSTS;
+    }
+  });
+
+  const [daySpecialMeal, setDaySpecialMeal] = useState<DaySpecialMeal>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_day_special_meal`);
+    if (!saved) return DEFAULT_DAY_SPECIAL_MEAL;
+    try {
+      return { ...DEFAULT_DAY_SPECIAL_MEAL, ...JSON.parse(saved) };
+    } catch {
+      return DEFAULT_DAY_SPECIAL_MEAL;
+    }
+  });
+
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(() => {
     const saved = safeGetItem(`${STORAGE_KEY}_auth`);
     return saved ? JSON.parse(saved) : false;
@@ -609,6 +719,39 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
     toast.success("Storefront & Festival settings updated live!");
   }, []);
+
+  const addSocialPost = useCallback((postData: Omit<SocialPost, "id" | "createdAt">) => {
+    setSocialPosts((prev) => {
+      const newPost: SocialPost = {
+        ...postData,
+        id: `post-${Date.now()}`,
+        createdAt: "Just now",
+      };
+      const updated = [newPost, ...prev];
+      safeSetItem(`${STORAGE_KEY}_social_posts`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Social post added to storefront!");
+  }, []);
+
+  const deleteSocialPost = useCallback((postId: string) => {
+    setSocialPosts((prev) => {
+      const updated = prev.filter((p) => p.id !== postId);
+      safeSetItem(`${STORAGE_KEY}_social_posts`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.info("Social post removed");
+  }, []);
+
+  const updateDaySpecialMeal = useCallback((mealData: Partial<DaySpecialMeal>) => {
+    setDaySpecialMeal((prev) => {
+      const updated = { ...prev, ...mealData };
+      safeSetItem(`${STORAGE_KEY}_day_special_meal`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Day Special Meal updated live!");
+  }, []);
+
 
   const logActivity = useCallback(
     (role: ActivityLog["role"], action: string, details: string, relatedOrderId?: string) => {
@@ -1849,6 +1992,11 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         triggerWhatsAppSimulatedMessage,
         homepageCustomization,
         updateHomepageCustomization,
+        socialPosts,
+        addSocialPost,
+        deleteSocialPost,
+        daySpecialMeal,
+        updateDaySpecialMeal,
       }}
     >
       {children}
