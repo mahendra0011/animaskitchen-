@@ -1804,7 +1804,7 @@ function MainAppContent() {
           {/* ─── ANDROID MOBILE STICKY BOTTOM NAVIGATION BAR FOR STOREFRONT ─── */}
           {customerPage !== "dashboard" && !trackingViewOpen && !selectedDishPageId && (
             <nav
-              className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink/10 bg-frost/95 py-2 px-1 backdrop-blur-xl shadow-2xl lg:hidden"
+              className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around border-t border-ink/10 bg-frost/95 py-2 px-1 pb-safe backdrop-blur-xl shadow-2xl lg:hidden"
               aria-label="Mobile Bottom Navigation"
             >
               <button
@@ -1877,7 +1877,7 @@ function MainAppContent() {
 
           {/* ─── FLOATING QUICK ACTION BUTTONS (WHATSAPP & CALL) ─── */}
           {customerPage === "home" && !trackingViewOpen && (
-            <div className="fixed bottom-20 lg:bottom-6 right-4 sm:right-6 z-50 flex flex-col items-end gap-2.5 pointer-events-auto">
+            <div className="fixed bottom-24 lg:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end gap-2.5 pointer-events-auto">
               {/* WhatsApp Action Button */}
               <a
                 href="https://wa.me/917004960724?text=Namaste%20Anima's%20Kitchen,%20I%20want%20to%20order%20food"

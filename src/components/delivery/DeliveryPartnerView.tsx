@@ -386,7 +386,7 @@ export const DeliveryPartnerView: React.FC = () => {
       </main>
 
       {/* Android Mobile Sticky Bottom Navigation Bar */}
-      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-frost/95 border-t border-ink/10 backdrop-blur-xl px-2 py-1.5 flex items-center justify-around shadow-lg">
+      <nav className="md:hidden fixed bottom-0 inset-x-0 z-40 bg-frost/95 border-t border-ink/10 backdrop-blur-xl px-2 py-1.5 pb-safe flex items-center justify-around shadow-lg">
         <button
           onClick={() => setActiveTab("dashboard")}
           className={`flex flex-col items-center gap-0.5 px-3 py-1 rounded-xl text-[10px] font-medium transition-all ${

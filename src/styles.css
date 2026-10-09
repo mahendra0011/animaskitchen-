@@ -414,3 +414,48 @@ html.lenis body {
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }
+
+/* =========================================================
+   ANDROID & MOBILE RESPONSIVE OPTIMIZATIONS
+   ========================================================= */
+
+/* Native Android viewport height & notch safe-area insets */
+:root {
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
+  --sal: env(safe-area-inset-left, 0px);
+  --sar: env(safe-area-inset-right, 0px);
+}
+
+/* Prevent accidental mobile text selection on buttons and bottom bars */
+nav, button, .no-select {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Smooth kinetic scrolling on Android WebViews / Chrome */
+* {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Android touch tap highlight removal for sleek native app feel */
+button, a, input, select, textarea {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Safe area padding utilities for bottom navigation bars & headers on Android devices */
+.pb-safe {
+  padding-bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+}
+
+.pt-safe {
+  padding-top: calc(0.5rem + env(safe-area-inset-top, 0px));
+}
+
+/* Prevent horizontal scroll bleed on mobile screens */
+html, body {
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
