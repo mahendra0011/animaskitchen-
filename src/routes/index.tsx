@@ -214,6 +214,70 @@ function MainAppContent() {
             />
           ) : (
             <>
+              {/* Left Floating Social Sidebar (Inspired by User's Portfolio Screenshot) */}
+              <aside
+                aria-label="Social quick links"
+                className="fixed left-3 sm:left-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-3 p-2 rounded-2xl bg-[#0B132B]/85 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-white/20"
+              >
+                {/* Facebook */}
+                <a
+                  href="https://www.facebook.com/share/1DkpxegDgy/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all hover:scale-110 shadow-sm"
+                  title="Follow Anima's Kitchen on Facebook"
+                  aria-label="Facebook"
+                >
+                  <Facebook className="size-4.5 fill-current" />
+                  <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    Facebook
+                  </span>
+                </a>
+
+                {/* Instagram */}
+                <a
+                  href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:border-pink-400 transition-all hover:scale-110 shadow-sm"
+                  title="Follow Anima's Kitchen on Instagram"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="size-4.5" />
+                  <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    Instagram
+                  </span>
+                </a>
+
+                {/* WhatsApp */}
+                <a
+                  href="https://wa.me/917004960724?text=Namaste%20Anima's%20Kitchen,%20I%20want%20to%20order%20food"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-emerald-600 hover:border-emerald-500 transition-all hover:scale-110 shadow-sm"
+                  title="Chat on WhatsApp (+91 70049 60724)"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="size-4.5" />
+                  <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    WhatsApp (+91 70049 60724)
+                  </span>
+                </a>
+
+                {/* Phone Call */}
+                <a
+                  href="tel:+917004960724"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-amber-600 hover:border-amber-500 transition-all hover:scale-110 shadow-sm"
+                  title="Call Kitchen (+91 70049 60724)"
+                  aria-label="Call Kitchen"
+                >
+                  <Phone className="size-4.5" />
+                  <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
+                    Call: +91 70049 60724
+                  </span>
+                </a>
+              </aside>
+
               {/* Customer App Navigation Header */}
               <header className="sticky top-0 z-40 border-b border-ink/10 bg-frost/95 backdrop-blur-xl transition-all shadow-xs">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5">
@@ -819,30 +883,34 @@ function MainAppContent() {
                         <span>Download APK</span>
                         <Download className="size-3 text-emerald-400" />
                       </Button>
+                    </div>
 
-                      {/* Social Action Buttons requested by user */}
+                    {/* Social Action Pill Buttons (Styled Exactly Like User Screenshot) */}
+                    <div className="flex items-center gap-3 pt-2">
+                      {/* Facebook Button: Deep dark navy pill with bright blue border and glow */}
                       <a
                         href="https://www.facebook.com/share/1DkpxegDgy/"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-blue-400/50 bg-blue-900/40 hover:bg-blue-800/60 hover:border-blue-300 text-white px-3.5 sm:px-4 py-3 font-body text-xs sm:text-sm font-bold backdrop-blur-md transition-all hover:scale-105 active:scale-95 shadow-md"
+                        className="inline-flex items-center gap-2.5 rounded-full border border-[#2563EB] bg-[#0c1b33]/90 hover:bg-[#12284c] text-white px-5 sm:px-6 py-2.5 sm:py-3 font-sans text-sm sm:text-base font-bold shadow-lg shadow-blue-950/60 transition-all hover:scale-105 hover:border-blue-400 active:scale-95 backdrop-blur-md"
                         title="Follow Anima's Kitchen on Facebook"
                       >
-                        <Facebook className="size-3.5 text-blue-400 fill-blue-400" />
-                        <span>Facebook</span>
-                        <ExternalLink className="size-3 opacity-60" />
+                        <Facebook className="size-4 sm:size-4.5 text-[#1877F2] fill-[#1877F2]" />
+                        <span className="tracking-wide">Facebook</span>
+                        <ExternalLink className="size-3.5 sm:size-4 text-white/70" />
                       </a>
 
+                      {/* Instagram Button: Deep dark purple-pink gradient pill with bright magenta border and glow */}
                       <a
                         href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-1.5 rounded-full border border-pink-400/50 bg-gradient-to-r from-purple-900/50 via-pink-900/50 to-orange-900/50 hover:border-pink-300 text-white px-3.5 sm:px-4 py-3 font-body text-xs sm:text-sm font-bold backdrop-blur-md transition-all hover:scale-105 active:scale-95 shadow-md"
+                        className="inline-flex items-center gap-2.5 rounded-full border border-[#D946EF] bg-gradient-to-r from-[#2a0824]/90 to-[#450a2e]/90 hover:from-[#3a0b32] hover:to-[#570d3a] text-white px-5 sm:px-6 py-2.5 sm:py-3 font-sans text-sm sm:text-base font-bold shadow-lg shadow-pink-950/60 transition-all hover:scale-105 hover:border-pink-400 active:scale-95 backdrop-blur-md"
                         title="Follow Anima's Kitchen on Instagram"
                       >
-                        <Instagram className="size-3.5 text-pink-400" />
-                        <span>Instagram</span>
-                        <ExternalLink className="size-3 opacity-60" />
+                        <Instagram className="size-4 sm:size-4.5 text-[#E1306C]" />
+                        <span className="tracking-wide">Instagram</span>
+                        <ExternalLink className="size-3.5 sm:size-4 text-white/70" />
                       </a>
                     </div>
 
