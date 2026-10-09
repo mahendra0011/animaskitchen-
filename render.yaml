@@ -24,26 +24,34 @@ services:
         value: production
       - key: PORT
         value: 10000
-      - key: DATABASE_URL
-        sync: false
+      - key: MONGODB_URI
+        value: "mongodb+srv://animaskitchen228_db_user:9iBjDA236rriSouP@cluster0.0g9qbud.mongodb.net/animaskitchen?retryWrites=true&w=majority"
       - key: SESSION_SECRET
         generateValue: true
       - key: OTP_PEPPER
         generateValue: true
-      - key: RESEND_API_KEY
-        sync: false
+      - key: BREVO_API_KEY
+        value: "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"
+      - key: BREVO_SENDER_EMAIL
+        value: "animaskitchen228@gmail.com"
       - key: EMAIL_FROM
-        value: "Anima's Kitchen <orders@animaskitchen.com>"
-      - key: RAZORPAY_KEY_ID
-        sync: false
-      - key: RAZORPAY_KEY_SECRET
-        sync: false
-      - key: RAZORPAY_WEBHOOK_SECRET
-        sync: false
-      - key: GOOGLE_MAPS_KEY
-        sync: false
+        value: "Anima's Kitchen <animaskitchen228@gmail.com>"
       - key: CLOUDINARY_URL
-        sync: false
+        value: "cloudinary://159691887182116:YHaKl6q3hHGM5utG4vdbl93iGug@qsqpuyac"
+      - key: RAZORPAY_KEY_ID
+        value: "rzp_test_1234567890abcdef"
+      - key: RAZORPAY_KEY_SECRET
+        value: "secret_1234567890abcdef"
+      - key: RAZORPAY_WEBHOOK_SECRET
+        value: "webhook_secret_here"
+      - key: ADMIN_EMAIL
+        value: "Animaskitchen24@gmail.com"
+      - key: ADMIN_PASSWORD
+        value: "K9!xM7#qL2"
+      - key: GOOGLE_CLIENT_ID
+        value: "345998307885-p2l0rn1hhslnnkbm1381f2adu3u6m3gn.apps.googleusercontent.com"
+      - key: GOOGLE_CLIENT_SECRET
+        value: "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"
 
   # ==============================================================================
   # 2. FRONTEND SERVICE (Static Web UI / Client CDN)
@@ -79,3 +87,5 @@ services:
         value: production
       - key: VITE_BACKEND_URL
         value: https://animas-kitchen-backend.onrender.com
+      - key: VITE_GOOGLE_CLIENT_ID
+        value: "345998307885-p2l0rn1hhslnnkbm1381f2adu3u6m3gn.apps.googleusercontent.com"
