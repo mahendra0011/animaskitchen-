@@ -65,6 +65,45 @@ export default {
       });
     }
 
+    // Client IP extraction with anti-spoofing
+    const clientIp =
+      request.headers.get("cf-connecting-ip") ||
+      request.headers.get("x-real-ip") ||
+      request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+      "127.0.0.1";
+
+    // 1. Anti-DDoS & Brute Force IP Rate Limiting (120 req / minute per IP)
+    const { checkRateLimit } = await import("./server/auth/otp");
+    const ipRate = checkRateLimit(`ip_rate:${clientIp}`, 120, 60 * 1000);
+    if (!ipRate.allowed) {
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Too many requests. Please slow down to protect server availability.",
+        }),
+        {
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": "60",
+            ...corsHeaders,
+          },
+        },
+      );
+    }
+
+    // 2. Large Payload Protection (Block payload bombing > 5MB)
+    const contentLength = Number(request.headers.get("content-length") || 0);
+    if (contentLength > 5 * 1024 * 1024) {
+      return new Response(
+        JSON.stringify({ success: false, error: "Payload exceeds 5MB limit." }),
+        {
+          status: 413,
+          headers: { "Content-Type": "application/json", ...corsHeaders },
+        },
+      );
+    }
+
     // Backend Dedicated Health Check Route
     if (url.pathname === "/api/health" || url.pathname === "/healthz") {
       return new Response(
@@ -80,11 +119,14 @@ export default {
       );
     }
 
-    // Helper to wrap API responses with CORS
+    // Helper to wrap API responses with CORS and secure headers
     const withCors = (response: Response): Response => {
       Object.entries(corsHeaders).forEach(([k, v]) => {
         response.headers.set(k, v);
       });
+      // Anti-leak headers
+      response.headers.set("X-Content-Type-Options", "nosniff");
+      response.headers.set("Cache-Control", "no-store, max-age=0");
       return response;
     };
 
@@ -292,26 +334,31 @@ export default {
       }
     }
 
-    // API Route: Current Session
+    // API Route: Current Session (Zero PII / Hash Leakage)
     if (url.pathname === "/api/auth/me" && request.method === "GET") {
       const { getSessionUserFromCookie } = await import("./server/api");
+      const { safePublicUser } = await import("./server/security/guard");
       const user = await getSessionUserFromCookie(request.headers.get("cookie"));
-      return new Response(JSON.stringify({ user }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      });
+      return withCors(
+        new Response(JSON.stringify({ user: user ? safePublicUser(user) : null }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+      );
     }
 
-    // API Route: Logout
+    // API Route: Logout (Invalidate Cookie with Strict Security)
     if (url.pathname === "/api/auth/logout" && request.method === "POST") {
       const headers = new Headers({
         "Content-Type": "application/json",
         "Set-Cookie": `animas_session=; HttpOnly; Secure; SameSite=Lax; Path=/; Max-Age=0`,
       });
-      return new Response(JSON.stringify({ success: true }), {
-        status: 200,
-        headers,
-      });
+      return withCors(
+        new Response(JSON.stringify({ success: true, message: "Logged out successfully" }), {
+          status: 200,
+          headers,
+        }),
+      );
     }
 
     // API Route: Save / Update Order Location to Redis (from user or manual input)
@@ -391,29 +438,35 @@ export default {
       }
     }
 
-    // API Route: Create Order in MongoDB (Flexible Document format)
+    // API Route: Create Order in MongoDB (Flexible Document format with Anti-Tamper & Sanitization)
     if (url.pathname === "/api/orders/create" && request.method === "POST") {
       try {
         const body = await request.json();
+        const { sanitizeText, sanitizePayload } = await import("./server/security/guard");
         const { connectMongo, MongoOrder } = await import("./server/db/mongo");
         await connectMongo();
 
+        const sanitizedItems = Array.isArray(body.items) ? sanitizePayload(body.items) : [];
+        const sanitizedAddress = body.deliveryAddress
+          ? sanitizePayload(body.deliveryAddress)
+          : {
+              street: "Road No. 4, Patliputra Colony",
+              area: "Patna, Bihar",
+              lat: 25.6268,
+              lng: 85.1118,
+            };
+
         const orderDoc = {
-          orderNumber: body.orderNumber || `AK-${Date.now().toString().slice(-5)}`,
-          userId: body.userId || "usr_guest",
-          customerName: body.customerName || "Customer",
-          customerPhone: body.customerPhone || body.phone || "+91 99999 88888",
-          items: Array.isArray(body.items) ? body.items : [],
-          deliveryAddress: body.deliveryAddress || {
-            street: "Road No. 4, Patliputra Colony",
-            area: "Patna, Bihar",
-            lat: 25.6268,
-            lng: 85.1118,
-          },
-          totalPaise: body.totalPaise || 0,
-          paymentMethod: body.paymentMethod || "cod",
+          orderNumber: sanitizeText(body.orderNumber || `AK-${Date.now().toString().slice(-5)}`),
+          userId: sanitizeText(body.userId || "usr_guest"),
+          customerName: sanitizeText(body.customerName || "Customer"),
+          customerPhone: sanitizeText(body.customerPhone || body.phone || "+91 99999 88888"),
+          items: sanitizedItems,
+          deliveryAddress: sanitizedAddress,
+          totalPaise: Math.max(0, Math.floor(Number(body.totalPaise) || 0)),
+          paymentMethod: sanitizeText(body.paymentMethod || "cod"),
           status: "placed",
-          deliveryOtp: body.deliveryOtp || "4521",
+          deliveryOtp: String(body.deliveryOtp || "4521").slice(0, 6),
           gpsTrail: [],
         };
 
