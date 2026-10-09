@@ -480,10 +480,20 @@ export default {
           }
         }
 
-        return new Response(JSON.stringify({ success: true, order: savedDoc || orderDoc }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        // Broadcast real-time order creation event via Socket.io
+        try {
+          const { broadcastOrderUpdate } = await import("./server/socket");
+          broadcastOrderUpdate(orderDoc.orderNumber, "order:created", savedDoc || orderDoc);
+        } catch {
+          // Socket silent fallback
+        }
+
+        return withCors(
+          new Response(JSON.stringify({ success: true, order: savedDoc || orderDoc }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
       } catch (err: any) {
         console.error("[API] /api/orders/create failed:", err.message);
         return new Response(JSON.stringify({ success: false, error: err.message }), {
@@ -536,10 +546,24 @@ export default {
           }
         }
 
-        return new Response(JSON.stringify({ success: true, point }), {
-          status: 200,
-          headers: { "Content-Type": "application/json" },
-        });
+        // Live Socket.io emit for real-time tracking map
+        try {
+          const { broadcastOrderUpdate } = await import("./server/socket");
+          broadcastOrderUpdate(body.orderNumber, "rider:location", {
+            orderNumber: body.orderNumber,
+            lat: point.lat,
+            lng: point.lng,
+          });
+        } catch {
+          // Socket silent fallback
+        }
+
+        return withCors(
+          new Response(JSON.stringify({ success: true, point }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
       } catch (err: any) {
         return new Response(JSON.stringify({ success: false, error: err.message }), {
           status: 400,

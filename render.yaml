@@ -41,6 +41,8 @@ services:
         fromDatabase:
           name: animas-kitchen-postgres
           property: connectionString
+      - key: REDIS_URL
+        value: "redis://localhost:6379"
       - key: MONGODB_URI
         value: "mongodb+srv://animaskitchen228_db_user:9iBjDA236rriSouP@cluster0.0g9qbud.mongodb.net/animaskitchen?retryWrites=true&w=majority"
       - key: MONGODB_USERNAME

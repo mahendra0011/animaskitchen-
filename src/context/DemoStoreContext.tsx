@@ -581,9 +581,23 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     fetchLiveOrders();
     const interval = setInterval(fetchLiveOrders, 8000);
+
+    // Real-time Socket.io bi-directional live sync
+    let unsubscribeSocket: (() => void) | undefined;
+    import("../lib/socketClient").then(({ subscribeToKDS }) => {
+      if (isMounted) {
+        unsubscribeSocket = subscribeToKDS(() => {
+          fetchLiveOrders();
+        });
+      }
+    }).catch(() => {
+      // Fallback seamlessly to polling if websocket fails
+    });
+
     return () => {
       isMounted = false;
       clearInterval(interval);
+      if (unsubscribeSocket) unsubscribeSocket();
     };
   }, []);
 
