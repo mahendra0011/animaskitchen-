@@ -542,46 +542,37 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return saved ? JSON.parse(saved) : INITIAL_WHATSAPP_LOGS;
   });
 
-  // Sync to local storage
+  // Debounced Sync to local storage to eliminate UI thread blocking and lag
   useEffect(() => {
-    safeSetItem(`${STORAGE_KEY}_menu`, JSON.stringify(menuItems));
-    safeSetItem(`${STORAGE_KEY}_cart`, JSON.stringify(cart));
-    safeSetItem(`${STORAGE_KEY}_wishlist`, JSON.stringify(wishlistIds));
-    safeSetItem(`${STORAGE_KEY}_orders`, JSON.stringify(orders));
-    safeSetItem(`${STORAGE_KEY}_partners`, JSON.stringify(deliveryPartners));
-    safeSetItem(`${STORAGE_KEY}_coupons`, JSON.stringify(coupons));
-    safeSetItem(`${STORAGE_KEY}_subs`, JSON.stringify(subscriptions));
-    safeSetItem(`${STORAGE_KEY}_profile`, JSON.stringify(customerProfile));
-    safeSetItem(`${STORAGE_KEY}_inventory`, JSON.stringify(inventoryItems));
-    safeSetItem(`${STORAGE_KEY}_staff`, JSON.stringify(staffList));
-    safeSetItem(`${STORAGE_KEY}_tickets`, JSON.stringify(supportTickets));
-    safeSetItem(`${STORAGE_KEY}_kot`, JSON.stringify(kotTickets));
-    safeSetItem(`${STORAGE_KEY}_loyalty`, JSON.stringify(loyaltyProfile));
-    safeSetItem(`${STORAGE_KEY}_wallet`, JSON.stringify(customerWallet));
-    safeSetItem(`${STORAGE_KEY}_whatsapp`, JSON.stringify(whatsappLogs));
-    safeSetItem(`${STORAGE_KEY}_homepage_customization`, JSON.stringify(homepageCustomization));
+    const timer = setTimeout(() => {
+      safeSetItem(`${STORAGE_KEY}_cart`, JSON.stringify(cart));
+      safeSetItem(`${STORAGE_KEY}_wishlist`, JSON.stringify(wishlistIds));
+      safeSetItem(`${STORAGE_KEY}_orders`, JSON.stringify(orders));
+      safeSetItem(`${STORAGE_KEY}_profile`, JSON.stringify(customerProfile));
+      safeSetItem(`${STORAGE_KEY}_wallet`, JSON.stringify(customerWallet));
+      safeSetItem(`${STORAGE_KEY}_homepage_customization`, JSON.stringify(homepageCustomization));
+      safeSetItem(`${STORAGE_KEY}_subs`, JSON.stringify(subscriptions));
+    }, 400);
+
+    return () => clearTimeout(timer);
   }, [
-    menuItems,
     cart,
+    wishlistIds,
     orders,
-    deliveryPartners,
-    coupons,
-    subscriptions,
     customerProfile,
-    inventoryItems,
-    staffList,
-    supportTickets,
-    kotTickets,
-    loyaltyProfile,
     customerWallet,
-    whatsappLogs,
     homepageCustomization,
+    subscriptions,
   ]);
 
-  // Realtime Database Synchronizer: Fetch live orders from MongoDB
+  // Realtime Database Synchronizer: Fetch live orders from MongoDB without UI freeze
   useEffect(() => {
     let isMounted = true;
+    let isFetching = false;
+
     const fetchLiveOrders = async () => {
+      if (isFetching || document.hidden) return;
+      isFetching = true;
       try {
         const res = await fetch("/api/orders");
         if (!res.ok) return;
@@ -589,25 +580,26 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (data.success && Array.isArray(data.orders) && data.orders.length > 0 && isMounted) {
           setOrders((prev) => {
             const existingIds = new Set(prev.map((o) => o.orderNumber));
-            const newMappedOrders: Order[] = data.orders
-              .filter((mo: any) => !existingIds.has(mo.orderNumber))
-              .map((mo: any) => ({
-                id: mo._id || `ord-${Date.now()}`,
-                orderNumber: mo.orderNumber,
-                createdAt: mo.createdAt || new Date().toISOString(),
-                customerName: mo.customerName || "Customer",
-                customerPhone: mo.customerPhone || "+91 99999 88888",
-                deliveryAddress: {
-                  id: "addr-mongo",
-                  flatNo: mo.deliveryAddress?.addressText || "Patliputra Hub #01",
-                  area: "Patna, Bihar",
-                  landmark: "",
-                  tag: "Home",
-                  coordinates: {
-                    lat: mo.deliveryAddress?.lat || 25.6268,
-                    lng: mo.deliveryAddress?.lng || 85.1118,
-                  },
+            const freshOrders = data.orders.filter((mo: any) => !existingIds.has(mo.orderNumber));
+            if (freshOrders.length === 0) return prev;
+
+            const newMappedOrders: Order[] = freshOrders.map((mo: any) => ({
+              id: mo._id || `ord-${Date.now()}`,
+              orderNumber: mo.orderNumber,
+              createdAt: mo.createdAt || new Date().toISOString(),
+              customerName: mo.customerName || "Customer",
+              customerPhone: mo.customerPhone || "+91 99999 88888",
+              deliveryAddress: {
+                id: "addr-mongo",
+                flatNo: mo.deliveryAddress?.addressText || "Patliputra Hub #01",
+                area: "Patna, Bihar",
+                landmark: "",
+                tag: "Home",
+                coordinates: {
+                  lat: mo.deliveryAddress?.lat || 25.6268,
+                  lng: mo.deliveryAddress?.lng || 85.1118,
                 },
+              },
                 items:
                   Array.isArray(mo.items) && mo.items.length > 0
                     ? mo.items.map((it: any) => ({
@@ -686,6 +678,8 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       } catch {
         // Continue with local cache
+      } finally {
+        isFetching = false;
       }
     };
 

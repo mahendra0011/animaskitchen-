@@ -128,30 +128,7 @@ function MainAppContent() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [selectedDishPageId, setSelectedDishPageId] = useState<string | null>(null);
 
-  // GSAP animation for floating food micro-badges and subtle ambient glow
   const heroAccentRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (typeof window === "undefined" || !heroAccentRef.current) return;
-    const ctx = gsap.context(() => {
-      gsap.to(".gsap-float", {
-        y: -6,
-        duration: 2.2,
-        repeat: -1,
-        yoyo: true,
-        ease: "sine.inOut",
-        stagger: 0.3,
-      });
-      gsap.to(".gsap-pulse-slow", {
-        scale: 1.03,
-        duration: 3,
-        repeat: -1,
-        yoyo: true,
-        ease: "power1.inOut",
-      });
-    }, heroAccentRef);
-
-    return () => ctx.revert();
-  }, [customerPage]);
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-cream text-ink pb-20 lg:pb-0">
