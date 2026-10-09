@@ -1,6 +1,12 @@
 import React, { useRef } from "react";
 import { Order } from "@/types/kitchen";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Download, Printer, CheckCircle2, ShieldCheck, Share2, Receipt } from "lucide-react";
 import { toast } from "sonner";
@@ -11,7 +17,11 @@ interface OrderInvoiceModalProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, open, onOpenChange }) => {
+export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
+  order,
+  open,
+  onOpenChange,
+}) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
 
   if (!order) return null;
@@ -66,7 +76,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
           <div style="text-align: right;">
             <strong>Invoice No:</strong> ${invoiceNumber}<br>
             <strong>Order ID:</strong> ${order.orderNumber}<br>
-            <strong>Date:</strong> ${new Date(order.placedAt).toLocaleString("en-IN")}<br>
+            <strong>Date:</strong> ${new Date(order.createdAt).toLocaleString("en-IN")}<br>
             <strong>Payment Mode:</strong> ${order.paymentMethod.toUpperCase()} (${order.paymentStatus.toUpperCase()})
           </div>
         </div>
@@ -97,7 +107,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
                 <td class="text-right">₹${item.menuItem?.price || item.itemTotal}</td>
                 <td class="text-right">₹${item.itemTotal * item.quantity}</td>
               </tr>
-            `
+            `,
               )
               .join("")}
           </tbody>
@@ -133,11 +143,11 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
   const handleShareWhatsApp = () => {
     const text = encodeURIComponent(
       `*Anima's Kitchen Tax Invoice*\n` +
-      `Invoice: ${invoiceNumber}\n` +
-      `Order: ${order.orderNumber}\n` +
-      `Amount Paid: ₹${order.finalTotal}\n` +
-      `Date: ${new Date(order.placedAt).toLocaleDateString("en-IN")}\n\n` +
-      `Thank you for ordering Ghar Jaisa Khana from Anima's Kitchen Patna!`
+        `Invoice: ${invoiceNumber}\n` +
+        `Order: ${order.orderNumber}\n` +
+        `Amount Paid: ₹${order.finalTotal}\n` +
+        `Date: ${new Date(order.createdAt).toLocaleDateString("en-IN")}\n\n` +
+        `Thank you for ordering Ghar Jaisa Khana from Anima's Kitchen Patna!`,
     );
     window.open(`https://wa.me/91${order.customerPhone}?text=${text}`, "_blank");
   };
@@ -184,7 +194,10 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
         </DialogHeader>
 
         {/* Invoice Printable View */}
-        <div ref={invoiceRef} className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-4 bg-white">
+        <div
+          ref={invoiceRef}
+          className="p-5 sm:p-6 overflow-y-auto max-h-[75vh] space-y-4 bg-white"
+        >
           {/* Header */}
           <div className="flex justify-between items-start border-b border-ink/10 pb-4">
             <div>
@@ -218,7 +231,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
               </span>
               <p className="font-mono text-xs font-bold text-ink mt-2">{invoiceNumber}</p>
               <p className="text-[11px] font-mono text-ink/60">
-                Date: {new Date(order.placedAt).toLocaleDateString("en-IN")}
+                Date: {new Date(order.createdAt).toLocaleDateString("en-IN")}
               </p>
               <p className="text-[11px] font-mono text-ink/60">Order Ref: {order.orderNumber}</p>
             </div>
@@ -241,7 +254,8 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
                 <>
                   <p className="text-ink font-medium">{order.deliveryAddress.street}</p>
                   <p className="text-ink/60 text-[11px]">
-                    {order.deliveryAddress.area}, {order.deliveryAddress.city} - {order.deliveryAddress.pincode}
+                    {order.deliveryAddress.area}, {order.deliveryAddress.city} -{" "}
+                    {order.deliveryAddress.pincode}
                   </p>
                 </>
               ) : (
@@ -265,10 +279,13 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
                 {order.items.map((item, i) => (
                   <tr key={i} className="hover:bg-frost/20">
                     <td className="p-3">
-                      <span className="font-semibold text-ink">{item.menuItem?.name || "Dish Item"}</span>
+                      <span className="font-semibold text-ink">
+                        {item.menuItem?.name || "Dish Item"}
+                      </span>
                       {item.selectedAddons && item.selectedAddons.length > 0 && (
                         <p className="text-[10px] text-ink/60 mt-0.5">
-                          + {item.selectedAddons.map((a: any) => a.addon?.name || a.name).join(", ")}
+                          +{" "}
+                          {item.selectedAddons.map((a: any) => a.addon?.name || a.name).join(", ")}
                         </p>
                       )}
                     </td>
@@ -297,7 +314,9 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({ order, ope
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-mono uppercase font-bold text-ink/50">Status:</span>
+                <span className="text-[10px] font-mono uppercase font-bold text-ink/50">
+                  Status:
+                </span>
                 <span className="font-mono font-bold uppercase text-emerald-700">
                   {order.paymentStatus}
                 </span>

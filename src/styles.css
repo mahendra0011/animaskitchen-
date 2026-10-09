@@ -428,7 +428,9 @@ html.lenis body {
 }
 
 /* Prevent accidental mobile text selection on buttons and bottom bars */
-nav, button, .no-select {
+nav,
+button,
+.no-select {
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
@@ -440,7 +442,11 @@ nav, button, .no-select {
 }
 
 /* Android touch tap highlight removal for sleek native app feel */
-button, a, input, select, textarea {
+button,
+a,
+input,
+select,
+textarea {
   -webkit-tap-highlight-color: transparent;
 }
 
@@ -454,8 +460,8 @@ button, a, input, select, textarea {
 }
 
 /* Prevent horizontal scroll bleed on mobile screens */
-html, body {
+html,
+body {
   max-width: 100vw;
   overflow-x: hidden;
 }
-

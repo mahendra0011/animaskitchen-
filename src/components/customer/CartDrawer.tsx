@@ -354,7 +354,7 @@ export const CartDrawer: React.FC = () => {
 
         {/* Footer: Bill Summary & Checkout Button */}
         {cart.length > 0 && (
-          <div className="border-t border-ink/10 bg-cream/90 p-5 backdrop-blur-md">
+          <div className="border-t border-ink/10 bg-cream/90 p-5 pb-safe backdrop-blur-md">
             <div className="space-y-1.5 text-xs text-ink/70">
               <div className="flex justify-between">
                 <span>Items Subtotal</span>

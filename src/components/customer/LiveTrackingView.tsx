@@ -34,6 +34,10 @@ export const LiveTrackingView: React.FC = () => {
     updateOrderStatus,
     submitOrderReview,
     setActiveRole,
+    isAuthenticated,
+    currentUser,
+    setAuthModalOpen,
+    setAuthModalTab,
   } = useDemoStore();
 
   const [ratingInput, setRatingInput] = useState(5);
@@ -122,10 +126,17 @@ export const LiveTrackingView: React.FC = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => setActiveRole("rider")}
+            onClick={() => {
+              if (isAuthenticated && currentUser?.role === "rider") {
+                setActiveRole("rider");
+              } else {
+                setAuthModalTab("login");
+                setAuthModalOpen(true);
+              }
+            }}
             className="rounded-full border-ink/15 text-xs text-ink hover:border-spice"
           >
-            View as Rider 🛵
+            Rider Login 🛵
           </Button>
         </div>
       </div>

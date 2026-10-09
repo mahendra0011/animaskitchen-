@@ -96,7 +96,7 @@ export const AnalyticsTab: React.FC = () => {
         <div className="rounded-3xl border border-ink/10 bg-frost p-5 shadow-sm">
           <h4 className="font-display text-lg text-ink mb-1">Weekly Revenue Curve (₹)</h4>
           <p className="text-xs text-ink/60 mb-4">Daily gross receipts from kitchen dispatches</p>
-          <div className="h-64 w-full">
+          <div className="h-[220px] sm:h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={salesData}>
                 <defs>
@@ -126,7 +126,7 @@ export const AnalyticsTab: React.FC = () => {
         <div className="rounded-3xl border border-ink/10 bg-frost p-5 shadow-sm">
           <h4 className="font-display text-lg text-ink mb-1">Most Loved Menu Items</h4>
           <p className="text-xs text-ink/60 mb-4">Total volume ordered this week</p>
-          <div className="h-64 w-full">
+          <div className="h-[200px] sm:h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={popularDishes} layout="vertical">
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />
@@ -145,7 +145,7 @@ export const AnalyticsTab: React.FC = () => {
           <p className="text-xs text-ink/60 mb-4">
             Highlights lunch rush (12-2 PM) and dinner rush (7-9 PM)
           </p>
-          <div className="h-64 w-full">
+          <div className="h-[180px] sm:h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={hourlyRush}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#e5e5e5" />

@@ -61,7 +61,7 @@ const FAQ_DATA: FaqItem[] = [
     category: "Ordering & Delivery",
     question: "What is your delivery coverage area?",
     answer:
-      "Our primary cloud kitchen hub is in Indiranagar, Bengaluru. We currently deliver across a 6 km radius including Indiranagar, Domlur, Ulsoor, Koramangala, CV Raman Nagar, and HAL Old Airport Road with ₹0 delivery fees on orders above ₹149.",
+      "Our central cloud kitchen hub is in Vikash Nagar, Kurji, Patna. We deliver exclusively across Patna in key localities including Patliputra Colony, Anandpuri, Indrapuri, Rajeev Nagar, Ashiyana, Digha, Boring Road, Budha Colony, Alpana Market, Nehru Nagar, and surrounding sectors. Free express delivery applies on orders ≥ ₹250 within 4 km, with limited condition delivery beyond 4 km across Patna.",
   },
   {
     id: "f-6",

@@ -27,7 +27,10 @@ function tryFetch() {
       }
 
       // Ensure proper meta charset
-      if (!cleanHtml.includes('<meta charset="utf-8">') && !cleanHtml.includes("<meta charSet=\"utf-8\"")) {
+      if (
+        !cleanHtml.includes('<meta charset="utf-8">') &&
+        !cleanHtml.includes('<meta charSet="utf-8"')
+      ) {
         cleanHtml = cleanHtml.replace(/<head>/i, '<head><meta charset="utf-8">');
       }
 

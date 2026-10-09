@@ -29,6 +29,8 @@ import {
   ExternalLink,
   Smartphone,
   Download,
+  Bike,
+  Shield,
 } from "lucide-react";
 import { useState, useEffect, useRef, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -105,6 +107,7 @@ function MainAppContent() {
     activeRole,
     isAuthenticated,
     currentUser,
+    loginAsRole,
     logout,
     setAuthModalOpen,
     setAuthModalTab,
@@ -121,23 +124,65 @@ function MainAppContent() {
     wishlistIds,
     socialPosts,
     daySpecialMeal,
+    customerPage,
+    setCustomerPage,
   } = useDemoStore();
 
   const [areaChecked, setAreaChecked] = useState(false);
-  const [customerPage, setCustomerPage] = useState<string>("home");
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [selectedDishPageId, setSelectedDishPageId] = useState<string | null>(null);
 
   const heroAccentRef = useRef<HTMLDivElement>(null);
 
+  const canAccessRole =
+    activeRole === "customer" || (isAuthenticated && currentUser?.role === activeRole);
+
+  const RestrictedPortalNotice = ({ portal }: { portal: string }) => (
+    <div className="mx-auto max-w-md px-5 py-20 text-center">
+      <p className="font-display text-2xl font-black">Restricted {portal} Portal</p>
+      <p className="mt-2 text-sm text-ink/60">
+        Please sign in with an authorized {portal} account to continue.
+      </p>
+      <div className="mt-6 flex items-center justify-center gap-2">
+        <Button
+          className="rounded-full bg-spice text-cream text-xs font-bold px-5"
+          onClick={() => {
+            setAuthModalTab("login");
+            setAuthModalOpen(true);
+          }}
+        >
+          Sign In
+        </Button>
+        <Button
+          variant="outline"
+          className="rounded-full text-xs font-bold px-5"
+          onClick={() => logout()}
+        >
+          Back to Store
+        </Button>
+      </div>
+    </div>
+  );
+
   return (
     <main className="min-h-screen overflow-x-hidden bg-cream text-ink pb-20 lg:pb-0">
-      {/* Role-Based Rendering */}
-      {activeRole === "rider" && <DeliveryPartnerView />}
+      {/* Role-Based Rendering (guarded: staff portals need matching authenticated role) */}
+      {activeRole === "rider" &&
+        (canAccessRole ? <DeliveryPartnerView /> : <RestrictedPortalNotice portal="Rider" />)}
 
-      {activeRole === "admin" && <AdminDashboardView initialTab="overview" />}
+      {activeRole === "admin" &&
+        (canAccessRole ? (
+          <AdminDashboardView initialTab="overview" />
+        ) : (
+          <RestrictedPortalNotice portal="Admin" />
+        ))}
 
-      {activeRole === "kds" && <AdminDashboardView initialTab="kds" />}
+      {activeRole === "kds" &&
+        (canAccessRole ? (
+          <AdminDashboardView initialTab="kds" />
+        ) : (
+          <RestrictedPortalNotice portal="Kitchen" />
+        ))}
 
       {activeRole === "customer" && (
         <>
@@ -149,10 +194,14 @@ function MainAppContent() {
               onBack={() => setSelectedDishPageId(null)}
             />
           ) : customerPage === "dashboard" ? (
-            <CustomerDashboardView
-              onBackToStore={() => setCustomerPage("home")}
-              onOpenDishPage={(id) => setSelectedDishPageId(id)}
-            />
+            isAuthenticated ? (
+              <CustomerDashboardView
+                onBackToStore={() => setCustomerPage("home")}
+                onOpenDishPage={(id) => setSelectedDishPageId(id)}
+              />
+            ) : (
+              <RestrictedPortalNotice portal="Customer" />
+            )
           ) : customerPage === "menu" ? (
             <FullMenuPage
               onBack={() => setCustomerPage("home")}
@@ -191,64 +240,64 @@ function MainAppContent() {
             />
           ) : (
             <>
-              {/* Left Floating Social Sidebar (Inspired by User's Portfolio Screenshot) */}
+              {/* Left Floating Social Sidebar (Vibrant Brand Colours Always Visible) */}
               <aside
                 aria-label="Social quick links"
-                className="fixed left-3 sm:left-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-3 p-2 rounded-2xl bg-[#0B132B]/85 border border-white/10 backdrop-blur-xl shadow-2xl transition-all hover:border-white/20"
+                className="fixed left-3 sm:left-4 top-1/2 -translate-y-1/2 z-40 hidden md:flex flex-col items-center gap-3 p-2.5 rounded-2xl bg-[#0B132B]/90 border border-white/15 backdrop-blur-xl shadow-2xl transition-all hover:border-white/25"
               >
-                {/* Facebook */}
+                {/* Facebook - Permanent Rich Blue */}
                 <a
                   href="https://www.facebook.com/share/1DkpxegDgy/"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-blue-600 hover:border-blue-500 transition-all hover:scale-110 shadow-sm"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-[#1877F2] text-white transition-all hover:scale-115 shadow-md shadow-blue-900/30 ring-1 ring-white/20"
                   title="Follow Anima's Kitchen on Facebook"
                   aria-label="Facebook"
                 >
-                  <Facebook className="size-4.5 fill-current" />
+                  <Facebook className="size-5 fill-current text-white" />
                   <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                     Facebook
                   </span>
                 </a>
 
-                {/* Instagram */}
+                {/* Instagram - Permanent Iconic Vivid Gradient */}
                 <a
                   href="https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-gradient-to-tr hover:from-amber-500 hover:via-pink-500 hover:to-purple-600 hover:border-pink-400 transition-all hover:scale-110 shadow-sm"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-gradient-to-tr from-[#FD1D1D] via-[#E1306C] to-[#C13584] text-white transition-all hover:scale-115 shadow-md shadow-pink-900/30 ring-1 ring-white/20"
                   title="Follow Anima's Kitchen on Instagram"
                   aria-label="Instagram"
                 >
-                  <Instagram className="size-4.5" />
+                  <Instagram className="size-5 text-white" />
                   <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                     Instagram
                   </span>
                 </a>
 
-                {/* WhatsApp */}
+                {/* WhatsApp - Permanent Vivid Emerald / Green */}
                 <a
                   href="https://wa.me/917004960724?text=Namaste%20Anima's%20Kitchen,%20I%20want%20to%20order%20food"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-emerald-600 hover:border-emerald-500 transition-all hover:scale-110 shadow-sm"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-[#25D366] text-white transition-all hover:scale-115 shadow-md shadow-emerald-900/30 ring-1 ring-white/20"
                   title="Chat on WhatsApp (+91 70049 60724)"
                   aria-label="WhatsApp"
                 >
-                  <MessageCircle className="size-4.5" />
+                  <MessageCircle className="size-5 fill-white text-white" />
                   <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                     WhatsApp (+91 70049 60724)
                   </span>
                 </a>
 
-                {/* Phone Call */}
+                {/* Phone Call - Permanent Vibrant Amber / Spice */}
                 <a
                   href="tel:+917004960724"
-                  className="group relative grid size-10 place-items-center rounded-xl bg-white/5 border border-white/10 text-white/80 hover:text-white hover:bg-amber-600 hover:border-amber-500 transition-all hover:scale-110 shadow-sm"
+                  className="group relative grid size-10 place-items-center rounded-xl bg-[#E25C1D] text-white transition-all hover:scale-115 shadow-md shadow-orange-950/30 ring-1 ring-white/20"
                   title="Call Kitchen (+91 70049 60724)"
                   aria-label="Call Kitchen"
                 >
-                  <Phone className="size-4.5" />
+                  <Phone className="size-4.5 fill-current text-white" />
                   <span className="pointer-events-none absolute left-full ml-3 px-2 py-1 rounded-md bg-ink text-cream text-[11px] font-bold whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity shadow-lg">
                     Call: +91 70049 60724
                   </span>
@@ -576,7 +625,12 @@ function MainAppContent() {
                       >
                         <span className="flex items-center gap-2.5">
                           <User className="size-4 text-spice" />
-                          <span>👤 {isAuthenticated ? "My Customer Dashboard" : "Sign In / Customer Account"}</span>
+                          <span>
+                            👤{" "}
+                            {isAuthenticated
+                              ? "My Customer Dashboard"
+                              : "Sign In / Customer Account"}
+                          </span>
                         </span>
                         <ArrowRight className="size-3.5 opacity-50" />
                       </button>
@@ -962,7 +1016,10 @@ function MainAppContent() {
 
               {/* 🌟 Day Special Meal Section (Admin Editable on Day-Basis) */}
               {daySpecialMeal.active && (
-                <section id="day-special" className="py-8 px-4 sm:px-6 bg-gradient-to-b from-amber-500/10 via-cream to-cream">
+                <section
+                  id="day-special"
+                  className="py-8 px-4 sm:px-6 bg-gradient-to-b from-amber-500/10 via-cream to-cream"
+                >
                   <div className="mx-auto max-w-6xl">
                     <div className="relative overflow-hidden rounded-3xl border-2 border-spice/30 bg-gradient-to-r from-ink via-stone-900 to-amber-950 p-6 sm:p-8 text-cream shadow-2xl">
                       {/* Decorative ambient backdrop */}
@@ -977,7 +1034,10 @@ function MainAppContent() {
                               {daySpecialMeal.badge || "TODAY'S SPECIAL"}
                             </span>
                             <span className="rounded-full bg-amber-400/20 border border-amber-400/40 px-3 py-1 text-[11px] font-mono font-semibold text-amber-300">
-                              📅 {daySpecialMeal.day === "Daily" ? "Fresh Today" : `${daySpecialMeal.day} Special`}
+                              📅{" "}
+                              {daySpecialMeal.day === "Daily"
+                                ? "Fresh Today"
+                                : `${daySpecialMeal.day} Special`}
                             </span>
                             {daySpecialMeal.isVeg && (
                               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-950/60 border border-emerald-400/40 px-2.5 py-0.5 text-[10px] font-bold text-emerald-300">
@@ -996,19 +1056,20 @@ function MainAppContent() {
                           </div>
 
                           {/* Items Included Badges */}
-                          {daySpecialMeal.itemsIncluded && daySpecialMeal.itemsIncluded.length > 0 && (
-                            <div className="flex flex-wrap items-center gap-2 pt-1">
-                              {daySpecialMeal.itemsIncluded.map((item, idx) => (
-                                <span
-                                  key={idx}
-                                  className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-medium text-cream/90 backdrop-blur-sm border border-white/10"
-                                >
-                                  <Check className="size-3 text-emerald-400" />
-                                  {item}
-                                </span>
-                              ))}
-                            </div>
-                          )}
+                          {daySpecialMeal.itemsIncluded &&
+                            daySpecialMeal.itemsIncluded.length > 0 && (
+                              <div className="flex flex-wrap items-center gap-2 pt-1">
+                                {daySpecialMeal.itemsIncluded.map((item, idx) => (
+                                  <span
+                                    key={idx}
+                                    className="inline-flex items-center gap-1 rounded-lg bg-white/10 px-2.5 py-1 text-[11px] font-medium text-cream/90 backdrop-blur-sm border border-white/10"
+                                  >
+                                    <Check className="size-3 text-emerald-400" />
+                                    {item}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
 
                           {/* Pricing & Order CTA */}
                           <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -1016,11 +1077,12 @@ function MainAppContent() {
                               <span className="font-display text-3xl font-black text-spice">
                                 ₹{daySpecialMeal.price}
                               </span>
-                              {daySpecialMeal.originalPrice && daySpecialMeal.originalPrice > daySpecialMeal.price && (
-                                <span className="text-sm font-mono text-cream/50 line-through">
-                                  ₹{daySpecialMeal.originalPrice}
-                                </span>
-                              )}
+                              {daySpecialMeal.originalPrice &&
+                                daySpecialMeal.originalPrice > daySpecialMeal.price && (
+                                  <span className="text-sm font-mono text-cream/50 line-through">
+                                    ₹{daySpecialMeal.originalPrice}
+                                  </span>
+                                )}
                               <span className="rounded-md bg-emerald-500/20 px-2 py-0.5 text-[10px] font-bold text-emerald-300">
                                 Limited Daily Batches
                               </span>
@@ -1088,7 +1150,10 @@ function MainAppContent() {
               />
 
               {/* 📸 Instagram & Social Feed Section (Directly after Menu) */}
-              <section id="kitchen-stories" className="py-14 sm:py-20 bg-gradient-to-b from-cream via-amber-500/5 to-cream border-t border-ink/10">
+              <section
+                id="kitchen-stories"
+                className="py-14 sm:py-20 bg-gradient-to-b from-cream via-amber-500/5 to-cream border-t border-ink/10"
+              >
                 <div className="mx-auto max-w-6xl px-4 sm:px-6">
                   {/* Header */}
                   <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 mb-8">
@@ -1101,7 +1166,8 @@ function MainAppContent() {
                         From Our Kitchen To Your Feed
                       </h2>
                       <p className="mt-1 text-xs sm:text-sm text-ink/70 max-w-xl">
-                        See real daily cooking behind the scenes, fresh ingredients, and customer love updated regularly.
+                        See real daily cooking behind the scenes, fresh ingredients, and customer
+                        love updated regularly.
                       </p>
                     </div>
 
@@ -1167,7 +1233,10 @@ function MainAppContent() {
                               {post.likesCount || 120} likes
                             </span>
                             <a
-                              href={post.postUrl || "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"}
+                              href={
+                                post.postUrl ||
+                                "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk"
+                              }
                               target="_blank"
                               rel="noopener noreferrer"
                               className="font-bold text-spice hover:underline inline-flex items-center gap-1"
@@ -1182,7 +1251,6 @@ function MainAppContent() {
                   </div>
                 </div>
               </section>
-
 
               {/* Delivery Guarantee Section (Placed immediately after Menu for high visibility) */}
               <section
@@ -1721,8 +1789,14 @@ function MainAppContent() {
                     <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-cream/[0.04] via-cream/[0.08] to-cream/[0.04] p-5 md:p-6 border border-cream/15 backdrop-blur-md shadow-2xl flex flex-col md:flex-row items-center justify-between gap-6">
                       {/* Left: Agency Identity & Badge */}
                       <div className="flex flex-col sm:flex-row items-center sm:items-start text-center sm:text-left gap-3.5">
-                        <div className="relative flex size-11 items-center justify-center rounded-xl bg-gradient-to-br from-saffron to-amber-600 text-ink shadow-lg shadow-saffron/20 ring-2 ring-saffron/40 font-display font-black text-lg tracking-tighter">
-                          AT
+                        {/* Official Agency Logo Image */}
+                        <div className="relative shrink-0 overflow-hidden rounded-xl bg-white p-1 shadow-xl shadow-saffron/20 ring-2 ring-saffron/40 flex items-center justify-center">
+                          <img
+                            src="/apex-techera-logo.jpg"
+                            alt="Apex Techera Agency Logo"
+                            className="h-12 w-14 sm:h-14 sm:w-16 object-contain"
+                            loading="lazy"
+                          />
                           <span className="absolute -top-1 -right-1 flex h-2.5 w-2.5">
                             <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                             <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>

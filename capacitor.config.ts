@@ -15,6 +15,11 @@ const config: CapacitorConfig = {
     captureInput: true,
     webContentsDebuggingEnabled: true,
   },
+  ios: {
+    contentInset: "automatic",
+    allowsLinkPreview: false,
+    scrollEnabled: true,
+  },
 };
 
 export default config;

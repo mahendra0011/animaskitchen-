@@ -447,7 +447,7 @@ export interface SocialPost {
   imageUrl: string;
   caption: string;
   postUrl: string;
-  platform?: "instagram" | "facebook";
+  platform: "instagram" | "facebook";
   likesCount?: number;
   commentsCount?: number;
   createdAt: string;
@@ -467,4 +467,3 @@ export interface DaySpecialMeal {
   isVeg: boolean;
   itemsIncluded: string[];
 }
-

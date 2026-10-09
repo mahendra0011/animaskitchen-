@@ -1568,11 +1568,17 @@ const AdminDaySpecialMealSection: React.FC = () => {
 const AdminSocialPostsSection: React.FC = () => {
   const { socialPosts, addSocialPost, deleteSocialPost } = useDemoStore();
 
-  const [newPost, setNewPost] = useState({
+  const [newPost, setNewPost] = useState<{
+    imageUrl: string;
+    caption: string;
+    postUrl: string;
+    platform: "instagram" | "facebook";
+    likesCount: number;
+  }>({
     imageUrl: "",
     caption: "",
     postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
-    platform: "instagram" as const,
+    platform: "instagram",
     likesCount: 150,
   });
 
@@ -1626,7 +1632,10 @@ const AdminSocialPostsSection: React.FC = () => {
       </div>
 
       {/* New Post Form */}
-      <form onSubmit={handleAddPost} className="p-4 rounded-xl border border-ink/10 bg-cream/50 space-y-3 text-xs">
+      <form
+        onSubmit={handleAddPost}
+        className="p-4 rounded-xl border border-ink/10 bg-cream/50 space-y-3 text-xs"
+      >
         <h4 className="font-bold text-ink flex items-center gap-1.5">
           <Plus className="size-3.5 text-spice" />
           <span>Publish New Social Post</span>
@@ -1739,4 +1748,3 @@ const AdminSocialPostsSection: React.FC = () => {
     </div>
   );
 };
-

@@ -171,6 +171,19 @@ export const CheckoutModal: React.FC = () => {
         // Calculate distance from Kurji Hub
         const dist = calculateDistanceKm(KITCHEN_HUB.lat, KITCHEN_HUB.lng, lat, lng);
 
+        // Strict Patna Geofence Check: Anima's Kitchen operates strictly inside Patna (Max service radius 12 KM)
+        // If detected GPS is outside Patna (e.g. Bangalore, Delhi, Mumbai, etc.), reject delivery with clear error!
+        const MAX_PATNA_SERVICE_RADIUS_KM = 12.0;
+
+        if (dist > MAX_PATNA_SERVICE_RADIUS_KM) {
+          setIsDetectingGps(false);
+          toast.error("Location outside Patna!", {
+            description: `Your detected GPS is ${dist.toFixed(0)} km away. Anima's Kitchen operates strictly in Patna (Patliputra, Boring Road, Anandpuri, Digha, Ashiyana, Rajeev Nagar, etc.).`,
+            duration: 6000,
+          });
+          return;
+        }
+
         // Find closest known Patna locality or fallback
         let closestArea = "Patna Local Area";
         let minD = 999;
@@ -183,7 +196,7 @@ export const CheckoutModal: React.FC = () => {
         });
 
         toast.success(
-          `GPS detected! Approx ${dist} km from Kurji Hub (${dist <= 4.0 ? "Free delivery zone" : "Extra distance zone"}).`,
+          `GPS detected in Patna (${closestArea})! Approx ${dist} km from Kurji Hub (${dist <= 4.0 ? "Free delivery zone" : "Extra distance zone"}).`,
         );
 
         const newGpsAddr: DeliveryAddress = {
@@ -208,7 +221,7 @@ export const CheckoutModal: React.FC = () => {
         setIsDetectingGps(false);
         toast.dismiss("gps-detect");
         toast.error(
-          "Could not fetch GPS: " + (err.message || "Please select manual address option."),
+          "Could not fetch GPS: " + (err.message || "Please select manual Patna address option."),
         );
       },
       { enableHighAccuracy: true, timeout: 12000 },
@@ -256,6 +269,24 @@ export const CheckoutModal: React.FC = () => {
       toast.error("Please add or select a delivery address.");
       return;
     }
+
+    if (orderType === "delivery") {
+      const distance = calculateDistanceKm(
+        KITCHEN_HUB.lat,
+        KITCHEN_HUB.lng,
+        selectedAddress.coordinates.lat,
+        selectedAddress.coordinates.lng,
+      );
+
+      if (distance > 12.0) {
+        toast.error("Address outside Patna delivery perimeter!", {
+          description: `This address is approx ${distance.toFixed(0)} km away. Hot food delivery is strictly limited to Patna (Patliputra, Boring Road, Anandpuri, Digha, Ashiyana, etc.). For takeaway, please select Self Takeaway.`,
+          duration: 6000,
+        });
+        return;
+      }
+    }
+
     setIsProcessing(true);
 
     // Save location to Redis for Admin & Rider Google Maps navigation
@@ -276,7 +307,7 @@ export const CheckoutModal: React.FC = () => {
       // Background sync
     }
 
-    setTimeout(() => {
+    const finishCodOrder = () => {
       setIsProcessing(false);
       placeOrder(
         selectedAddress,
@@ -284,12 +315,108 @@ export const CheckoutModal: React.FC = () => {
         "ANIMA120",
         scheduledTime ? `Scheduled for: ${scheduledTime}` : "Fast delivery please",
       );
-    }, 1200);
+    };
+
+    // COD: place immediately (payment pending, collected at doorstep).
+    if (paymentMethod === "cod") {
+      setTimeout(finishCodOrder, 800);
+      return;
+    }
+
+    // Online (UPI/card/netbanking): REAL Razorpay flow. Never mark paid without verify.
+    try {
+      const amountPaise = Math.max(1, Math.round(cartTotal * 100));
+      const createRes = await fetch("/api/payments/razorpay/order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          amountPaise,
+          receipt: `AK-${Date.now().toString().slice(-8)}`,
+          notes: { address: selectedAddress.area },
+        }),
+      });
+      const createData = await createRes.json();
+      if (!createRes.ok || !createData.success) {
+        setIsProcessing(false);
+        toast.error("Online payment unavailable", {
+          description:
+            createData.error || "Razorpay keys not configured. Please use Cash on Delivery.",
+        });
+        return;
+      }
+
+      // Load Razorpay Checkout.js dynamically.
+      const loadRazorpay = () =>
+        new Promise<boolean>((resolve) => {
+          if ((window as any).Razorpay) return resolve(true);
+          const script = document.createElement("script");
+          script.src = "https://checkout.razorpay.com/v1/checkout.js";
+          script.onload = () => resolve(true);
+          script.onerror = () => resolve(false);
+          document.body.appendChild(script);
+        });
+      const loaded = await loadRazorpay();
+      if (!loaded) {
+        setIsProcessing(false);
+        toast.error("Payment gateway failed to load. Try COD.");
+        return;
+      }
+
+      const rz = new (window as any).Razorpay({
+        key: createData.keyId,
+        amount: createData.order.amount,
+        currency: "INR",
+        name: "Anima's Kitchen",
+        description: "Homemade food order",
+        order_id: createData.order.id,
+        theme: { color: "#E25C1D" },
+        handler: async (response: any) => {
+          try {
+            const verifyRes = await fetch("/api/payments/razorpay/verify", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+                orderNumber: createData.order.receipt,
+              }),
+            });
+            const verifyData = await verifyRes.json();
+            setIsProcessing(false);
+            if (verifyRes.ok && verifyData.success) {
+              placeOrder(
+                selectedAddress,
+                paymentMethod,
+                "ANIMA120",
+                scheduledTime ? `Scheduled for: ${scheduledTime}` : "Fast delivery please",
+                { verifiedPaid: true },
+              );
+            } else {
+              toast.error("Payment verification failed. Amount will auto-refund if debited.");
+            }
+          } catch {
+            setIsProcessing(false);
+            toast.error("Verification error. Contact support with payment ID.");
+          }
+        },
+        modal: {
+          ondismiss: () => {
+            setIsProcessing(false);
+            toast.info("Payment cancelled. Order not placed.");
+          },
+        },
+      });
+      rz.open();
+    } catch {
+      setIsProcessing(false);
+      toast.error("Payment init failed. Please use Cash on Delivery.");
+    }
   };
 
   return (
     <Dialog open={checkoutModalOpen} onOpenChange={setCheckoutModalOpen}>
-      <DialogContent className="max-w-3xl overflow-hidden rounded-3xl border border-ink/10 bg-frost p-0 shadow-2xl text-ink">
+      <DialogContent className="max-w-3xl max-h-[92vh] overflow-y-auto rounded-3xl border border-ink/10 bg-frost p-0 shadow-2xl text-ink">
         {/* Header */}
         <div className="border-b border-ink/10 bg-cream p-5">
           <div className="flex items-center justify-between">
@@ -856,17 +983,22 @@ export const CheckoutModal: React.FC = () => {
                 </div>
               </div>
 
-              {/* DEMO PAYMENT SIMULATION DETAILS */}
+              {/* PAYMENT DETAILS — online via Razorpay, COD at doorstep */}
               <div className="mt-3.5 rounded-2xl border border-spice/20 bg-cream/40 p-4 space-y-3">
                 <div className="flex items-center justify-between border-b border-ink/10 pb-2">
                   <div className="flex items-center gap-1.5 text-spice">
                     <Sparkles className="size-3.5" />
                     <span className="font-mono text-[11px] font-bold uppercase tracking-wider">
-                      Demo Payment Sandbox (Testing Mode)
+                      {paymentMethod === "cod"
+                        ? "Cash on Delivery"
+                        : "Secure Online Payment (Razorpay)"}
                     </span>
                   </div>
-                  <Badge variant="outline" className="text-[9px] font-mono text-emerald-800 border-emerald-300 bg-emerald-50">
-                    Auto-Verified Demo
+                  <Badge
+                    variant="outline"
+                    className="text-[9px] font-mono text-emerald-800 border-emerald-300 bg-emerald-50"
+                  >
+                    {paymentMethod === "cod" ? "Pay at Doorstep" : "Verified by Gateway"}
                   </Badge>
                 </div>
 
@@ -889,7 +1021,9 @@ export const CheckoutModal: React.FC = () => {
                           <div className="size-4 bg-ink rounded-xs" />
                           <div className="size-4 bg-spice rounded-xs" />
                         </div>
-                        <span className="font-mono text-[9px] text-ink/60 mt-1 font-bold">SCAN TO PAY</span>
+                        <span className="font-mono text-[9px] text-ink/60 mt-1 font-bold">
+                          SCAN TO PAY
+                        </span>
                       </div>
                       <div className="space-y-1 text-center sm:text-left flex-1">
                         <span className="font-mono text-[10px] uppercase font-bold text-ink/60 block">
@@ -902,7 +1036,8 @@ export const CheckoutModal: React.FC = () => {
                           className="h-8 rounded-xl border-ink/15 bg-frost text-xs font-mono"
                         />
                         <p className="text-[10px] text-ink/60 mt-1">
-                          Scan QR with PhonePe/GPay or confirm with test UPI ID for instant order approval.
+                          Scan QR with PhonePe/GPay or confirm with test UPI ID for instant order
+                          approval.
                         </p>
                       </div>
                     </div>
@@ -931,7 +1066,7 @@ export const CheckoutModal: React.FC = () => {
                       </div>
                     </div>
                     <p className="text-[10px] text-emerald-700 font-mono">
-                      ✓ Instant mock gateway authentication. Zero real deductions.
+                      ✓ Real Razorpay gateway. Card charged only after you confirm.
                     </p>
                   </div>
                 )}
@@ -942,7 +1077,13 @@ export const CheckoutModal: React.FC = () => {
                       Popular Supported Banks:
                     </span>
                     <div className="flex flex-wrap gap-1.5">
-                      {["HDFC Bank", "State Bank of India", "ICICI Bank", "Axis Bank", "Punjab National Bank"].map((b, i) => (
+                      {[
+                        "HDFC Bank",
+                        "State Bank of India",
+                        "ICICI Bank",
+                        "Axis Bank",
+                        "Punjab National Bank",
+                      ].map((b, i) => (
                         <span
                           key={b}
                           className={`font-mono text-[10px] px-2 py-1 rounded-lg border ${
@@ -964,7 +1105,8 @@ export const CheckoutModal: React.FC = () => {
                       Cash or QR on Delivery (Doorstep):
                     </span>
                     <p className="text-[11px] text-ink/70 leading-relaxed">
-                      Pay cash directly to rider upon arrival or scan their live static QR code at delivery.
+                      Pay cash directly to rider upon arrival or scan their live static QR code at
+                      delivery.
                     </p>
                   </div>
                 )}
@@ -1046,7 +1188,11 @@ export const CheckoutModal: React.FC = () => {
                   className="mt-0.5 size-3.5 rounded border-rose-400 text-rose-600 focus:ring-rose-500 cursor-pointer accent-[#e05320]"
                 />
                 <label htmlFor="checkout-agree-terms" className="leading-tight cursor-pointer">
-                  I understand and agree that <strong>orders for freshly cooked food cannot be cancelled or returned once placed</strong>, and receiving the parcel upon arrival is mandatory.
+                  I understand and agree that{" "}
+                  <strong>
+                    orders for freshly cooked food cannot be cancelled or returned once placed
+                  </strong>
+                  , and receiving the parcel upon arrival is mandatory.
                 </label>
               </div>
 

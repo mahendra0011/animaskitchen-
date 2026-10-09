@@ -363,24 +363,66 @@ export async function handlePasswordLogin(
 export async function handleGoogleLogin(
   credential?: string,
   userInfo?: { email: string; name?: string; picture?: string; sub?: string },
+  accessToken?: string,
 ): Promise<{ success: boolean; token?: string; user?: AuthenticatedUser; error?: string }> {
   try {
-    let email = userInfo?.email;
+    let email = "";
     let name = userInfo?.name || "";
 
-    // If credential (Google ID Token JWT) was passed, decode payload
-    if (credential && !email) {
+    // 1) Preferred: verify OAuth access_token server-side via Google userinfo.
+    if (accessToken) {
       try {
-        const parts = credential.split(".");
-        if (parts.length === 3 && parts[1]) {
-          const payloadJson = Buffer.from(parts[1], "base64url").toString("utf-8");
-          const payload = JSON.parse(payloadJson);
-          email = payload.email;
-          name = payload.name || payload.given_name || "Google User";
+        const verifyRes = await fetch("https://www.googleapis.com/oauth2/v3/userinfo", {
+          headers: { Authorization: `Bearer ${accessToken}` },
+        });
+        if (verifyRes.ok) {
+          const verified = (await verifyRes.json()) as {
+            email?: string;
+            name?: string;
+            email_verified?: boolean;
+          };
+          if (verified.email) {
+            email = verified.email;
+            name = verified.name || name;
+          }
         }
       } catch {
-        // Fallback
+        // fall through to ID-token verification
       }
+    }
+
+    // 2) Verify Google ID Token (JWT) via tokeninfo + audience check.
+    if (!email && credential) {
+      try {
+        const verifyRes = await fetch(
+          `https://oauth2.googleapis.com/tokeninfo?id_token=${encodeURIComponent(credential)}`,
+        );
+        if (verifyRes.ok) {
+          const payload = (await verifyRes.json()) as {
+            email?: string;
+            name?: string;
+            given_name?: string;
+            aud?: string;
+            email_verified?: string;
+          };
+          const expectedAud =
+            process.env["GOOGLE_CLIENT_ID"] || process.env["VITE_GOOGLE_CLIENT_ID"] || "";
+          if (payload.email && (!expectedAud || payload.aud === expectedAud)) {
+            email = payload.email;
+            name = payload.name || payload.given_name || name || "Google User";
+          }
+        }
+      } catch {
+        // Verification failed — do not trust unverified payload.
+      }
+    }
+
+    // 3) Legacy: client-supplied userInfo without token — reject (prevents email spoofing).
+    if (!email) {
+      return {
+        success: false,
+        error: "Google verification failed. Please try signing in again.",
+      };
     }
 
     if (!email) {

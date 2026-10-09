@@ -88,9 +88,9 @@ const OFFERS: PromoOffer[] = [
     code: "FREESHIP",
     title: "Insulated Box Zero Delivery",
     discount: "FREE DELIVERY",
-    minOrder: "Min order ₹149",
+    minOrder: "Min order ₹250",
     description:
-      "Free express delivery in heat-lock insulated packaging anywhere within 6km of Indiranagar Hub.",
+      "Free express delivery in heat-lock insulated packaging anywhere within 4km of Kurji Patna Hub (Patliputra, Boring Road, Anandpuri, Digha, etc.).",
     tag: "EVERYDAY PERK",
     validTill: "Always active",
   },

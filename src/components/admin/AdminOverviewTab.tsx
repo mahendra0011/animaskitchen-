@@ -185,7 +185,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onNavigateTa
             </span>
             <span className="text-cream/40">·</span>
             <span className="text-xs text-cream/70 font-mono">
-              Bengaluru Central Hub · Auto-refresh 5s
+              Kurji Main Kitchen, Patna · Auto-refresh 5s
             </span>
           </div>
           <h2 className="font-display text-xl sm:text-2xl font-bold mt-1 text-cream">
@@ -476,7 +476,7 @@ export const AdminOverviewTab: React.FC<AdminOverviewTabProps> = ({ onNavigateTa
 
             {/* Simulated Visual Bar Chart */}
             <div className="mt-4 sm:mt-6 pt-2 sm:pt-4 overflow-x-auto scrollbar-none">
-              <div className="grid grid-cols-8 gap-2 items-end h-44 border-b border-ink/10 pb-2 min-w-[340px]">
+              <div className="grid grid-cols-8 gap-2 items-end h-44 border-b border-ink/10 pb-2 min-w-0">
                 {[
                   { time: "9 AM", orders: 8, height: "18%", rev: "₹1,840" },
                   { time: "11 AM", orders: 18, height: "35%", rev: "₹4,200" },

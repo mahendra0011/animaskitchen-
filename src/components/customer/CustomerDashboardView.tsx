@@ -348,8 +348,12 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
           ) : (
             <div className="mt-4 p-3 rounded-2xl bg-spice/10 border border-spice/20 text-left space-y-2">
               <div>
-                <span className="font-display text-xs font-bold text-spice block">Not Signed In</span>
-                <p className="text-[11px] text-ink/70">Login to save addresses, track orders & view wallet.</p>
+                <span className="font-display text-xs font-bold text-spice block">
+                  Not Signed In
+                </span>
+                <p className="text-[11px] text-ink/70">
+                  Login to save addresses, track orders & view wallet.
+                </p>
               </div>
               <div className="flex gap-2">
                 <Button
@@ -526,8 +530,12 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
             {!isAuthenticated && (
               <div className="p-3 rounded-2xl bg-spice/10 border border-spice/20 flex items-center justify-between">
                 <div>
-                  <span className="font-display text-xs font-bold text-spice block">Welcome Guest!</span>
-                  <span className="text-[10px] text-ink/70">Sign in to save addresses & track orders</span>
+                  <span className="font-display text-xs font-bold text-spice block">
+                    Welcome Guest!
+                  </span>
+                  <span className="text-[10px] text-ink/70">
+                    Sign in to save addresses & track orders
+                  </span>
                 </div>
                 <Button
                   size="sm"
@@ -577,11 +585,9 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
                     <span>Pure Cow Desi Ghee Cloud Kitchen</span>
                   </div>
                   <h1 className="font-display text-2xl sm:text-4xl font-black text-ink mt-1">
-                    {isAuthenticated ? (
-                      `${getGreeting()}, ${(currentUser?.name || "Customer").split(" ")[0]} 👋`
-                    ) : (
-                      "Namaste! Welcome to Anima’s Kitchen 🙏"
-                    )}
+                    {isAuthenticated
+                      ? `${getGreeting()}, ${(currentUser?.name || "Customer").split(" ")[0]} 👋`
+                      : "Namaste! Welcome to Anima’s Kitchen 🙏"}
                   </h1>
                   <p className="text-xs sm:text-sm text-ink/70 mt-1">
                     {isAuthenticated

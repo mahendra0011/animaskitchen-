@@ -60,14 +60,16 @@ interface DemoStoreContextType {
   currentUser: { name: string; role: RoleType; phone: string; email: string } | null;
   loginAsRole: (role: RoleType, credentials?: { identifier?: string; password?: string }) => void;
   logout: () => void;
-  isPhoneFrame: boolean;
-  setIsPhoneFrame: (val: boolean | ((prev: boolean) => boolean)) => void;
+  customerPage: string;
+  setCustomerPage: (page: string) => void;
 
   // UI Drawers & Modals
   authModalOpen: boolean;
   setAuthModalOpen: (open: boolean) => void;
   authModalTab: "login" | "signup";
   setAuthModalTab: (tab: "login" | "signup") => void;
+  isPhoneFrame: boolean;
+  setIsPhoneFrame: (val: boolean) => void;
   cartDrawerOpen: boolean;
   setCartDrawerOpen: (open: boolean) => void;
   checkoutModalOpen: boolean;
@@ -189,6 +191,7 @@ interface DemoStoreContextType {
     paymentMethod: "upi" | "card" | "netbanking" | "cod",
     couponCode?: string,
     instructions?: string,
+    opts?: { verifiedPaid?: boolean },
   ) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus, customMessage?: string) => void;
   assignDeliveryPartner: (orderId: string, partnerId: string) => void;
@@ -236,14 +239,18 @@ const safeSetItem = (key: string, value: string) => {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(key, value);
-  } catch {}
+  } catch (e) {
+    console.warn("localStorage setItem failed", e);
+  }
 };
 
 const safeRemoveItem = (key: string) => {
   if (typeof window === "undefined") return;
   try {
     localStorage.removeItem(key);
-  } catch {}
+  } catch (e) {
+    console.warn("localStorage removeItem failed", e);
+  }
 };
 
 const DEFAULT_HOMEPAGE_CUSTOMIZATION: HomepageCustomization = {
@@ -272,8 +279,7 @@ const DEFAULT_SOCIAL_POSTS: SocialPost[] = [
       "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80",
     caption:
       "Hot, pure desi ghee Dal Tadka with piping hot rotis right off the iron tawa! Made with love daily at Anima's Kitchen. 🍛✨",
-    postUrl:
-      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
     platform: "instagram",
     likesCount: 342,
     commentsCount: 28,
@@ -285,8 +291,7 @@ const DEFAULT_SOCIAL_POSTS: SocialPost[] = [
       "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&auto=format&fit=crop&q=80",
     caption:
       "Fresh melt-in-mouth Paneer cubes simmered in hand-ground spices and organic tomato gravy. No food coloring, 100% natural. 🧆❤️",
-    postUrl:
-      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
     platform: "instagram",
     likesCount: 519,
     commentsCount: 45,
@@ -298,8 +303,7 @@ const DEFAULT_SOCIAL_POSTS: SocialPost[] = [
       "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80",
     caption:
       "Dum Handi Biryani slow cooked with fragrant aged basmati rice and roasted spices. The aroma fills the entire street! 🍲🔥",
-    postUrl:
-      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
     platform: "instagram",
     likesCount: 884,
     commentsCount: 67,
@@ -311,8 +315,7 @@ const DEFAULT_SOCIAL_POSTS: SocialPost[] = [
       "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=800&auto=format&fit=crop&q=80",
     caption:
       "Behind the scenes in our kitchen: Every roti is hand-rolled and puffed fresh for lunch dispatch. Zero stale food ever! 🫓",
-    postUrl:
-      "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
+    postUrl: "https://www.instagram.com/sanjaysingh1599?utm_source=qr&mdxt=NGFucWt6dWlldmlk",
     platform: "instagram",
     likesCount: 620,
     commentsCount: 39,
@@ -346,7 +349,17 @@ const DEFAULT_DAY_SPECIAL_MEAL: DaySpecialMeal = {
 const DemoStoreContext = createContext<DemoStoreContextType | undefined>(undefined);
 
 export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [activeRole, setActiveRole] = useState<RoleType>("customer");
+  const [activeRole, setActiveRole] = useState<RoleType>(() => {
+    const savedUser = safeGetItem(`${STORAGE_KEY}_user`);
+    if (savedUser) {
+      try {
+        const parsed = JSON.parse(savedUser);
+        if (parsed.role) return parsed.role;
+      } catch {}
+    }
+    return "customer";
+  });
+  const [customerPage, setCustomerPage] = useState<string>("home");
   const [isPhoneFrame, setIsPhoneFrame] = useState(false);
   const [homepageCustomization, setHomepageCustomization] = useState<HomepageCustomization>(() => {
     const saved = safeGetItem(`${STORAGE_KEY}_homepage_customization`);
@@ -600,75 +613,75 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
                   lng: mo.deliveryAddress?.lng || 85.1118,
                 },
               },
-                items:
-                  Array.isArray(mo.items) && mo.items.length > 0
-                    ? mo.items.map((it: any) => ({
-                        menuItem: {
-                          id: it.menuItemId || "item-1",
-                          name: it.name || "Homemade Thali",
-                          description: "Fresh homestyle preparation",
-                          category: "thali",
-                          price: (it.pricePaise || 17900) / 100,
-                          image: "/images/hero-thali.png",
-                          isVeg: true,
-                          isBestseller: true,
-                          isAvailable: true,
-                          spiceLevel: "medium",
-                          preparationTimeMinutes: 20,
-                          calories: 520,
-                          tags: ["Fresh", "Homestyle"],
-                        },
-                        quantity: it.quantity || 1,
-                        priceAtOrder: (it.pricePaise || 17900) / 100,
-                        selectedAddons: Array.isArray(it.selectedAddons)
-                          ? it.selectedAddons.map((ad: any) => ({
-                              addon: {
-                                code: ad.code || "ad",
-                                name: ad.name || "Addon",
-                                price: (ad.pricePaise || 0) / 100,
-                                category: "sides",
-                                portion: ad.portion || "Standard",
-                                isVeg: true,
-                              },
-                              quantity: ad.quantity || 1,
-                            }))
-                          : [],
-                        specialInstructions: it.specialInstructions,
-                      }))
-                    : [],
-                itemTotal: (mo.totalPaise || 0) / 100,
-                taxAmount: 0,
-                deliveryFee: 0,
-                discountAmount: 0,
-                finalTotal: (mo.totalPaise || 0) / 100,
-                paymentMethod: mo.paymentMethod || "cod",
-                paymentStatus: "paid",
-                status: mo.status || "placed",
-                deliveryOtp: mo.deliveryOtp || "4521",
-                estimatedDeliveryMinutes: 24,
-                orderType: "delivery",
-                timeline: [
-                  {
-                    status: mo.status || "placed",
-                    label: "Order Placed",
-                    timestamp: new Date(mo.createdAt || Date.now()).toLocaleTimeString([], {
-                      hour: "2-digit",
-                      minute: "2-digit",
-                    }),
-                    description: "Order synced live from MongoDB Document Store",
-                  },
-                ],
-                coordinates: {
-                  kitchen: KITCHEN_LOCATION,
-                  currentRider: KITCHEN_LOCATION,
-                  customer: {
-                    lat: mo.deliveryAddress?.lat || 25.6268,
-                    lng: mo.deliveryAddress?.lng || 85.1118,
-                  },
-                  progressRatio: 0,
+              items:
+                Array.isArray(mo.items) && mo.items.length > 0
+                  ? mo.items.map((it: any) => ({
+                      menuItem: {
+                        id: it.menuItemId || "item-1",
+                        name: it.name || "Homemade Thali",
+                        description: "Fresh homestyle preparation",
+                        category: "thali",
+                        price: (it.pricePaise || 17900) / 100,
+                        image: "/images/hero-thali.png",
+                        isVeg: true,
+                        isBestseller: true,
+                        isAvailable: true,
+                        spiceLevel: "medium",
+                        preparationTimeMinutes: 20,
+                        calories: 520,
+                        tags: ["Fresh", "Homestyle"],
+                      },
+                      quantity: it.quantity || 1,
+                      priceAtOrder: (it.pricePaise || 17900) / 100,
+                      selectedAddons: Array.isArray(it.selectedAddons)
+                        ? it.selectedAddons.map((ad: any) => ({
+                            addon: {
+                              code: ad.code || "ad",
+                              name: ad.name || "Addon",
+                              price: (ad.pricePaise || 0) / 100,
+                              category: "sides",
+                              portion: ad.portion || "Standard",
+                              isVeg: true,
+                            },
+                            quantity: ad.quantity || 1,
+                          }))
+                        : [],
+                      specialInstructions: it.specialInstructions,
+                    }))
+                  : [],
+              itemTotal: (mo.totalPaise || 0) / 100,
+              taxAmount: 0,
+              deliveryFee: 0,
+              discountAmount: 0,
+              finalTotal: (mo.totalPaise || 0) / 100,
+              paymentMethod: mo.paymentMethod || "cod",
+              paymentStatus: mo.paymentStatus === "paid" ? "paid" : "pending",
+              status: mo.status || "placed",
+              deliveryOtp: mo.deliveryOtp || "4521",
+              estimatedDeliveryMinutes: 24,
+              orderType: "delivery",
+              timeline: [
+                {
+                  status: mo.status || "placed",
+                  label: "Order Placed",
+                  timestamp: new Date(mo.createdAt || Date.now()).toLocaleTimeString([], {
+                    hour: "2-digit",
+                    minute: "2-digit",
+                  }),
+                  description: "Order synced live from MongoDB Document Store",
                 },
-                currentDeliveryStep: "assigned",
-              }));
+              ],
+              coordinates: {
+                kitchen: KITCHEN_LOCATION,
+                currentRider: KITCHEN_LOCATION,
+                customer: {
+                  lat: mo.deliveryAddress?.lat || 25.6268,
+                  lng: mo.deliveryAddress?.lng || 85.1118,
+                },
+                progressRatio: 0,
+              },
+              currentDeliveryStep: "assigned",
+            }));
 
             if (newMappedOrders.length === 0) return prev;
             const updated = [...prev, ...newMappedOrders];
@@ -688,15 +701,17 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
     // Real-time Socket.io bi-directional live sync
     let unsubscribeSocket: (() => void) | undefined;
-    import("../lib/socketClient").then(({ subscribeToKDS }) => {
-      if (isMounted) {
-        unsubscribeSocket = subscribeToKDS(() => {
-          fetchLiveOrders();
-        });
-      }
-    }).catch(() => {
-      // Fallback seamlessly to polling if websocket fails
-    });
+    import("../lib/socketClient")
+      .then(({ subscribeToKDS }) => {
+        if (isMounted) {
+          unsubscribeSocket = subscribeToKDS(() => {
+            fetchLiveOrders();
+          });
+        }
+      })
+      .catch(() => {
+        // Fallback seamlessly to polling if websocket fails
+      });
 
     return () => {
       isMounted = false;
@@ -745,7 +760,6 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
     toast.success("Day Special Meal updated live!");
   }, []);
-
 
   const logActivity = useCallback(
     (role: ActivityLog["role"], action: string, details: string, relatedOrderId?: string) => {
@@ -890,6 +904,7 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       paymentMethod: "upi" | "card" | "netbanking" | "cod" | "wallet",
       couponCode?: string,
       instructions?: string,
+      opts?: { verifiedPaid?: boolean },
     ): Order => {
       const orderNum = `AK-${Math.floor(1000 + Math.random() * 9000)}`;
       const subtotal = cartTotal;
@@ -1020,7 +1035,10 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         appliedCoupon: couponCode,
         finalTotal: finalAmt,
         paymentMethod,
-        paymentStatus: paymentMethod === "cod" ? "pending" : "paid",
+        // PROD: online methods are "paid" ONLY after Razorpay verify/webhook.
+        // COD/wallet-unverified stay pending. Pass { verifiedPaid: true } after verify.
+        paymentStatus:
+          paymentMethod === "cod" ? "pending" : opts?.verifiedPaid === true ? "paid" : "pending",
         status: "placed",
         deliveryOtp: randomOtp,
         estimatedDeliveryMinutes: rushHourMode ? 35 : 24,
@@ -1667,6 +1685,14 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const loginAsRole = useCallback(
     (role: RoleType, credentials?: { identifier?: string; password?: string }) => {
+      // PROD GUARD: privileged portals require a verified identifier (from /api/auth/*).
+      // Blocks blank demo switching like loginAsRole("admin") with no credentials.
+      if ((role === "admin" || role === "rider" || role === "kds") && !credentials?.identifier) {
+        toast.error("Restricted portal", {
+          description: "Please sign in with an authorized staff account.",
+        });
+        return;
+      }
       setActiveRole(role);
       setIsAuthenticated(true);
       let userObj = {
@@ -1711,6 +1737,8 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const logout = useCallback(() => {
     setIsAuthenticated(false);
     setCurrentUser(null);
+    setActiveRole("customer");
+    setCustomerPage("home");
     try {
       safeRemoveItem(`${STORAGE_KEY}_auth`);
       safeRemoveItem(`${STORAGE_KEY}_user`);
@@ -1719,7 +1747,7 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
     toast.info("Logged out", { description: "Returned to Customer website" });
     logActivity("system", "User Logout", "Logged out to guest customer mode");
-  }, [logActivity]);
+  }, [logActivity, setActiveRole, setCustomerPage]);
 
   // Auto Simulation Player
   const autoPlayOrderSimulation = useCallback(
@@ -1840,7 +1868,7 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         case "rider_assign": {
           if (activeOrder) {
             assignDeliveryPartner(activeOrder.id, "partner-rajesh");
-            setActiveRole("rider");
+            loginAsRole("rider", { identifier: "sanjay.k.singh2003@gmail.com" });
             toast.success("Scenario: Rider Assigned! Switched to Delivery Partner view.");
           }
           break;
@@ -1885,6 +1913,8 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         currentUser,
         loginAsRole,
         logout,
+        customerPage,
+        setCustomerPage,
         authModalOpen,
         setAuthModalOpen,
         authModalTab,

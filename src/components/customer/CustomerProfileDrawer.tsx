@@ -38,6 +38,10 @@ export const CustomerProfileDrawer: React.FC = () => {
     profileDrawerOpen,
     setProfileDrawerOpen,
     customerProfile,
+    currentUser,
+    isAuthenticated,
+    setAuthModalOpen,
+    setAuthModalTab,
     orders,
     addToCart,
     setCartDrawerOpen,
@@ -162,31 +166,49 @@ export const CustomerProfileDrawer: React.FC = () => {
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="grid size-12 place-items-center rounded-2xl bg-ink font-display text-xl text-cream">
-                {customerProfile.name.charAt(0)}
+                {(currentUser?.name || customerProfile.name || "G").charAt(0)}
               </div>
               <div>
                 <SheetTitle className="font-display text-xl text-ink">
-                  {customerProfile.name}
+                  {isAuthenticated ? currentUser?.name || customerProfile.name : "Guest Customer"}
                 </SheetTitle>
                 <p className="text-xs text-ink/60 flex items-center gap-2">
-                  <span>+91 {customerProfile.phone}</span>
+                  <span>
+                    {isAuthenticated
+                      ? currentUser?.phone || customerProfile.phone || currentUser?.email
+                      : "Browse or sign in to account"}
+                  </span>
                 </p>
               </div>
             </div>
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                logout();
-                setProfileDrawerOpen(false);
-                toast.success("Logged out successfully");
-              }}
-              className="h-8 rounded-full border-red-200 bg-red-50/50 px-2.5 text-xs font-semibold text-red-600 hover:bg-red-100 hover:text-red-700 gap-1"
-            >
-              <LogOut className="size-3.5" />
-              <span>Logout</span>
-            </Button>
+            {isAuthenticated ? (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  logout();
+                  setProfileDrawerOpen(false);
+                  toast.success("Logged out successfully");
+                }}
+                className="h-8 rounded-full border-red-200 bg-red-50/50 px-2.5 text-xs font-semibold text-red-600 hover:bg-red-100 hover:text-red-700 gap-1"
+              >
+                <LogOut className="size-3.5" />
+                <span>Logout</span>
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                onClick={() => {
+                  setProfileDrawerOpen(false);
+                  setAuthModalTab("login");
+                  setAuthModalOpen(true);
+                }}
+                className="h-8 rounded-full bg-spice hover:bg-ink text-cream px-3 text-xs font-bold"
+              >
+                Sign In
+              </Button>
+            )}
           </div>
 
           {/* Quick Metrics */}

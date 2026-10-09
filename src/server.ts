@@ -48,13 +48,27 @@ export default {
   async fetch(request: Request, env: unknown, ctx: unknown) {
     const url = new URL(request.url);
 
-    // Dynamic CORS origin support for frontend client & Capacitor apps
-    const allowedOrigin = request.headers.get("origin") || "*";
+    // PROD CORS allowlist (no open reflector). Non-browser / same-origin
+    // requests without Origin still work; browsers need an exact match.
+    const requestOrigin = request.headers.get("origin") || "";
+    const allowedOrigins = [
+      process.env["APP_URL"] || "",
+      process.env["FRONTEND_URL"] || "",
+      "https://animaskitchen.com",
+      "https://www.animaskitchen.com",
+      "https://animas-kitchen-frontend.onrender.com",
+      "http://localhost:5173",
+      "http://localhost:3000",
+      "capacitor://localhost",
+      "ionic://localhost",
+    ].filter(Boolean);
+    const isAllowedOrigin = requestOrigin !== "" && allowedOrigins.includes(requestOrigin);
     const corsHeaders: Record<string, string> = {
-      "Access-Control-Allow-Origin": allowedOrigin,
+      ...(isAllowedOrigin ? { "Access-Control-Allow-Origin": requestOrigin } : {}),
       "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With",
-      "Access-Control-Allow-Credentials": "true",
+      ...(isAllowedOrigin ? { "Access-Control-Allow-Credentials": "true" } : {}),
+      Vary: "Origin",
     };
 
     // Preflight OPTIONS handler
@@ -95,13 +109,10 @@ export default {
     // 2. Large Payload Protection (Block payload bombing > 5MB)
     const contentLength = Number(request.headers.get("content-length") || 0);
     if (contentLength > 5 * 1024 * 1024) {
-      return new Response(
-        JSON.stringify({ success: false, error: "Payload exceeds 5MB limit." }),
-        {
-          status: 413,
-          headers: { "Content-Type": "application/json", ...corsHeaders },
-        },
-      );
+      return new Response(JSON.stringify({ success: false, error: "Payload exceeds 5MB limit." }), {
+        status: 413,
+        headers: { "Content-Type": "application/json", ...corsHeaders },
+      });
     }
 
     // Backend Dedicated Health Check Route
@@ -226,7 +237,11 @@ export default {
       try {
         const body = await request.json();
         const { handleGoogleLogin } = await import("./server/api");
-        const result = await handleGoogleLogin(body.credential, body.userInfo);
+        const result = await handleGoogleLogin(
+          body.credential,
+          body.userInfo,
+          body.accessToken || body.access_token,
+        );
 
         if (!result.success || !result.token) {
           return new Response(
@@ -456,6 +471,70 @@ export default {
               lng: 85.1118,
             };
 
+        // PROD: never trust client totals / OTP / paid flags.
+        // Validate items, cap quantities & totals, generate OTP server-side.
+        if (!Array.isArray(sanitizedItems) || sanitizedItems.length === 0) {
+          return withCors(
+            new Response(JSON.stringify({ success: false, error: "Order must contain items." }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        if (sanitizedItems.length > 50) {
+          return withCors(
+            new Response(JSON.stringify({ success: false, error: "Too many items in order." }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        const clientTotalPaise = Math.max(0, Math.floor(Number(body.totalPaise) || 0));
+        if (clientTotalPaise <= 0 || clientTotalPaise > 500000) {
+          return withCors(
+            new Response(JSON.stringify({ success: false, error: "Invalid order total." }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        const allowedMethods = ["cod", "upi", "card", "netbanking", "wallet"];
+        const rawMethod = sanitizeText(body.paymentMethod || "cod").toLowerCase();
+        const paymentMethod = allowedMethods.includes(rawMethod) ? rawMethod : "cod";
+        const { randomInt } = await import("node:crypto");
+        const serverOtp = String(randomInt(1000, 10000));
+
+        // Best-effort server-side price recalculation from PG menu prices.
+        let authoritativeTotalPaise: number | null = null;
+        try {
+          const { db } = await import("./db/index");
+          const { menuItems } = await import("./db/schema");
+          const { inArray } = await import("drizzle-orm");
+          const { calculateServerOrderPrice } = await import("./server/pricing/calculator");
+          const ids = sanitizedItems
+            .map((it: any) => String(it.menuItemId || it.id || ""))
+            .filter(Boolean)
+            .slice(0, 50);
+          if (ids.length > 0) {
+            const rows = await db.select().from(menuItems).where(inArray(menuItems.id, ids));
+            const priceById = new Map(rows.map((r) => [r.id, r.pricePaise]));
+            const priced = sanitizedItems.map((it: any) => {
+              const key = String(it.menuItemId || it.id || "");
+              const qty = Math.min(20, Math.max(1, Math.floor(Number(it.quantity) || 1)));
+              return {
+                pricePaise: priceById.get(key) ?? Math.floor(Number(it.pricePaise) || 0),
+                quantity: qty,
+                addonsTotalPaise: 0,
+                variantOffsetPaise: 0,
+              };
+            });
+            const breakdown = calculateServerOrderPrice(priced, { orderType: "delivery" });
+            authoritativeTotalPaise = breakdown.finalTotalPaise;
+          }
+        } catch {
+          // DB offline — fall back to capped client total.
+        }
+
         const orderDoc = {
           orderNumber: sanitizeText(body.orderNumber || `AK-${Date.now().toString().slice(-5)}`),
           userId: sanitizeText(body.userId || "usr_guest"),
@@ -463,10 +542,12 @@ export default {
           customerPhone: sanitizeText(body.customerPhone || body.phone || "+91 99999 88888"),
           items: sanitizedItems,
           deliveryAddress: sanitizedAddress,
-          totalPaise: Math.max(0, Math.floor(Number(body.totalPaise) || 0)),
-          paymentMethod: sanitizeText(body.paymentMethod || "cod"),
+          totalPaise: authoritativeTotalPaise ?? clientTotalPaise,
+          clientTotalPaise,
+          paymentMethod,
+          paymentStatus: "pending",
           status: "placed",
-          deliveryOtp: String(body.deliveryOtp || "4521").slice(0, 6),
+          deliveryOtp: serverOtp,
           gpsTrail: [],
         };
 
@@ -655,6 +736,198 @@ export default {
       }
     }
 
+    // API Route: Razorpay — create order (online UPI/card/netbanking)
+    // Requires RAZORPAY_KEY_ID + RAZORPAY_KEY_SECRET in env. Frontend must call
+    // this BEFORE marking anything paid; /api/orders/create always stores pending.
+    if (url.pathname === "/api/payments/razorpay/order" && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const keyId = process.env["RAZORPAY_KEY_ID"] || "";
+        const keySecret = process.env["RAZORPAY_KEY_SECRET"] || "";
+        if (!keyId || !keySecret || (keyId.includes("test_") === false && keyId === "")) {
+          return withCors(
+            new Response(
+              JSON.stringify({ success: false, error: "Online payments not configured." }),
+              { status: 503, headers: { "Content-Type": "application/json" } },
+            ),
+          );
+        }
+        if (keyId.startsWith("rzp_test_") && process.env["NODE_ENV"] === "production") {
+          console.warn("[Razorpay] Test keys in production — switch to live keys.");
+        }
+        const amountPaise = Math.floor(Number(body.amountPaise) || 0);
+        if (!amountPaise || amountPaise <= 0 || amountPaise > 500000) {
+          return withCors(
+            new Response(JSON.stringify({ success: false, error: "Invalid amount." }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        const receipt = String(body.receipt || `AK-${Date.now()}`).slice(0, 40);
+        const auth = Buffer.from(`${keyId}:${keySecret}`).toString("base64");
+        const rzRes = await fetch("https://api.razorpay.com/v1/orders", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Basic ${auth}`,
+          },
+          body: JSON.stringify({
+            amount: amountPaise,
+            currency: "INR",
+            receipt,
+            notes: body.notes || {},
+          }),
+        });
+        const rzData = await rzRes.json();
+        if (!rzRes.ok) {
+          return withCors(
+            new Response(
+              JSON.stringify({
+                success: false,
+                error: (rzData as any)?.error?.description || "Razorpay order failed.",
+              }),
+              { status: 502, headers: { "Content-Type": "application/json" } },
+            ),
+          );
+        }
+        return withCors(
+          new Response(JSON.stringify({ success: true, order: rzData, keyId }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      } catch (err: any) {
+        return withCors(
+          new Response(JSON.stringify({ success: false, error: err.message }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+    }
+
+    // API Route: Razorpay — verify payment signature & mark order paid
+    if (url.pathname === "/api/payments/razorpay/verify" && request.method === "POST") {
+      try {
+        const body = await request.json();
+        const keySecret = process.env["RAZORPAY_KEY_SECRET"] || "";
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderNumber } = body;
+        if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
+          return withCors(
+            new Response(JSON.stringify({ success: false, error: "Missing payment fields." }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        const { createHmac } = await import("node:crypto");
+        const expected = createHmac("sha256", keySecret)
+          .update(`${razorpay_order_id}|${razorpay_payment_id}`)
+          .digest("hex");
+        if (expected !== razorpay_signature) {
+          return withCors(
+            new Response(JSON.stringify({ success: false, error: "Signature mismatch." }), {
+              status: 400,
+              headers: { "Content-Type": "application/json" },
+            }),
+          );
+        }
+        // Mark Mongo order paid (best-effort).
+        try {
+          const { connectMongo, MongoOrder } = await import("./server/db/mongo");
+          await connectMongo();
+          if (MongoOrder && orderNumber) {
+            await MongoOrder.updateOne(
+              { orderNumber: String(orderNumber) },
+              {
+                $set: {
+                  paymentStatus: "paid",
+                  razorpayOrderId: razorpay_order_id,
+                  razorpayPaymentId: razorpay_payment_id,
+                },
+              },
+            );
+          }
+        } catch {
+          // Memory fallback — client still treats verify success as paid.
+        }
+        try {
+          const { broadcastOrderUpdate } = await import("./server/socket");
+          broadcastOrderUpdate(String(orderNumber || ""), "order:payment_verified", {
+            orderNumber,
+            razorpay_payment_id,
+          });
+        } catch {
+          // noop
+        }
+        return withCors(
+          new Response(JSON.stringify({ success: true, verified: true }), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      } catch (err: any) {
+        return withCors(
+          new Response(JSON.stringify({ success: false, error: err.message }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          }),
+        );
+      }
+    }
+
+    // API Route: Razorpay webhook (payment.captured → mark paid)
+    if (url.pathname === "/api/payments/razorpay/webhook" && request.method === "POST") {
+      try {
+        const rawBody = await request.text();
+        const signature = request.headers.get("x-razorpay-signature") || "";
+        const webhookSecret = process.env["RAZORPAY_WEBHOOK_SECRET"] || "";
+        if (!webhookSecret) {
+          return new Response(
+            JSON.stringify({ success: false, error: "Webhook not configured." }),
+            {
+              status: 503,
+              headers: { "Content-Type": "application/json" },
+            },
+          );
+        }
+        const { createHmac } = await import("node:crypto");
+        const expected = createHmac("sha256", webhookSecret).update(rawBody).digest("hex");
+        if (expected !== signature) {
+          return new Response(JSON.stringify({ success: false }), {
+            status: 400,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        const event = JSON.parse(rawBody) as any;
+        if (event?.event === "payment.captured" && event?.payload?.payment?.entity) {
+          const entity = event.payload.payment.entity;
+          try {
+            const { connectMongo, MongoOrder } = await import("./server/db/mongo");
+            await connectMongo();
+            if (MongoOrder) {
+              await MongoOrder.updateOne(
+                { razorpayOrderId: entity.order_id },
+                { $set: { paymentStatus: "paid", razorpayPaymentId: entity.id } },
+              );
+            }
+          } catch {
+            // noop
+          }
+        }
+        return new Response(JSON.stringify({ success: true }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      } catch (err: any) {
+        return new Response(JSON.stringify({ success: false }), {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+    }
+
     // Helper function to attach production security headers (0% leak, anti-clickjacking, anti-XSS)
     const secureResponse = (res: Response): Response => {
       res.headers.set("X-Content-Type-Options", "nosniff");
@@ -664,7 +937,7 @@ export default {
       res.headers.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains; preload");
       res.headers.set(
         "Content-Security-Policy",
-        "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: *;",
+        "default-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://maps.googleapis.com https://accounts.google.com https://checkout.razorpay.com; frame-src 'self' https://accounts.google.com https://api.razorpay.com https://checkout.razorpay.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; connect-src 'self' https: *;",
       );
       Object.entries(corsHeaders).forEach(([k, v]) => {
         if (!res.headers.has(k)) res.headers.set(k, v);

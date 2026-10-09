@@ -68,7 +68,7 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onExploreMenu 
                 Contact Anima’s Kitchen
               </h1>
               <p className="font-mono text-[10px] uppercase tracking-wider text-ink/50">
-                Indiranagar Hub #01 · WhatsApp Helpline · Bulk Orders
+                Kurji Patna Hub #01 · WhatsApp Helpline · Bulk Orders
               </p>
             </div>
           </div>

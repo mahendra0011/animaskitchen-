@@ -168,12 +168,19 @@ export function safePublicUser(user: {
 
 // 8. Security Audit Logger (Logs with zero raw passwords, OTPs or sensitive PII)
 export function logSecurityEvent(
-  eventType: "AUTH_LOGIN_SUCCESS" | "AUTH_LOGIN_FAILED" | "AUTH_LOCKOUT" | "SUSPICIOUS_PAYLOAD" | "IDOR_ATTEMPT",
+  eventType:
+    | "AUTH_LOGIN_SUCCESS"
+    | "AUTH_LOGIN_FAILED"
+    | "AUTH_LOCKOUT"
+    | "SUSPICIOUS_PAYLOAD"
+    | "IDOR_ATTEMPT",
   details: { ip?: string; email?: string; userId?: string; note?: string },
 ) {
   const timestamp = new Date().toISOString();
   const maskedEmailSafe = details.email ? maskEmail(details.email) : "unknown";
-  const maskedIp = details.ip ? details.ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.*.*") : "local";
+  const maskedIp = details.ip
+    ? details.ip.replace(/(\d+)\.(\d+)\.(\d+)\.(\d+)/, "$1.$2.*.*")
+    : "local";
 
   console.info(
     `[SECURITY AUDIT] ${timestamp} | EVENT: ${eventType} | IP: ${maskedIp} | USER: ${details.userId || maskedEmailSafe} | INFO: ${details.note || ""}`,

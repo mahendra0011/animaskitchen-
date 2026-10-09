@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useDemoStore } from "@/context/DemoStoreContext";
 import {
   Dialog,
@@ -17,6 +17,8 @@ import {
   KeyRound,
   ArrowRight,
   ShieldCheck,
+  Shield,
+  Bike,
   CheckCircle2,
   RefreshCw,
   Loader2,
@@ -28,11 +30,20 @@ import {
 import { toast } from "sonner";
 
 export const AuthModal: React.FC = () => {
-  const { authModalOpen, setAuthModalOpen, setIsAuthenticated, loginAsRole } = useDemoStore();
+  const { authModalOpen, setAuthModalOpen, authModalTab, setIsAuthenticated, loginAsRole } =
+    useDemoStore();
 
   const [mode, setMode] = useState<
     "login" | "signup" | "verify_email" | "forgot_password" | "reset_password"
   >("login");
+
+  // Sync mode whenever authModalTab changes (e.g. from clicking Sign In vs Create Account)
+  useEffect(() => {
+    if (authModalTab) {
+      setMode(authModalTab);
+    }
+  }, [authModalTab, authModalOpen]);
+
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
@@ -190,10 +201,12 @@ export const AuthModal: React.FC = () => {
               }
 
               // Send to backend to create or resume session
+              // accessToken is verified server-side via Google userinfo (anti-spoofing).
               const res = await fetch("/api/auth/google", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
+                  accessToken: tokenResponse.access_token,
                   userInfo: {
                     email: googleProfile.email,
                     name: googleProfile.name || googleProfile.given_name || "Google User",
@@ -282,6 +295,7 @@ export const AuthModal: React.FC = () => {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
+                      accessToken,
                       userInfo: {
                         email: googleProfile.email,
                         name: googleProfile.name || "Google User",
@@ -429,7 +443,7 @@ export const AuthModal: React.FC = () => {
 
   return (
     <Dialog open={authModalOpen} onOpenChange={setAuthModalOpen}>
-      <DialogContent className="max-w-md overflow-hidden rounded-[28px] border border-spice/20 bg-gradient-to-b from-[#fbf8f1] to-[#f4ede0] p-0 shadow-2xl text-ink transition-all animate-in fade-in-90 zoom-in-95 duration-200">
+      <DialogContent className="max-w-md max-h-[92vh] overflow-y-auto rounded-[28px] border border-spice/20 bg-gradient-to-b from-[#fbf8f1] to-[#f4ede0] p-0 shadow-2xl text-ink transition-all animate-in fade-in-90 zoom-in-95 duration-200">
         {/* Animated Brand Header */}
         <div className="relative border-b border-ink/10 bg-gradient-to-r from-cream via-[#f9f3e5] to-cream/80 p-6 overflow-hidden">
           <div className="absolute -top-12 -right-12 size-32 rounded-full bg-spice/10 blur-2xl pointer-events-none" />
@@ -697,7 +711,8 @@ export const AuthModal: React.FC = () => {
                 <label htmlFor="signup-agree-terms" className="leading-tight cursor-pointer">
                   I agree to Anima’s Kitchen{" "}
                   <span className="font-bold text-spice underline">Terms of Service</span>,{" "}
-                  <span className="font-bold text-spice underline">Privacy Policy</span>, and food hygiene guidelines.
+                  <span className="font-bold text-spice underline">Privacy Policy</span>, and food
+                  hygiene guidelines.
                 </label>
               </div>
 

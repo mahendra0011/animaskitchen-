@@ -237,29 +237,16 @@ export const DeliveryPartnerView: React.FC = () => {
           </div>
         </div>
 
-        {/* Sidebar Footer: Storefront & Logout */}
+        {/* Sidebar Footer: Logout */}
         <div className="pt-3 border-t border-cream/10 space-y-1.5 mt-auto">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setActiveRole("customer")}
-            className="w-full justify-start rounded-xl border-cream/20 bg-cream/5 text-[11px] text-cream hover:bg-cream/15 gap-2 h-8"
-          >
-            <ExternalLink className="size-3" />
-            <span>Customer Storefront</span>
-          </Button>
-
           <Button
             variant="destructive"
             size="sm"
-            onClick={() => {
-              logout();
-              setActiveRole("customer");
-            }}
+            onClick={logout}
             className="w-full justify-start rounded-xl bg-red-600/20 text-red-300 hover:bg-red-600 hover:text-white border border-red-500/30 text-[11px] gap-2 h-8"
           >
             <LogOut className="size-3" />
-            <span>Logout</span>
+            <span>Logout Rider</span>
           </Button>
         </div>
       </aside>
@@ -285,11 +272,12 @@ export const DeliveryPartnerView: React.FC = () => {
             </Badge>
             <Button
               size="sm"
-              variant="ghost"
-              onClick={() => setActiveRole("customer")}
-              className="text-xs text-cream/80 hover:text-cream px-2 h-7"
+              variant="destructive"
+              onClick={logout}
+              className="text-xs bg-red-600/30 text-red-200 hover:bg-red-600 hover:text-white border border-red-500/40 px-2 h-7"
             >
-              Store
+              <LogOut className="size-3 mr-1" />
+              <span>Logout</span>
             </Button>
           </div>
         </div>

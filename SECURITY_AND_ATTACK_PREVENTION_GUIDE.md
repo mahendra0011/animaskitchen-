@@ -332,16 +332,16 @@ RETURNING id;     -- 0 rows = reject
 ### 6.8 DoS / abuse / scraping
 
 - Cloudflare proxy (WAF, DDoS, bot management), rate limits per IP + per user + per route:
-  | Route | Limit |
-  |---|---|
-  | Global | 120 req/min/IP |
-  | OTP request | sec 3.2 |
-  | OTP verify | 10/10min/IP |
-  | Order create | 5/min/user |
-  | Coupon apply | 10/min/user |
-  | Search/menu | 60/min/IP (scrape slow) |
-  | Contact/ticket form | 3/hour/IP + Turnstile |
-  | Rider location | 1 per 3 sec/rider |
+  | Route               | Limit                   |
+  | ------------------- | ----------------------- |
+  | Global              | 120 req/min/IP          |
+  | OTP request         | sec 3.2                 |
+  | OTP verify          | 10/10min/IP             |
+  | Order create        | 5/min/user              |
+  | Coupon apply        | 10/min/user             |
+  | Search/menu         | 60/min/IP (scrape slow) |
+  | Contact/ticket form | 3/hour/IP + Turnstile   |
+  | Rider location      | 1 per 3 sec/rider       |
 - Request body size limit (100 KB JSON), upload limits, pagination max (`limit<=50`), query timeout (`statement_timeout`), GraphQL/depth none.
 - SSE connections per user cap (3), heartbeat, idle close.
 - Expensive endpoints (analytics, export) background job + cache + admin only.

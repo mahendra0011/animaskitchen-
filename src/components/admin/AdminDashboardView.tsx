@@ -59,6 +59,10 @@ import {
   Menu as MenuIcon,
   X,
   Palette,
+  Home,
+  HelpCircle,
+  Phone,
+  BookOpen,
 } from "lucide-react";
 import type { Branch } from "@/types/kitchen";
 
@@ -103,7 +107,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     supportTickets,
     branches,
     activeBranchId,
+    kotTickets,
     setActiveRole,
+    setCustomerPage,
     logout,
   } = useDemoStore();
 
@@ -111,6 +117,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
   const pendingOrders = orders.filter((o) => o.status !== "delivered" && o.status !== "cancelled");
+  // Live KDS load (replaces hardcoded badge). Falls back to preparing orders if KOT empty.
+  const activeKotCount = kotTickets.filter((k) => k.status !== "ready").length;
+  const kdsLiveCount =
+    activeKotCount > 0
+      ? activeKotCount
+      : orders.filter((o) => o.status === "preparing" || o.status === "placed").length;
   const lowStockCount = inventoryItems.filter((i) => i.currentStock <= i.minStockLevel).length;
   const openTicketCount = supportTickets.filter((t) => t.status === "open").length;
   const defaultBranch: Branch = {
@@ -136,12 +148,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   }
 
   // Grouped Navigation structure aligned directly with requested architecture
+  // "SYNC" = polling-based order sync (socket is best-effort, see socket.ts).
   const coreTabs = [
     {
       id: "overview",
       label: "Dashboard Home",
       icon: <LayoutDashboard className="size-4" />,
-      badge: "LIVE",
+      badge: "SYNC",
     },
     {
       id: "orders",
@@ -149,7 +162,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       icon: <ShoppingBag className="size-4" />,
       count: pendingOrders.length,
     },
-    { id: "kds", label: "Kitchen / KDS", icon: <ChefHat className="size-4" />, count: 18 },
+    {
+      id: "kds",
+      label: "Kitchen / KDS",
+      icon: <ChefHat className="size-4" />,
+      count: kdsLiveCount > 0 ? kdsLiveCount : undefined,
+    },
     {
       id: "menu",
       label: "Menu Catalog",
@@ -223,7 +241,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       label: `Orders (${pendingOrders.length})`,
       icon: <ShoppingBag className="size-3.5" />,
     },
-    { id: "kds", label: "KDS (18)", icon: <ChefHat className="size-3.5" /> },
+    { id: "kds", label: `KDS (${kdsLiveCount})`, icon: <ChefHat className="size-3.5" /> },
     { id: "inventory", label: "Stock", icon: <Boxes className="size-3.5" /> },
     { id: "menu", label: "Menu", icon: <Utensils className="size-3.5" /> },
     { id: "fleet", label: "Fleet", icon: <Bike className="size-3.5" /> },
@@ -331,26 +349,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
           <div className="space-y-1.5">
             <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setActiveRole("customer")}
-              className="w-full justify-start rounded-xl border-cream/20 bg-cream/5 text-[11px] text-cream hover:bg-cream/15 gap-2 h-8"
-            >
-              <ExternalLink className="size-3" />
-              <span>Customer Storefront</span>
-            </Button>
-
-            <Button
               variant="destructive"
               size="sm"
-              onClick={() => {
-                logout();
-                setActiveRole("customer");
-              }}
+              onClick={logout}
               className="w-full justify-start rounded-xl bg-red-600/20 text-red-300 hover:bg-red-600 hover:text-white border border-red-500/30 text-[11px] gap-2 h-8"
             >
               <LogOut className="size-3" />
-              <span>Logout</span>
+              <span>Logout Admin</span>
             </Button>
           </div>
         </div>
@@ -383,11 +388,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </Badge>
             <Button
               size="sm"
-              variant="ghost"
-              onClick={() => setActiveRole("customer")}
-              className="text-xs text-cream/80 hover:text-cream px-2 h-7"
+              variant="destructive"
+              onClick={logout}
+              className="text-xs bg-red-600/30 text-red-200 hover:bg-red-600 hover:text-white border border-red-500/40 px-2.5 h-7 rounded-lg"
+              title="Logout Admin"
             >
-              Store
+              <LogOut className="size-3.5 mr-1" />
+              <span>Logout</span>
             </Button>
           </div>
         </div>
@@ -421,6 +428,23 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           {renderNavGroup("Kitchen & Supply", supplyOperationsTabs)}
           {renderNavGroup("Customers & Finance", customerRetentionTabs)}
           {renderNavGroup("Reports & Configuration", intelligenceSettingsTabs)}
+
+          {/* Mobile Drawer Logout */}
+          <div className="pt-3 border-t border-cream/10">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                logout();
+                setActiveRole("customer");
+                setMobileDrawerOpen(false);
+              }}
+              className="w-full justify-center rounded-xl bg-red-600/20 text-red-300 hover:bg-red-600 hover:text-white border border-red-500/30 text-xs gap-2 h-9"
+            >
+              <LogOut className="size-3.5" />
+              <span>Logout Admin Session</span>
+            </Button>
+          </div>
         </div>
       )}
 
@@ -463,18 +487,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 Anima's Kitchen Cloud Kitchen · {currentBranch.name} ({currentBranch.code})
               </p>
             </div>
-          </div>
-
-          <div className="hidden sm:flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setActiveRole("customer")}
-              className="rounded-full border-ink/15 text-xs text-ink hover:border-spice gap-1.5"
-            >
-              <ExternalLink className="size-3.5" />
-              <span>Customer View</span>
-            </Button>
           </div>
         </div>
 
@@ -541,7 +553,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           }`}
         >
           <ChefHat className="size-4" />
-          <span>KDS (18)</span>
+          <span>KDS ({kdsLiveCount})</span>
         </button>
 
         <button

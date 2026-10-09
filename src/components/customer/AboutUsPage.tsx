@@ -1,5 +1,5 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, type Variants } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import {
   ArrowLeft,
@@ -22,12 +22,12 @@ interface AboutUsPageProps {
   onExploreMenu: () => void;
 }
 
-const fadeUp = {
+const fadeUp: Variants = {
   hidden: { opacity: 0, y: 28 },
   visible: (i: number = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.55, delay: i * 0.08, ease: "easeOut" },
+    transition: { duration: 0.55, delay: i * 0.08, ease: "easeOut" as const },
   }),
 };
 
