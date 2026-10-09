@@ -1,9 +1,11 @@
-# Render Blueprint Specification (Separated Frontend & Backend with Neon PostgreSQL)
+# Render Blueprint Specification (Separated Frontend & Backend)
 # Documentation: https://render.com/docs/blueprint-spec
+# NOTE: Secrets and Credentials are never hardcoded here.
+# Add your secret values securely via the Render Dashboard Environment tab.
 
 services:
   # ==============================================================================
-  # 1. BACKEND SERVICE (Node API, MongoDB Atlas + Neon PostgreSQL Engine)
+  # 1. BACKEND SERVICE (Node Web Service)
   # ==============================================================================
   - type: web
     name: animas-kitchen-backend
@@ -25,62 +27,62 @@ services:
       - key: PORT
         value: 10000
       - key: APP_URL
-        value: "https://animaskitchenpatna.online"
+        sync: false
       - key: DATABASE_URL
-        value: "postgresql://neondb_owner:npg_vuX3xjir1LWn@ep-broad-dust-b5rjkoxr-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require"
+        sync: false
       - key: REDIS_URL
-        value: "redis://red-db4fp6lg1s2s7399sitg:6379"
+        sync: false
       - key: MONGODB_URI
-        value: "mongodb+srv://animaskitchen228_db_user:9iBjDA236rriSouP@cluster0.0g9qbud.mongodb.net/animaskitchen?retryWrites=true&w=majority"
+        sync: false
       - key: MONGODB_USERNAME
-        value: "animaskitchen228_db_user"
+        sync: false
       - key: MONGODB_PASSWORD
-        value: "9iBjDA236rriSouP"
+        sync: false
       - key: SESSION_SECRET
-        value: "animas_kitchen_super_secret_session_key_min_32_chars_long_2026"
+        generateValue: true
       - key: OTP_PEPPER
-        value: "animas_kitchen_otp_pepper_salt_string_min_32_chars_long_2026"
+        generateValue: true
       - key: BREVO_API_KEY
-        value: "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"
+        sync: false
       - key: BREVO_SENDER_EMAIL
-        value: "animaskitchen228@gmail.com"
+        sync: false
       - key: EMAIL_FROM
-        value: "Anima's Kitchen <animaskitchen228@gmail.com>"
+        sync: false
       - key: CLOUDINARY_URL
-        value: "cloudinary://159691887182116:YHaKl6q3hHGM5utG4vdbl93iGug@qsqpuyac"
+        sync: false
       - key: CLOUDINARY_CLOUD_NAME
-        value: "qsqpuyac"
+        sync: false
       - key: CLOUDINARY_API_KEY
-        value: "159691887182116"
+        sync: false
       - key: CLOUDINARY_API_SECRET
-        value: "YHaKl6q3hHGM5utG4vdbl93iGug"
+        sync: false
       - key: RAZORPAY_KEY_ID
-        value: "rzp_test_1234567890abcdef"
+        sync: false
       - key: RAZORPAY_KEY_SECRET
-        value: "secret_1234567890abcdef"
+        sync: false
       - key: RAZORPAY_WEBHOOK_SECRET
-        value: "webhook_secret_here"
+        sync: false
       - key: ADMIN_EMAIL
-        value: "Animaskitchen24@gmail.com"
+        sync: false
       - key: ADMIN_PASSWORD
-        value: "K9!xM7#qL2"
+        sync: false
       - key: ADMIN_NAME
-        value: "Anima Kitchen Admin"
+        sync: false
       - key: RIDER_EMAIL
-        value: "Sanjay.k.singh2003@gmail.com"
+        sync: false
       - key: RIDER_PASSWORD
-        value: "R8@vP5!zT9"
+        sync: false
       - key: RIDER_NAME
-        value: "Sanjay K Singh"
+        sync: false
       - key: RIDER_PHONE
-        value: "+91 98450 12345"
+        sync: false
       - key: GOOGLE_CLIENT_ID
-        value: "345998307885-p2l0rn1hhslnnkbm1381f2adu3u6m3gn.apps.googleusercontent.com"
+        sync: false
       - key: GOOGLE_CLIENT_SECRET
-        value: "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"
+        sync: false
 
   # ==============================================================================
-  # 2. FRONTEND SERVICE (Static Web UI / Client CDN)
+  # 2. FRONTEND SERVICE (Static Web CDN)
   # ==============================================================================
   - type: web
     name: animas-kitchen-frontend
@@ -88,11 +90,9 @@ services:
     buildCommand: npm install --include=dev && npm install @rolldown/binding-linux-x64-gnu@1.2.1 && npm run build:frontend
     staticPublishPath: .output/public
     routes:
-      # Forward /api requests directly to the dedicated backend service
       - type: rewrite
         source: /api/*
         destination: https://animas-kitchen-backend.onrender.com/api/*
-      # Single Page App routing fallback
       - type: rewrite
         source: /*
         destination: /index.html
@@ -112,7 +112,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_BACKEND_URL
-        value: https://api.animaskitchenpatna.online
+        sync: false
       - key: VITE_APP_NAME
         value: "Anima's Kitchen"
       - key: VITE_APP_TAGLINE
@@ -120,4 +120,4 @@ services:
       - key: VITE_KITCHEN_LOCATION
         value: "Vikash Nagar, Kurji, Patna, Bihar, India"
       - key: VITE_GOOGLE_CLIENT_ID
-        value: "345998307885-p2l0rn1hhslnnkbm1381f2adu3u6m3gn.apps.googleusercontent.com"
+        sync: false
