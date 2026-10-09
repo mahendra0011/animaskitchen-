@@ -25,7 +25,7 @@ services:
       - key: PORT
         value: 10000
       - key: APP_URL
-        value: "https://animas-kitchen-frontend.onrender.com"
+        value: "https://animaskitchenpatna.online"
       - key: DATABASE_URL
         value: "postgresql://neondb_owner:npg_vuX3xjir1LWn@ep-broad-dust-b5rjkoxr-pooler.c-7.us-east-2.aws.neon.tech/neondb?sslmode=require"
       - key: REDIS_URL
@@ -112,7 +112,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: VITE_BACKEND_URL
-        value: https://animas-kitchen-backend.onrender.com
+        value: https://api.animaskitchenpatna.online
       - key: VITE_APP_NAME
         value: "Anima's Kitchen"
       - key: VITE_APP_TAGLINE
