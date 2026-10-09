@@ -1,0 +1,4 @@
+- [x] Build the 9-section Anima’s Kitchen homepage
+- [x] Add food imagery and selected visual system
+- [x] Verify interactions and responsive rendering
+- [x] Add five visible food-story sections with fresh photography and cart actions

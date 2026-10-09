@@ -1,0 +1,81 @@
+# Render Blueprint Specification (Separated Frontend & Backend)
+# Documentation: https://render.com/docs/blueprint-spec
+
+services:
+  # ==============================================================================
+  # 1. BACKEND SERVICE (Node API & Database Engine)
+  # ==============================================================================
+  - type: web
+    name: animas-kitchen-backend
+    runtime: node
+    plan: free
+    region: singapore
+    branch: main
+    autoDeploy: true
+    buildCommand: npm install --include=dev && npm install @rolldown/binding-linux-x64-gnu@1.2.1 && npm run build:backend
+    startCommand: npm run start:backend
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NITRO_PRESET
+        value: node-server
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: DATABASE_URL
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: OTP_PEPPER
+        generateValue: true
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        value: "Anima's Kitchen <orders@animaskitchen.com>"
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+      - key: RAZORPAY_WEBHOOK_SECRET
+        sync: false
+      - key: GOOGLE_MAPS_KEY
+        sync: false
+      - key: CLOUDINARY_URL
+        sync: false
+
+  # ==============================================================================
+  # 2. FRONTEND SERVICE (Static Web UI / Client CDN)
+  # ==============================================================================
+  - type: web
+    name: animas-kitchen-frontend
+    runtime: static
+    buildCommand: npm install --include=dev && npm install @rolldown/binding-linux-x64-gnu@1.2.1 && npm run build:frontend
+    staticPublishPath: .output/public
+    routes:
+      # Forward /api requests directly to the dedicated backend service
+      - type: rewrite
+        source: /api/*
+        destination: https://animas-kitchen-backend.onrender.com/api/*
+      # Single Page App routing fallback
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: X-Frame-Options
+        value: SAMEORIGIN
+      - path: /*
+        name: X-Content-Type-Options
+        value: nosniff
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
+    envVars:
+      - key: NODE_VERSION
+        value: 22.14.0
+      - key: NODE_ENV
+        value: production
+      - key: VITE_BACKEND_URL
+        value: https://animas-kitchen-backend.onrender.com
