@@ -58,6 +58,7 @@ import { DeliveryPartnerView } from "@/components/delivery/DeliveryPartnerView";
 import { AdminDashboardView } from "@/components/admin/AdminDashboardView";
 import { AppDownloadSection } from "@/components/customer/AppDownloadSection";
 import { KitchenVideoReelsSection } from "@/components/customer/KitchenVideoReelsSection";
+import { FoodGallerySection } from "@/components/customer/FoodGallerySection";
 import { AuthModal } from "@/components/auth/AuthModal";
 
 import heroBgImage from "@/assets/animas-hero-bg.png";
@@ -1222,6 +1223,9 @@ function MainAppContent() {
                   </div>
                 </section>
               )}
+
+              {/* 📸 Authentic Food Gallery Carousel (Directly Above Menu) */}
+              <FoodGallerySection />
 
               {/* Complete Interactive Menu Section with Add-ons Bar */}
               <CustomerMenuSection

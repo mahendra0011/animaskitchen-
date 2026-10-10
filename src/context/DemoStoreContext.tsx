@@ -48,6 +48,7 @@ import type {
   SocialPost,
   DaySpecialMeal,
   KitchenVideo,
+  FoodGalleryItem,
 } from "@/types/kitchen";
 import { toast } from "sonner";
 
@@ -151,6 +152,12 @@ interface DemoStoreContextType {
   updateKitchenVideo: (videoId: string, videoData: Partial<KitchenVideo>) => void;
   deleteKitchenVideo: (videoId: string) => void;
   resetKitchenVideosToDefault: () => void;
+
+  // Food Gallery (Above Menu)
+  foodGallery: FoodGalleryItem[];
+  addFoodGalleryItem: (item: Omit<FoodGalleryItem, "id" | "createdAt">) => void;
+  deleteFoodGalleryItem: (itemId: string) => void;
+  resetFoodGalleryToDefault: () => void;
 
   // Day Special Meal Flow (Admin Daily Controlled)
   daySpecialMeal: DaySpecialMeal;
@@ -402,6 +409,122 @@ const DEFAULT_KITCHEN_VIDEOS: KitchenVideo[] = [
   },
 ];
 
+const DEFAULT_FOOD_GALLERY: FoodGalleryItem[] = [
+  {
+    id: "gallery-1",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.38.51-PM.jpeg",
+    title: "Freshly Cooked Homestyle Thali",
+    caption: "Steaming hot authentic Dal, Sabzi & Roti prepared with pure Desi Ghee",
+    tag: "Signature Thali",
+  },
+  {
+    id: "gallery-2",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.38.56-PM.jpeg",
+    title: "Sanitized & Hygienic Meal Packaging",
+    caption: "Leak-proof, microwave-safe, tamper-evident food containers",
+    tag: "Hygiene Standard",
+  },
+  {
+    id: "gallery-3",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.38.57-PM.jpeg",
+    title: "Deluxe Executive Lunch Spread",
+    caption: "Balanced nutrition with fresh curd, paneer curry, and hot rotis",
+    tag: "Executive Lunch",
+  },
+  {
+    id: "gallery-4",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.38.57-PMhcfvhvh.jpeg",
+    title: "Chef Anima Handcrafted Curries",
+    caption: "Cooked in traditional brass utensils with cold-pressed mustard oil",
+    tag: "Handcrafted",
+  },
+  {
+    id: "gallery-5",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.39.02-PM.jpeg",
+    title: "Crispy Hot Poori & Sabzi Special",
+    caption: "Golden puffed pooris served with aromatic spiced aloo dum",
+    tag: "Special Feast",
+  },
+  {
+    id: "gallery-6",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.39.03-PM.jpeg",
+    title: "Slow-Simmered Paneer Gravy",
+    caption: "Rich tomato-cashew base with fresh malai paneer cubes",
+    tag: "Paneer Special",
+  },
+  {
+    id: "gallery-7",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.41.15-PM.jpeg",
+    title: "Authentic Bihari Homestyle Dal",
+    caption: "Panchforan tadka with pure cow ghee and aromatic roasted jeera",
+    tag: "Desi Tadka",
+  },
+  {
+    id: "gallery-8",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.41.16-PM.jpeg",
+    title: "Daily Office & Student Tiffin Box",
+    caption: "Hot lunch delivered right to your office desk in Kurji & Patna",
+    tag: "Daily Tiffin",
+  },
+  {
+    id: "gallery-9",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.41.17-PM.jpeg",
+    title: "Fresh Hand-Rolled Tawa Rotis",
+    caption: "100% whole wheat chakki atta, soft and puffed with desi ghee",
+    tag: "Hot Rotis",
+  },
+  {
+    id: "gallery-10",
+    imageUrl: "/gallery/WhatsApp-Image-2026-10-10-at-12.41.19-PM.jpeg",
+    title: "Ghar Jaisa Swaad, Har Din",
+    caption: "Mother's love and clean nutrition in every single bite",
+    tag: "Pure Veg",
+  },
+  {
+    id: "gallery-11",
+    imageUrl: "/gallery/10-at-12.41.19-PM.jpeg",
+    title: "Special Sunday Khana Khazana",
+    caption: "Delightful weekend menu prepared fresh for your family",
+    tag: "Sunday Special",
+  },
+  {
+    id: "gallery-12",
+    imageUrl: "/gallery/026-10-10-at-12.41.20-PM.jpeg",
+    title: "Fresh Seasonal Sabzi Mandi Produce",
+    caption: "Handpicked vegetables sourced daily from local Patna mandis",
+    tag: "Farm Fresh",
+  },
+  {
+    id: "gallery-13",
+    imageUrl: "/gallery/10-10-at-12.41.21-PM.jpeg",
+    title: "Aromatic Basmati Jeera Rice",
+    caption: "Fluffy long-grain basmati with mild whole spices and ghee aroma",
+    tag: "Basmati Rice",
+  },
+  {
+    id: "gallery-14",
+    imageUrl: "/gallery/WhatsA026-10-10-at-12.41.21-PM.jpeg",
+    title: "Zero Palm Oil Kitchen Promise",
+    caption: "Cooked exclusively in authentic mustard oil and desi ghee",
+    tag: "Health First",
+  },
+  {
+    id: "gallery-15",
+    imageUrl: "/gallery/WhatsA26-10-10-at-12.41.24-PM.jpeg",
+    title: "Complete Meal Thali Combo",
+    caption: "Balanced nutrients, high protein lentils, and home-style love",
+    tag: "Balanced Diet",
+  },
+  {
+    id: "gallery-16",
+    imageUrl: "/gallery/bhbPM.jpeg",
+    title: "Kurji Kitchen Sanitization & Care",
+    caption: "RO water purification & clean cooking standards in Patna",
+    tag: "Clean Kitchen",
+  },
+];
+
+
 const DEFAULT_DAY_SPECIAL_MEAL: DaySpecialMeal = {
   id: "day-special-today",
   day: "Daily",
@@ -467,6 +590,16 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return JSON.parse(saved);
     } catch {
       return DEFAULT_KITCHEN_VIDEOS;
+    }
+  });
+
+  const [foodGallery, setFoodGallery] = useState<FoodGalleryItem[]>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_food_gallery`);
+    if (!saved) return DEFAULT_FOOD_GALLERY;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return DEFAULT_FOOD_GALLERY;
     }
   });
 
@@ -888,6 +1021,36 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     safeSetItem(`${STORAGE_KEY}_kitchen_videos`, JSON.stringify(DEFAULT_KITCHEN_VIDEOS));
     toast.success("Kitchen videos reset to default 5 fresh reels!");
   }, []);
+
+  const addFoodGalleryItem = useCallback((itemData: Omit<FoodGalleryItem, "id" | "createdAt">) => {
+    setFoodGallery((prev) => {
+      const newItem: FoodGalleryItem = {
+        ...itemData,
+        id: `gallery-${Date.now()}`,
+        createdAt: "Just now",
+      };
+      const updated = [newItem, ...prev];
+      safeSetItem(`${STORAGE_KEY}_food_gallery`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("New food photo added to Gallery!");
+  }, []);
+
+  const deleteFoodGalleryItem = useCallback((itemId: string) => {
+    setFoodGallery((prev) => {
+      const updated = prev.filter((item) => item.id !== itemId);
+      safeSetItem(`${STORAGE_KEY}_food_gallery`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.info("Food photo removed from Gallery");
+  }, []);
+
+  const resetFoodGalleryToDefault = useCallback(() => {
+    setFoodGallery(DEFAULT_FOOD_GALLERY);
+    safeSetItem(`${STORAGE_KEY}_food_gallery`, JSON.stringify(DEFAULT_FOOD_GALLERY));
+    toast.success("Food gallery restored to default 16 kitchen images!");
+  }, []);
+
 
   const updateDaySpecialMeal = useCallback((mealData: Partial<DaySpecialMeal>) => {
     setDaySpecialMeal((prev) => {
@@ -2165,6 +2328,10 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateKitchenVideo,
         deleteKitchenVideo,
         resetKitchenVideosToDefault,
+        foodGallery,
+        addFoodGalleryItem,
+        deleteFoodGalleryItem,
+        resetFoodGalleryToDefault,
         daySpecialMeal,
         updateDaySpecialMeal,
       }}

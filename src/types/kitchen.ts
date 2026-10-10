@@ -483,3 +483,11 @@ export interface DaySpecialMeal {
   itemsIncluded: string[];
 }
 
+export interface FoodGalleryItem {
+  id: string;
+  imageUrl: string;
+  title: string;
+  caption?: string;
+  tag?: string;
+  createdAt?: string;
+}

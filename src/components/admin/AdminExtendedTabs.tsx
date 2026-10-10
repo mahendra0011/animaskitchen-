@@ -36,6 +36,9 @@ import {
   Play,
   Youtube,
   Upload,
+  Camera,
+  Image,
+  RotateCcw,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -1342,10 +1345,13 @@ export const AdminHomepageCustomizerTab: React.FC = () => {
       {/* 4. Day Special Meal Manager (Day-wise meal plan control) */}
       <AdminDaySpecialMealSection />
 
-      {/* 5. 🎬 Live Kitchen Video Reels & YouTube Upload Manager (Above Instagram) */}
+      {/* 5. 📸 Food Photo Gallery Manager (Directly above Menu) */}
+      <AdminFoodGallerySection />
+
+      {/* 6. 🎬 Live Kitchen Video Reels & YouTube Upload Manager (Above Instagram) */}
       <AdminKitchenVideosSection />
 
-      {/* 6. Instagram & Social Feed Manager */}
+      {/* 7. Instagram & Social Feed Manager */}
       <AdminSocialPostsSection />
     </div>
   );
@@ -1614,6 +1620,21 @@ const AdminSocialPostsSection: React.FC = () => {
     });
   };
 
+  const handleSocialFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setNewPost((prev) => ({
+        ...prev,
+        imageUrl: result,
+      }));
+      toast.success(`Photo selected: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
+  };
+
   return (
     <div className="rounded-2xl border border-ink/10 bg-frost/90 p-5 space-y-5 shadow-xs mt-6">
       <div className="flex items-center justify-between">
@@ -1621,7 +1642,7 @@ const AdminSocialPostsSection: React.FC = () => {
           <div className="flex items-center gap-2">
             <Instagram className="size-4 text-pink-600" />
             <h3 className="font-display text-base font-bold text-ink">
-              5. Instagram & Kitchen Stories Feed Manager
+              7. Instagram & Kitchen Stories Feed Manager
             </h3>
           </div>
           <p className="text-xs text-ink/60">
@@ -1651,15 +1672,39 @@ const AdminSocialPostsSection: React.FC = () => {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="space-y-1">
-            <label className="font-semibold text-ink">Image URL</label>
-            <input
-              type="text"
-              value={newPost.imageUrl}
-              onChange={(e) => setNewPost({ ...newPost, imageUrl: e.target.value })}
-              placeholder="https://images.unsplash.com/... or uploaded URL"
-              className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-mono"
-              required
-            />
+            <label className="font-semibold text-ink flex items-center justify-between">
+              <span>Image Source</span>
+              <span className="text-[10px] text-ink/50 font-normal">Direct upload or paste URL</span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newPost.imageUrl}
+                onChange={(e) => setNewPost({ ...newPost, imageUrl: e.target.value })}
+                placeholder="https://images.unsplash.com/... or choose file"
+                className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-mono"
+                required
+              />
+              <label className="cursor-pointer shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-pink-600 text-white font-bold hover:bg-pink-700 transition-colors shadow-xs">
+                <Upload className="size-3.5" />
+                <span>Upload</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleSocialFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            {newPost.imageUrl && (
+              <div className="relative w-16 h-16 rounded-lg overflow-hidden border border-ink/20 shadow-xs mt-1">
+                <img
+                  src={newPost.imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
           </div>
 
           <div className="space-y-1">
@@ -2409,4 +2454,255 @@ export const AdminKitchenVideosSection: React.FC = () => {
     </div>
   );
 };
+
+/* =========================================================================
+   12. 📸 Food Photo Gallery Manager Component (Above Menu)
+   ========================================================================= */
+export const AdminFoodGallerySection: React.FC = () => {
+  const {
+    foodGallery,
+    addFoodGalleryItem,
+    deleteFoodGalleryItem,
+    resetFoodGalleryToDefault,
+  } = useDemoStore();
+
+  const [newItem, setNewItem] = useState({
+    title: "",
+    caption: "",
+    tag: "Signature Thali",
+    imageUrl: "",
+  });
+
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Use FileReader for base64 / blob URL preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      setNewItem((prev) => ({
+        ...prev,
+        imageUrl: result,
+        title: prev.title || file.name.replace(/\.[^/.]+$/, "").replace(/[-_]/g, " "),
+      }));
+      toast.success(`Photo loaded: ${file.name}`);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAddItem = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newItem.imageUrl) {
+      toast.error("Please provide an image or upload one from your device!");
+      return;
+    }
+    if (!newItem.title.trim()) {
+      toast.error("Please enter a title for the food photo!");
+      return;
+    }
+
+    addFoodGalleryItem({
+      imageUrl: newItem.imageUrl,
+      title: newItem.title.trim(),
+      caption: newItem.caption.trim(),
+      tag: newItem.tag,
+    });
+
+    setNewItem({
+      title: "",
+      caption: "",
+      tag: "Signature Thali",
+      imageUrl: "",
+    });
+  };
+
+  return (
+    <div className="rounded-2xl border border-ink/10 bg-frost/90 p-5 space-y-5 shadow-xs mt-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div>
+          <div className="flex items-center gap-2">
+            <Camera className="size-4 text-spice" />
+            <h3 className="font-display text-base font-bold text-ink">
+              5. Authentic Food Photo Gallery Manager (Above Menu)
+            </h3>
+          </div>
+          <p className="text-xs text-ink/60">
+            Control the horizontal photo carousel displayed right above the food menu on the customer homepage.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Badge variant="outline" className="text-xs bg-spice/10 text-spice border-spice/20">
+            {foodGallery.length} Photos Active
+          </Badge>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={resetFoodGalleryToDefault}
+            className="text-xs gap-1.5 h-8 rounded-xl border-ink/20 hover:bg-ink hover:text-white"
+          >
+            <RotateCcw className="size-3.5" />
+            <span>Reset 16 Images</span>
+          </Button>
+        </div>
+      </div>
+
+      {/* Add New Photo Form */}
+      <form
+        onSubmit={handleAddItem}
+        className="p-4 rounded-xl border border-ink/10 bg-cream/50 space-y-3 text-xs"
+      >
+        <h4 className="font-bold text-ink flex items-center gap-1.5">
+          <Plus className="size-3.5 text-spice" />
+          <span>Upload & Add Food Image to Carousel</span>
+        </h4>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          {/* File Upload / Image URL */}
+          <div className="space-y-1.5">
+            <label className="font-semibold text-ink flex items-center justify-between">
+              <span>Image Source</span>
+              <span className="text-[10px] text-ink/50 font-normal">Direct upload or paste URL</span>
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={newItem.imageUrl}
+                onChange={(e) => setNewItem({ ...newItem, imageUrl: e.target.value })}
+                placeholder="Image URL or choose file below..."
+                className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-mono"
+              />
+              <label className="cursor-pointer shrink-0 inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-spice text-white font-bold hover:bg-spice/90 transition-colors shadow-xs">
+                <Upload className="size-3.5" />
+                <span>Upload</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            {newItem.imageUrl && (
+              <div className="relative w-20 h-20 rounded-xl overflow-hidden border border-ink/20 shadow-xs mt-1">
+                <img
+                  src={newItem.imageUrl}
+                  alt="Preview"
+                  className="w-full h-full object-cover"
+                />
+              </div>
+            )}
+          </div>
+
+          {/* Title & Tag */}
+          <div className="space-y-3">
+            <div className="space-y-1">
+              <label className="font-semibold text-ink">Photo Title</label>
+              <input
+                type="text"
+                value={newItem.title}
+                onChange={(e) => setNewItem({ ...newItem, title: e.target.value })}
+                placeholder="e.g. Fresh Desi Ghee Dal Tadka"
+                className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-medium"
+                required
+              />
+            </div>
+
+            <div className="space-y-1">
+              <label className="font-semibold text-ink">Badge Tag</label>
+              <select
+                value={newItem.tag}
+                onChange={(e) => setNewItem({ ...newItem, tag: e.target.value })}
+                className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs font-medium"
+              >
+                <option value="Signature Thali">Signature Thali</option>
+                <option value="Executive Lunch">Executive Lunch</option>
+                <option value="Hygiene Standard">Hygiene Standard</option>
+                <option value="Pure Veg">Pure Veg</option>
+                <option value="Hot Rotis">Hot Rotis</option>
+                <option value="Paneer Special">Paneer Special</option>
+                <option value="Farm Fresh">Farm Fresh</option>
+                <option value="Daily Tiffin">Daily Tiffin</option>
+                <option value="Sunday Special">Sunday Special</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        {/* Caption */}
+        <div className="space-y-1">
+          <label className="font-semibold text-ink">Caption / Description</label>
+          <textarea
+            rows={2}
+            value={newItem.caption}
+            onChange={(e) => setNewItem({ ...newItem, caption: e.target.value })}
+            placeholder="e.g. Prepared hot with RO water, zero palm oil, and fresh veggies."
+            className="w-full rounded-xl border border-ink/15 bg-white px-3 py-2 text-ink text-xs"
+          />
+        </div>
+
+        <div className="flex items-center justify-end pt-1">
+          <Button
+            type="submit"
+            className="rounded-xl bg-spice hover:bg-spice/90 text-white text-xs font-bold h-9 px-5 gap-1.5 shadow-md"
+          >
+            <Plus className="size-3.5" />
+            <span>Add to Live Carousel</span>
+          </Button>
+        </div>
+      </form>
+
+      {/* Existing Items Grid */}
+      <div className="space-y-2">
+        <h4 className="font-bold text-xs text-ink/70">
+          Current Live Carousel Images ({foodGallery.length})
+        </h4>
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3">
+          {foodGallery.map((item) => (
+            <div
+              key={item.id}
+              className="group relative rounded-xl border border-ink/10 bg-white overflow-hidden shadow-xs hover:shadow-md transition-all flex flex-col"
+            >
+              <div className="relative aspect-square bg-stone-900 overflow-hidden">
+                <img
+                  src={item.imageUrl}
+                  alt={item.title}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLImageElement).src =
+                      "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80";
+                  }}
+                />
+                {item.tag && (
+                  <span className="absolute top-1.5 left-1.5 rounded-md bg-black/70 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-mono font-bold text-amber-300">
+                    {item.tag}
+                  </span>
+                )}
+                <button
+                  type="button"
+                  onClick={() => deleteFoodGalleryItem(item.id)}
+                  className="absolute top-1.5 right-1.5 size-6 rounded-md bg-rose-600/90 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 hover:bg-rose-700 transition-all shadow-xs"
+                  title="Remove from gallery"
+                  aria-label="Remove image"
+                >
+                  <Trash2 className="size-3" />
+                </button>
+              </div>
+
+              <div className="p-2 space-y-0.5 flex-1 flex flex-col justify-between">
+                <p className="font-bold text-[11px] text-ink line-clamp-1">{item.title}</p>
+                {item.caption && (
+                  <p className="text-[10px] text-ink/60 line-clamp-1">{item.caption}</p>
+                )}
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
 
