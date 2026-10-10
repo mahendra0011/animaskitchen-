@@ -863,4 +863,32 @@
 
         let orderSummary = '';
         let subtotal = 0;
-        Object.keys(
+        Object.keys(cart).forEach(name => {
+          const item = cart[name];
+          const lineTotal = item.price * item.qty;
+          subtotal += lineTotal;
+          orderSummary += `• ${name} x ${item.qty} = ₹${lineTotal}\n`;
+        });
+
+        const delivery = subtotal >= 250 ? 0 : 20;
+        const grandTotal = subtotal + delivery;
+
+        let msg = `*🍲 NEW ORDER BOOKING - ANIMA'S KITCHEN PATNA*\n\n`;
+        msg += `*Customer:* ${name}\n`;
+        msg += `*Phone:* ${phone}\n`;
+        msg += `*Meal Slot:* ${slot}\n`;
+        msg += `*Area:* ${area}\n`;
+        msg += `*Address:* ${address}\n`;
+        if (notes) msg += `*Notes:* ${notes}\n`;
+        msg += `\n*ORDER ITEMS:*\n${orderSummary}`;
+        msg += `\n*Subtotal:* ₹${subtotal}`;
+        msg += `\n*Delivery:* ${delivery === 0 ? 'FREE' : '₹20'}`;
+        msg += `\n*Total To Pay:* ₹${grandTotal}\n\n`;
+        msg += `Please confirm my order booking!`;
+
+        const waUrl = `https://wa.me/917004960724?text=${encodeURIComponent(msg)}`;
+        window.open(waUrl, '_blank');
+      }
+    </script>
+  </body>
+</html>
