@@ -195,15 +195,23 @@ export const ContactPage: React.FC<ContactPageProps> = ({ onBack, onExploreMenu 
                   <div className="grid size-8 place-items-center rounded-xl bg-blue-50 text-blue-700 shrink-0 mt-0.5">
                     <Clock className="size-4" />
                   </div>
-                  <div>
+                  <div className="space-y-1">
                     <span className="font-bold text-ink block">
-                      Kitchen Cooking & Service Hours
+                      Daily Order Booking & Delivery Schedule
                     </span>
-                    <span className="block font-medium">Morning: 9:00 AM – 2:00 PM</span>
-                    <span className="block font-medium">Evening: 7:00 PM – 10:00 PM</span>
-                    <span className="text-[10px] text-ink/50 block mt-0.5">
-                      Open all 7 days for Lunch & Dinner
-                    </span>
+                    <div className="text-xs space-y-1 text-ink/80">
+                      <div>
+                        <span className="font-bold text-orange-700">☀️ Lunch Order:</span> 8:00 AM – 10:00 AM
+                        <span className="block text-[11px] text-stone-600 font-mono">↳ Delivery: 1:30 PM – 2:30 PM</span>
+                      </div>
+                      <div>
+                        <span className="font-bold text-emerald-800">🌙 Dinner Order:</span> 4:00 PM – 6:00 PM
+                        <span className="block text-[11px] text-stone-600 font-mono">↳ Delivery: 7:30 PM – 10:30 PM</span>
+                      </div>
+                    </div>
+                    <div className="p-2 rounded-xl bg-amber-50 border border-amber-200 text-[11px] text-amber-900 font-medium mt-1">
+                      ⚠️ <strong>Late Order Notice:</strong> If you order after the timing, please send a message or request directly on WhatsApp (+91 70049 60724).
+                    </div>
                   </div>
                 </div>
               </div>

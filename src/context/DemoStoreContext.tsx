@@ -47,6 +47,7 @@ import type {
   HomepageCustomization,
   SocialPost,
   DaySpecialMeal,
+  KitchenVideo,
 } from "@/types/kitchen";
 import { toast } from "sonner";
 
@@ -58,7 +59,10 @@ interface DemoStoreContextType {
   isAuthenticated: boolean;
   setIsAuthenticated: (val: boolean) => void;
   currentUser: { name: string; role: RoleType; phone: string; email: string } | null;
-  loginAsRole: (role: RoleType, credentials?: { identifier?: string; password?: string }) => void;
+  loginAsRole: (
+    role: RoleType | "delivery",
+    credentials?: { identifier?: string; password?: string },
+  ) => void;
   logout: () => void;
   customerPage: string;
   setCustomerPage: (page: string) => void;
@@ -140,6 +144,13 @@ interface DemoStoreContextType {
   socialPosts: SocialPost[];
   addSocialPost: (post: Omit<SocialPost, "id" | "createdAt">) => void;
   deleteSocialPost: (postId: string) => void;
+
+  // Kitchen Video Showcase & Reels (YouTube / Local MP4)
+  kitchenVideos: KitchenVideo[];
+  addKitchenVideo: (video: Omit<KitchenVideo, "id" | "createdAt">) => void;
+  updateKitchenVideo: (videoId: string, videoData: Partial<KitchenVideo>) => void;
+  deleteKitchenVideo: (videoId: string) => void;
+  resetKitchenVideosToDefault: () => void;
 
   // Day Special Meal Flow (Admin Daily Controlled)
   daySpecialMeal: DaySpecialMeal;
@@ -323,6 +334,74 @@ const DEFAULT_SOCIAL_POSTS: SocialPost[] = [
   },
 ];
 
+const DEFAULT_KITCHEN_VIDEOS: KitchenVideo[] = [
+  {
+    id: "video-1",
+    title: "Pure Desi Ghee Dal Tadka Tarka Preparation",
+    description: "Live cooking in brass handi with organic cumin, garlic, and hot desi ghee aroma.",
+    videoUrl: "/videos/kitchen-reel-1.mp4",
+    thumbnailUrl: "https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80",
+    sourceType: "local",
+    viewsCount: 1420,
+    likesCount: 189,
+    duration: "0:24",
+    tags: ["Desi Ghee", "Dal Tadka", "Pure Bihari Homestyle"],
+    createdAt: "Today",
+  },
+  {
+    id: "video-2",
+    title: "Fresh Hand-Rolled Tawa Rotis Puffing Hot",
+    description: "Every single roti is rolled fresh right before your delivery executive arrives.",
+    videoUrl: "/videos/kitchen-reel-2.mp4",
+    thumbnailUrl: "https://images.unsplash.com/photo-1626074353765-517a681e40be?w=800&auto=format&fit=crop&q=80",
+    sourceType: "local",
+    viewsCount: 2310,
+    likesCount: 312,
+    duration: "0:45",
+    tags: ["Hot Roti", "No Maida", "Chakki Atta"],
+    createdAt: "Yesterday",
+  },
+  {
+    id: "video-3",
+    title: "Special Shahi Paneer & Rich Hand-Ground Gravy",
+    description: "Real milk paneer cooked with fresh tomatoes, ginger, and aromatic roasted garam masala.",
+    videoUrl: "/videos/kitchen-reel-3.mp4",
+    thumbnailUrl: "https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?w=800&auto=format&fit=crop&q=80",
+    sourceType: "local",
+    viewsCount: 1890,
+    likesCount: 245,
+    duration: "0:52",
+    tags: ["Shahi Paneer", "Special Thali", "Rich Gravy"],
+    createdAt: "2 days ago",
+  },
+  {
+    id: "video-4",
+    title: "Hygienic Kitchen Packaging & Dispatch Inspection",
+    description: "Clean steel containers, sanitized food-grade boxes, sealed piping hot for Patna doorsteps.",
+    videoUrl: "/videos/kitchen-reel-4.mp4",
+    thumbnailUrl: "https://images.unsplash.com/photo-1563379091339-03b21ab4a4f8?w=800&auto=format&fit=crop&q=80",
+    sourceType: "local",
+    viewsCount: 3410,
+    likesCount: 420,
+    duration: "1:08",
+    tags: ["100% Hygienic", "Packaging", "Fast Dispatch"],
+    createdAt: "3 days ago",
+  },
+  {
+    id: "video-5",
+    title: "Chef Anima Signature Thali Plating & Secret Spices",
+    description: "Traditional family recipes cooked with motherly care, zero chemical colors, and pure ingredients.",
+    videoUrl: "/videos/kitchen-reel-5.mp4",
+    thumbnailUrl: "https://images.unsplash.com/photo-1589302168068-964664d93dc0?w=800&auto=format&fit=crop&q=80",
+    sourceType: "local",
+    viewsCount: 4890,
+    likesCount: 630,
+    duration: "1:45",
+    tags: ["Chef Special", "Ghar Ka Swaad", "Kurji Kitchen"],
+    createdAt: "4 days ago",
+  },
+];
+
 const DEFAULT_DAY_SPECIAL_MEAL: DaySpecialMeal = {
   id: "day-special-today",
   day: "Daily",
@@ -378,6 +457,16 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return JSON.parse(saved);
     } catch {
       return DEFAULT_SOCIAL_POSTS;
+    }
+  });
+
+  const [kitchenVideos, setKitchenVideos] = useState<KitchenVideo[]>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_kitchen_videos`);
+    if (!saved) return DEFAULT_KITCHEN_VIDEOS;
+    try {
+      return JSON.parse(saved);
+    } catch {
+      return DEFAULT_KITCHEN_VIDEOS;
     }
   });
 
@@ -448,15 +537,25 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     }
   });
 
-  const [cart, setCart] = useState<CartItem[]>(() => {
-    const saved = safeGetItem(`${STORAGE_KEY}_cart`);
-    return saved ? JSON.parse(saved) : [];
-  });
+  const [cart, setCart] = useState<CartItem[]>([]);
+  const [wishlistIds, setWishlistIds] = useState<string[]>([]);
 
-  const [wishlistIds, setWishlistIds] = useState<string[]>(() => {
-    const saved = safeGetItem(`${STORAGE_KEY}_wishlist`);
-    return saved ? JSON.parse(saved) : [];
-  });
+  // Load client persisted states on mount to guarantee SSR and client initial markup match
+  useEffect(() => {
+    const savedCart = safeGetItem(`${STORAGE_KEY}_cart`);
+    if (savedCart) {
+      try {
+        setCart(JSON.parse(savedCart));
+      } catch {}
+    }
+
+    const savedWishlist = safeGetItem(`${STORAGE_KEY}_wishlist`);
+    if (savedWishlist) {
+      try {
+        setWishlistIds(JSON.parse(savedWishlist));
+      } catch {}
+    }
+  }, []);
 
   const [orders, setOrders] = useState<Order[]>(() => {
     const saved = safeGetItem(`${STORAGE_KEY}_orders`);
@@ -750,6 +849,44 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       return updated;
     });
     toast.info("Social post removed");
+  }, []);
+
+  const addKitchenVideo = useCallback((videoData: Omit<KitchenVideo, "id" | "createdAt">) => {
+    setKitchenVideos((prev) => {
+      const newVideo: KitchenVideo = {
+        ...videoData,
+        id: `video-${Date.now()}`,
+        createdAt: "Just now",
+      };
+      const updated = [newVideo, ...prev];
+      safeSetItem(`${STORAGE_KEY}_kitchen_videos`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Kitchen Video published to customer feed!");
+  }, []);
+
+  const updateKitchenVideo = useCallback((videoId: string, videoData: Partial<KitchenVideo>) => {
+    setKitchenVideos((prev) => {
+      const updated = prev.map((v) => (v.id === videoId ? { ...v, ...videoData } : v));
+      safeSetItem(`${STORAGE_KEY}_kitchen_videos`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.success("Kitchen Video details updated!");
+  }, []);
+
+  const deleteKitchenVideo = useCallback((videoId: string) => {
+    setKitchenVideos((prev) => {
+      const updated = prev.filter((v) => v.id !== videoId);
+      safeSetItem(`${STORAGE_KEY}_kitchen_videos`, JSON.stringify(updated));
+      return updated;
+    });
+    toast.info("Kitchen Video removed");
+  }, []);
+
+  const resetKitchenVideosToDefault = useCallback(() => {
+    setKitchenVideos(DEFAULT_KITCHEN_VIDEOS);
+    safeSetItem(`${STORAGE_KEY}_kitchen_videos`, JSON.stringify(DEFAULT_KITCHEN_VIDEOS));
+    toast.success("Kitchen videos reset to default 5 fresh reels!");
   }, []);
 
   const updateDaySpecialMeal = useCallback((mealData: Partial<DaySpecialMeal>) => {
@@ -1684,7 +1821,10 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 
   const loginAsRole = useCallback(
-    (role: RoleType, credentials?: { identifier?: string; password?: string }) => {
+    (roleInput: RoleType | "delivery", credentials?: { identifier?: string; password?: string }) => {
+      // Normalize role alias: "delivery" -> "rider"
+      const role: RoleType = roleInput === "delivery" ? "rider" : roleInput;
+
       // PROD GUARD: privileged portals require a verified identifier (from /api/auth/*).
       // Blocks blank demo switching like loginAsRole("admin") with no credentials.
       if ((role === "admin" || role === "rider" || role === "kds") && !credentials?.identifier) {
@@ -1695,6 +1835,7 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       }
       setActiveRole(role);
       setIsAuthenticated(true);
+      setCustomerPage("home");
       let userObj = {
         name: credentials?.identifier?.split("@")[0] || "Customer",
         role,
@@ -1731,7 +1872,7 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       });
       logActivity("system", "User Login", `Logged in as ${role.toUpperCase()} (${userObj.name})`);
     },
-    [setActiveRole, logActivity],
+    [setActiveRole, setCustomerPage, logActivity],
   );
 
   const logout = useCallback(() => {
@@ -1745,8 +1886,8 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (e) {
       console.warn(e);
     }
-    toast.info("Logged out", { description: "Returned to Customer website" });
-    logActivity("system", "User Logout", "Logged out to guest customer mode");
+    toast.info("Logged out", { description: "Returned to homepage" });
+    logActivity("system", "User Logout", "Logged out to homepage");
   }, [logActivity, setActiveRole, setCustomerPage]);
 
   // Auto Simulation Player
@@ -2019,6 +2160,11 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         socialPosts,
         addSocialPost,
         deleteSocialPost,
+        kitchenVideos,
+        addKitchenVideo,
+        updateKitchenVideo,
+        deleteKitchenVideo,
+        resetKitchenVideosToDefault,
         daySpecialMeal,
         updateDaySpecialMeal,
       }}

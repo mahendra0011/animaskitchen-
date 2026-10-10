@@ -17,6 +17,7 @@ import {
   ShieldCheck,
   Check,
   X,
+  Clock,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -397,6 +398,26 @@ export const CartDrawer: React.FC = () => {
                 {250 - cartTotal} more). Extra delivery fee applies beyond 4 km.
               </div>
             )}
+
+            {/* Daily Pre-Order Schedule Notice */}
+            <div className="mt-2.5 p-2.5 rounded-xl bg-emerald-50/80 border border-emerald-600/30 text-emerald-950 text-[11px] space-y-1">
+              <div className="font-bold flex items-center gap-1.5 text-emerald-900">
+                <Clock className="size-3.5 text-orange-600" />
+                <span>Daily Order & Delivery Timings:</span>
+              </div>
+              <div className="text-[10px] font-mono leading-tight space-y-0.5 text-emerald-900/90">
+                <div>☀️ <strong>Lunch Order:</strong> 8 AM – 10 AM (Delivery: 1:30–2:30 PM)</div>
+                <div>🌙 <strong>Dinner Order:</strong> 4 PM – 6 PM (Delivery: 7:30–10:30 PM)</div>
+              </div>
+              <p className="text-[10px] text-amber-900 font-semibold pt-0.5 border-t border-emerald-200">
+                ⚠️ If ordering after timing, send instant request on WhatsApp!
+              </p>
+            </div>
+
+            {/* Cancel Policy Pill */}
+            <div className="mt-1.5 px-2.5 py-1.5 rounded-lg bg-stone-100 border border-stone-300 text-[11px] text-stone-800 font-medium text-center">
+              ⏱️ <strong>Cancel policy:</strong> Only within <strong>20 minutes</strong> of order booking.
+            </div>
 
             <motion.div
               whileHover={{ scale: cartTotal >= 250 ? 1.02 : 1 }}

@@ -65,10 +65,12 @@
   --color-saffron: var(--saffron);
   --color-leaf: var(--leaf);
   --color-frost: var(--frost);
-  --font-display: "Outfit", ui-sans-serif, sans-serif;
-  --font-body: "Inter", ui-sans-serif, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, monospace;
-  --font-serif: "Playfair Display", ui-serif, Georgia, serif;
+  --font-display: "Outfit", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-body: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Playfair Display", Georgia, serif;
+  --font-script: "Kaushan Script", cursive, sans-serif;
+  --font-kitchen: "Lobster Two", cursive, sans-serif;
 }
 
 :root {

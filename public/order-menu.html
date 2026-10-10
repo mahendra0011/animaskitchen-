@@ -1,0 +1,866 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Anima's Kitchen Order Booking Menu</title>
+    <style>
+      :root {
+        --g: #08783e;
+        --o: #ff5b12;
+        --r: #d71920;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html {
+        scroll-behavior: smooth;
+      }
+      body {
+        margin: 0;
+        background: #f6f2e8;
+        font-family: Arial, sans-serif;
+        color: #222;
+        padding-bottom: 90px;
+      }
+      header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        background: linear-gradient(135deg, #064321, #0b9149);
+        color: white;
+        padding: 12px 10px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25);
+      }
+      h1 {
+        margin: 0;
+        font-size: clamp(26px, 6vw, 44px);
+        font-weight: 900;
+        letter-spacing: -0.5px;
+      }
+      .tag {
+        font-weight: 700;
+        font-size: 13px;
+        opacity: 0.95;
+        margin-top: 4px;
+      }
+      .pills {
+        display: flex;
+        justify-content: center;
+        gap: 7px;
+        flex-wrap: wrap;
+        margin-top: 9px;
+      }
+      .pill {
+        background: #fff;
+        color: #111;
+        padding: 7px 12px;
+        border-radius: 20px;
+        font-weight: 800;
+        font-size: 12px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+      }
+      .hot {
+        background: #ff4b13;
+        color: #fff;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { transform: scale(1); }
+        50% { transform: scale(1.03); }
+      }
+      main {
+        max-width: 1100px;
+        margin: auto;
+        padding: 12px;
+      }
+      .hero {
+        margin-bottom: 14px;
+      }
+      .hero img {
+        width: 100%;
+        max-height: 480px;
+        object-fit: cover;
+        display: block;
+        border-radius: 18px;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+      }
+      .notice {
+        margin: 12px 0;
+        background: #fff;
+        border-radius: 14px;
+        padding: 14px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+        border-left: 5px solid #d71920;
+        font-size: 14px;
+        line-height: 1.5;
+      }
+      .notice b {
+        color: #d71920;
+      }
+      .tabs {
+        display: flex;
+        gap: 8px;
+        overflow: auto;
+        position: sticky;
+        top: 116px;
+        background: #f6f2e8;
+        padding: 8px 0;
+        z-index: 20;
+      }
+      .tabs button {
+        border: 0;
+        border-radius: 22px;
+        padding: 9px 16px;
+        font-weight: 800;
+        white-space: nowrap;
+        background: #fff;
+        color: #333;
+        cursor: pointer;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s;
+      }
+      .tabs button.active,
+      .tabs button:first-child {
+        background: var(--o);
+        color: #fff;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-top: 10px;
+      }
+      .card,
+      .panel {
+        background: white;
+        border-radius: 16px;
+        padding: 14px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+      }
+      .card h3 {
+        margin: 0 0 6px;
+        font-size: 17px;
+        color: #111;
+      }
+      .card p {
+        margin: 0;
+        color: #666;
+        font-size: 12px;
+        min-height: 34px;
+        line-height: 1.4;
+      }
+      .price {
+        font-size: 22px;
+        color: var(--r);
+        font-weight: 900;
+      }
+      .card button,
+      .orderbtn {
+        border: 0;
+        background: var(--o);
+        color: #fff;
+        font-weight: 900;
+        border-radius: 10px;
+        padding: 9px 14px;
+        cursor: pointer;
+        min-height: 44px;
+        touch-action: manipulation;
+        transition: transform 0.1s, background 0.2s;
+      }
+      .card button:hover,
+      .orderbtn:hover {
+        background: #e04705;
+      }
+      .row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        margin-top: 12px;
+      }
+      .cols {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 14px;
+        margin-top: 16px;
+      }
+      .panel h2 {
+        margin: 0 0 10px;
+        color: var(--g);
+        font-size: 20px;
+      }
+      .item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .item > div {
+        flex: 1;
+        min-width: 0;
+      }
+      .item small {
+        display: block;
+        color: #777;
+        font-size: 11px;
+        margin-top: 2px;
+      }
+      .item strong {
+        color: #d71920;
+        font-size: 15px;
+      }
+      .item button {
+        min-width: 44px;
+        min-height: 44px;
+        font-size: 20px;
+        border: 0;
+        border-radius: 10px;
+        background: #f1f1f1;
+        cursor: pointer;
+        font-weight: 900;
+      }
+      .item .plus {
+        background: #e8f7ee;
+        color: #08783e;
+      }
+      .item .minus {
+        background: #fff0f0;
+        color: #b21e1e;
+      }
+      .delivery {
+        background: linear-gradient(135deg, #eaffed, #fff5bd);
+        border: 2px solid #2aaa50;
+      }
+      .free {
+        font-size: 22px;
+        color: #d71920;
+        font-weight: 900;
+      }
+      .bulk {
+        background: linear-gradient(135deg, #8d1010, #e52a1d);
+        color: #fff;
+      }
+      .bulk h2,
+      .bulk strong {
+        color: #ffd83e;
+      }
+      .wa {
+        display: block;
+        text-align: center;
+        background: #08783e;
+        color: #fff;
+        text-decoration: none;
+        padding: 14px;
+        border-radius: 12px;
+        font-weight: 900;
+        font-size: 18px;
+        margin-top: 12px;
+        box-shadow: 0 4px 12px rgba(8, 120, 62, 0.3);
+      }
+      .cart {
+        position: fixed;
+        right: 16px;
+        bottom: 16px;
+        background: #08783e;
+        color: #fff;
+        border: 0;
+        border-radius: 30px;
+        padding: 13px 20px;
+        font-weight: 900;
+        z-index: 90;
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 48px;
+      }
+      .cart span {
+        background: #ffd52e;
+        color: #111;
+        border-radius: 50%;
+        padding: 2px 7px;
+        font-size: 13px;
+        font-weight: 900;
+      }
+      #orderDrawer {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.55);
+        z-index: 100;
+        display: none;
+        align-items: flex-end;
+        justify-content: center;
+      }
+      #orderDrawer.open {
+        display: flex;
+      }
+      .drawer {
+        background: #fff;
+        width: min(720px, 100%);
+        max-height: 94vh;
+        overflow: auto;
+        border-radius: 22px 22px 0 0;
+        padding: 18px 18px 28px;
+        box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.25);
+      }
+      .drawerTop {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        position: sticky;
+        top: 0;
+        background: #fff;
+        padding-bottom: 10px;
+        z-index: 2;
+        border-bottom: 1px solid #eee;
+      }
+      .drawerTop h2 {
+        margin: 0;
+        font-size: 21px;
+        color: #111;
+      }
+      .drawerClose {
+        border: 0;
+        background: #eee;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        font-size: 22px;
+        cursor: pointer;
+      }
+      .stepbar {
+        display: flex;
+        gap: 6px;
+        margin: 12px 0 16px;
+      }
+      .step {
+        flex: 1;
+        text-align: center;
+        padding: 8px 4px;
+        border-radius: 9px;
+        background: #eee;
+        color: #777;
+        font-size: 12px;
+        font-weight: 800;
+      }
+      .step.active {
+        background: #08783e;
+        color: white;
+      }
+      .cartRow {
+        display: grid;
+        grid-template-columns: 1fr auto auto auto;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 0;
+        border-bottom: 1px solid #eee;
+      }
+      .cartRow small {
+        display: block;
+        color: #777;
+        font-size: 11px;
+        margin-top: 3px;
+      }
+      .qty {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+      }
+      .qty button {
+        width: 38px;
+        height: 38px;
+        border: 0;
+        border-radius: 9px;
+        font-size: 20px;
+        background: #eee;
+        cursor: pointer;
+        font-weight: 900;
+      }
+      .qty span {
+        min-width: 24px;
+        text-align: center;
+        font-weight: 800;
+      }
+      .summary {
+        background: #f5f8f6;
+        border: 1px solid #dcebe1;
+        border-radius: 13px;
+        padding: 12px;
+        margin: 14px 0;
+        font-size: 14px;
+        line-height: 1.65;
+      }
+      .grand {
+        font-size: 18px;
+        font-weight: 900;
+        color: #075e30;
+      }
+      .primary {
+        width: 100%;
+        background: #08783e;
+        color: #fff;
+        border: 0;
+        border-radius: 12px;
+        padding: 14px;
+        font-size: 17px;
+        font-weight: 900;
+        cursor: pointer;
+        min-height: 48px;
+      }
+      .secondary {
+        width: 100%;
+        background: #fff;
+        color: #08783e;
+        border: 2px solid #08783e;
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 15px;
+        font-weight: 900;
+        margin-top: 9px;
+        cursor: pointer;
+      }
+      .formGrid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .field.full {
+        grid-column: 1 / -1;
+      }
+      .field label {
+        font-size: 13px;
+        font-weight: 800;
+        color: #333;
+      }
+      .field input,
+      .field select,
+      .field textarea {
+        width: 100%;
+        font-size: 15px;
+        padding: 11px;
+        border: 1px solid #ccc;
+        border-radius: 10px;
+        background: #fff;
+      }
+      .field textarea {
+        min-height: 78px;
+        resize: vertical;
+      }
+      .required {
+        color: #c00;
+      }
+      .empty {
+        padding: 28px 8px;
+        text-align: center;
+        color: #777;
+      }
+      footer {
+        background: #063d22;
+        color: #fff;
+        text-align: center;
+        padding: 30px 15px;
+        margin-top: 30px;
+      }
+      @media (max-width: 750px) {
+        .grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .cols {
+          grid-template-columns: 1fr;
+        }
+        .tabs {
+          top: 114px;
+        }
+      }
+      @media (max-width: 520px) {
+        .drawer {
+          padding: 14px 12px 24px;
+        }
+        .formGrid {
+          grid-template-columns: 1fr;
+        }
+        .field.full {
+          grid-column: auto;
+        }
+        .grid {
+          gap: 8px;
+        }
+        .card {
+          padding: 10px;
+        }
+        .card h3 {
+          font-size: 14px;
+        }
+        .card button {
+          font-size: 12px;
+          padding: 8px 8px;
+        }
+        .step {
+          font-size: 11px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Anima's Kitchen</h1>
+      <div class="tag">Fresh • Homemade • Hygienic • Made with Care</div>
+      <div class="pills">
+        <span class="pill hot">Lunch Booking: 8:00 AM – 10:00 AM</span>
+        <span class="pill">Lunch Delivery: 1:30 PM – 2:30 PM</span>
+        <span class="pill hot">Dinner Booking: 4:00 PM – 6:00 PM</span>
+        <span class="pill">Dinner Delivery: 7:30 PM – 10:30 PM</span>
+      </div>
+    </header>
+
+    <main>
+      <div class="hero">
+        <img
+          src="/hero-kitchen-banner.png"
+          alt="Anima's Kitchen Homemade Pure Desi Thali"
+        />
+      </div>
+
+      <div class="notice">
+        <b>📢 Order Booking & Delivery Schedule:</b><br />
+        • <b>Lunch Order Booking:</b> 8:00 AM – 10:00 AM &nbsp;|&nbsp; <b>Delivery:</b> 1:30 PM – 2:30 PM<br />
+        • <b>Dinner Order Booking:</b> 4:00 PM – 6:00 PM &nbsp;|&nbsp; <b>Delivery:</b> 7:30 PM – 10:30 PM<br />
+        <span style="color: #b21e1e; font-weight: bold; margin-top: 4px; display: inline-block;">
+          ⚠️ If you order after the timing, please send an instant request on WhatsApp (+91 70049 60724).
+        </span>
+      </div>
+
+      <div class="tabs">
+        <button class="active" onclick="filterCategory('all', this)">All Items</button>
+        <button onclick="filterCategory('thali', this)">Special Thalis</button>
+        <button onclick="filterCategory('addons', this)">Roti & Add-ons</button>
+        <button onclick="filterCategory('bulk', this)">Bulk & Tiffin</button>
+      </div>
+
+      <!-- Menu Grid -->
+      <div class="grid" id="menuGrid">
+        <!-- Deluxe Thali Card -->
+        <div class="card" data-cat="thali">
+          <h3>Comfort Standard Thali</h3>
+          <p>4 Phulka Roti + Dal Tadka + Seasonal Sabzi + Steamed Rice + Salad</p>
+          <div class="row">
+            <span class="price">₹120</span>
+            <button onclick="addToCart('Comfort Standard Thali', 120)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Special Paneer Thali -->
+        <div class="card" data-cat="thali">
+          <h3>Special Paneer Thali</h3>
+          <p>Matar Paneer / Shahi Paneer + 4 Ghee Roti + Dal + Rice + Raita + Sweet</p>
+          <div class="row">
+            <span class="price">₹160</span>
+            <button onclick="addToCart('Special Paneer Thali', 160)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Dignitary Litti Chokha -->
+        <div class="card" data-cat="thali">
+          <h3>Patna Litti Chokha Special</h3>
+          <p>2 Sattu Stuffed Baked Littis dipped in Pure Desi Ghee + Baingan Chokha + Chutney</p>
+          <div class="row">
+            <span class="price">₹100</span>
+            <button onclick="addToCart('Patna Litti Chokha Special', 100)">+ Add</button>
+          </div>
+        </div>
+
+        <!-- Addons -->
+        <div class="card" data-cat="addons">
+          <h3>Desi Ghee Phulka (Pack of 4)</h3>
+          <p>Fresh whole wheat soft phulkas brushed with 100% pure cow ghee</p>
+          <div class="row">
+            <span class="price">₹40</span>
+            <button onclick="addToCart('Desi Ghee Phulka (Pack of 4)', 40)">+ Add</button>
+          </div>
+        </div>
+
+        <div class="card" data-cat="addons">
+          <h3>Plain Phulka (Pack of 4)</h3>
+          <p>Fresh dry tawa phulkas, soft and fluffy homemade style</p>
+          <div class="row">
+            <span class="price">₹30</span>
+            <button onclick="addToCart('Plain Phulka (Pack of 4)', 30)">+ Add</button>
+          </div>
+        </div>
+
+        <div class="card" data-cat="addons">
+          <h3>Extra Dal Tadka Bowl</h3>
+          <p>Home-style yellow arhar dal with jeera, hing & garlic tadka</p>
+          <div class="row">
+            <span class="price">₹50</span>
+            <button onclick="addToCart('Extra Dal Tadka Bowl', 50)">+ Add</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Panels -->
+      <div class="cols">
+        <div class="panel delivery">
+          <h2>🛵 Free Home Delivery Available</h2>
+          <p>Free doorstep delivery across Patna (Kurji, Digha, Patliputra, Boring Road) for orders above <b>₹250</b>.</p>
+          <div class="free" style="margin-top: 8px;">FREE DELIVERY ON ₹250+</div>
+        </div>
+
+        <div class="panel bulk">
+          <h2>📦 Bulk & Corporate Catering</h2>
+          <p>Hosting family events, office lunch, or student hostels? Contact Anima's Kitchen for customized bulk meal packs.</p>
+          <strong>Call / WhatsApp: +91 70049 60724</strong>
+        </div>
+      </div>
+
+      <a href="https://wa.me/917004960724?text=Hi%20Anima%27s%20Kitchen,%20I%20want%20to%20book%20an%20order" target="_blank" class="wa">
+        💬 Direct WhatsApp Booking (+91 70049 60724)
+      </a>
+    </main>
+
+    <!-- Floating Cart Button -->
+    <button class="cart" id="cartFloatBtn" onclick="toggleDrawer(true)">
+      🛒 View Order <span id="cartCount">0</span>
+    </button>
+
+    <!-- Order Drawer -->
+    <div id="orderDrawer" onclick="handleDrawerBackdrop(event)">
+      <div class="drawer">
+        <div class="drawerTop">
+          <h2>Your Booking Order</h2>
+          <button class="drawerClose" onclick="toggleDrawer(false)">✕</button>
+        </div>
+
+        <div class="stepbar">
+          <div class="step active" id="step1Indicator">1. Items</div>
+          <div class="step" id="step2Indicator">2. Delivery Info</div>
+        </div>
+
+        <div id="step1Content">
+          <div id="cartList">
+            <div class="empty">No items added yet. Click "+ Add" on items above to start booking.</div>
+          </div>
+
+          <div class="summary" id="cartSummary" style="display:none;">
+            <div>Items Total: <b id="subtotalAmount">₹0</b></div>
+            <div>Delivery Fee: <b id="deliveryFee">₹20</b> <small>(Free over ₹250)</small></div>
+            <div class="grand" style="margin-top: 6px;">To Pay: <span id="grandTotalAmount">₹0</span></div>
+          </div>
+
+          <button class="primary" id="proceedBtn" style="display:none;" onclick="goToStep2()">
+            Proceed to Delivery Details →
+          </button>
+        </div>
+
+        <div id="step2Content" style="display:none;">
+          <form id="bookingForm" onsubmit="handleBookingSubmit(event)">
+            <div class="formGrid">
+              <div class="field">
+                <label>Your Name <span class="required">*</span></label>
+                <input type="text" id="custName" required placeholder="e.g. Rahul Kumar" />
+              </div>
+
+              <div class="field">
+                <label>WhatsApp / Phone Number <span class="required">*</span></label>
+                <input type="tel" id="custPhone" required placeholder="10-digit mobile number" />
+              </div>
+
+              <div class="field">
+                <label>Meal Time <span class="required">*</span></label>
+                <select id="mealSlot" required>
+                  <option value="Lunch Delivery (1:30 - 2:30 PM)">Lunch Delivery (1:30 - 2:30 PM) [Order: 8:00 - 10:00 AM]</option>
+                  <option value="Dinner Delivery (7:30 - 10:30 PM)">Dinner Delivery (7:30 - 10:30 PM) [Order: 4:00 - 6:00 PM]</option>
+                  <option value="Late Order (Confirm via WhatsApp)">Late Order (Send Instant WhatsApp Confirmation)</option>
+                </select>
+              </div>
+
+              <div class="field">
+                <label>Delivery Location in Patna <span class="required">*</span></label>
+                <select id="deliveryArea" required>
+                  <option value="Kurji / Vikash Nagar">Kurji / Vikash Nagar</option>
+                  <option value="Digha / Main Road">Digha / Main Road</option>
+                  <option value="Patliputra Colony">Patliputra Colony</option>
+                  <option value="Boring Road / Boring Canal Rd">Boring Road / Boring Canal Rd</option>
+                  <option value="Raja Bazar / Bailey Road">Raja Bazar / Bailey Road</option>
+                  <option value="Other Patna Location">Other Patna Location</option>
+                </select>
+              </div>
+
+              <div class="field full">
+                <label>Complete Delivery Address <span class="required">*</span></label>
+                <textarea id="custAddress" required placeholder="Flat / House No, Landmark, Street name..."></textarea>
+              </div>
+
+              <div class="field full">
+                <label>Special Cooking Instructions (Optional)</label>
+                <input type="text" id="custNotes" placeholder="e.g. Less spicy, extra salad, extra hot phulkas..." />
+              </div>
+              <div class="field full" style="margin-top: 6px; padding: 12px; background: #fff8e6; border: 1.5px solid #f2c037; border-radius: 12px; font-size: 13px; line-height: 1.5;">
+                <div style="font-weight: 800; color: #8a5700; margin-bottom: 4px;">⚠️ Cancellation Policy:</div>
+                <div style="color: #222;">
+                  📌 <b>Cancel policy only 20 minutes after order booking.</b> Once food enters cooking, freshly prepared meals cannot be cancelled or returned.
+                </div>
+                <label style="display: flex; gap: 8px; align-items: flex-start; margin-top: 8px; font-size: 12px; font-weight: 600; color: #222; cursor: pointer;">
+                  <input type="checkbox" id="orderMenuAgree" required style="width: 18px; height: 18px; margin-top: 2px; shrink-0;" />
+                  <span>I understand and agree that orders for freshly cooked food cannot be cancelled or returned once placed (cancellation allowed only within 20 minutes), and receiving the parcel upon arrival is mandatory.</span>
+                </label>
+              </div>
+
+            <div style="margin-top: 14px;">
+              <button type="submit" class="primary">
+                Confirm & Send Order on WhatsApp 🚀
+              </button>
+              <button type="button" class="secondary" onclick="goToStep1()">
+                ← Back to Edit Items
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div><b>Anima's Kitchen · Homemade Food Booking</b></div>
+      <div style="margin-top: 6px; font-size: 13px; opacity: 0.85;">
+        Vikash Nagar, Kurji, Patna — Freshly Prepared With Love & Desi Ghee
+      </div>
+      <div style="margin-top: 4px; font-size: 13px;">Phone / WhatsApp: +91 70049 60724</div>
+    </footer>
+
+    <script>
+      let cart = {};
+
+      function filterCategory(cat, btn) {
+        document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+        if (btn) btn.classList.add('active');
+        const cards = document.querySelectorAll('#menuGrid .card');
+        cards.forEach(card => {
+          if (cat === 'all' || card.getAttribute('data-cat') === cat) {
+            card.style.display = 'block';
+          } else {
+            card.style.display = 'none';
+          }
+        });
+      }
+
+      function addToCart(name, price) {
+        if (!cart[name]) {
+          cart[name] = { price: price, qty: 1 };
+        } else {
+          cart[name].qty += 1;
+        }
+        updateCartUI();
+      }
+
+      function changeQty(name, delta) {
+        if (!cart[name]) return;
+        cart[name].qty += delta;
+        if (cart[name].qty <= 0) {
+          delete cart[name];
+        }
+        updateCartUI();
+      }
+
+      function updateCartUI() {
+        let totalCount = 0;
+        let subtotal = 0;
+        const listEl = document.getElementById('cartList');
+        const countBadge = document.getElementById('cartCount');
+        const summaryEl = document.getElementById('cartSummary');
+        const proceedBtn = document.getElementById('proceedBtn');
+
+        let html = '';
+        const items = Object.keys(cart);
+
+        if (items.length === 0) {
+          listEl.innerHTML = '<div class="empty">No items added yet. Click "+ Add" on items above to start booking.</div>';
+          countBadge.innerText = '0';
+          summaryEl.style.display = 'none';
+          proceedBtn.style.display = 'none';
+          return;
+        }
+
+        items.forEach(name => {
+          const item = cart[name];
+          const lineTotal = item.price * item.qty;
+          totalCount += item.qty;
+          subtotal += lineTotal;
+
+          html += `
+            <div class="cartRow">
+              <div>
+                <strong>${name}</strong>
+                <small>₹${item.price} each</small>
+              </div>
+              <div class="qty">
+                <button type="button" onclick="changeQty('${name}', -1)">−</button>
+                <span>${item.qty}</span>
+                <button type="button" onclick="changeQty('${name}', 1)">+</button>
+              </div>
+              <div style="font-weight:900; text-align:right; min-width:60px;">₹${lineTotal}</div>
+            </div>
+          `;
+        });
+
+        listEl.innerHTML = html;
+        countBadge.innerText = totalCount;
+        summaryEl.style.display = 'block';
+        proceedBtn.style.display = 'block';
+
+        const delivery = subtotal >= 250 ? 0 : 20;
+        document.getElementById('subtotalAmount').innerText = '₹' + subtotal;
+        document.getElementById('deliveryFee').innerText = delivery === 0 ? 'FREE' : '₹20';
+        document.getElementById('grandTotalAmount').innerText = '₹' + (subtotal + delivery);
+      }
+
+      function toggleDrawer(open) {
+        const d = document.getElementById('orderDrawer');
+        if (open) {
+          d.classList.add('open');
+        } else {
+          d.classList.remove('open');
+        }
+      }
+
+      function handleDrawerBackdrop(e) {
+        if (e.target.id === 'orderDrawer') {
+          toggleDrawer(false);
+        }
+      }
+
+      function goToStep2() {
+        document.getElementById('step1Content').style.display = 'none';
+        document.getElementById('step2Content').style.display = 'block';
+        document.getElementById('step1Indicator').classList.remove('active');
+        document.getElementById('step2Indicator').classList.add('active');
+      }
+
+      function goToStep1() {
+        document.getElementById('step2Content').style.display = 'none';
+        document.getElementById('step1Content').style.display = 'block';
+        document.getElementById('step2Indicator').classList.remove('active');
+        document.getElementById('step1Indicator').classList.add('active');
+      }
+
+      function handleBookingSubmit(e) {
+        e.preventDefault();
+        const name = document.getElementById('custName').value.trim();
+        const phone = document.getElementById('custPhone').value.trim();
+        const slot = document.getElementById('mealSlot').value;
+        const area = document.getElementById('deliveryArea').value;
+        const address = document.getElementById('custAddress').value.trim();
+        const notes = document.getElementById('custNotes').value.trim();
+
+        let orderSummary = '';
+        let subtotal = 0;
+        Object.keys(

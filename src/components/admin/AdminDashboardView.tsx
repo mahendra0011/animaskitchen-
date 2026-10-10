@@ -297,17 +297,17 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   );
 
   return (
-    <div className="min-h-screen bg-cream flex flex-col md:flex-row text-ink pb-16 md:pb-0">
-      {/* Left Modern Admin Sidebar (Desktop Only) */}
-      <aside className="hidden md:flex w-64 lg:w-72 bg-ink text-cream shrink-0 flex-col justify-between border-r border-cream/10 p-4 md:min-h-screen md:sticky md:top-0">
-        <div className="overflow-y-auto max-h-[calc(100vh-140px)] scrollbar-none pr-1">
-          {/* Brand Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-cream/10">
+    <div className="min-h-screen bg-cream flex flex-col md:flex-row text-ink pb-16 md:pb-0 h-screen overflow-hidden">
+      {/* Left Modern Admin Sidebar (Desktop Only) - Fixed Height Independent Scroll */}
+      <aside className="hidden md:flex w-64 lg:w-72 bg-ink text-cream shrink-0 flex-col justify-between border-r border-cream/10 p-4 h-screen sticky top-0 overflow-hidden">
+        {/* Top: Brand Header */}
+        <div className="pb-4 border-b border-cream/10 shrink-0">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img
                 src="/logo.jpeg"
                 alt="Anima's Kitchen Logo"
-                className="size-9 rounded-2xl object-cover shadow-md border border-cream/20"
+                className="size-10 rounded-2xl object-cover shadow-md border border-cream/20"
               />
               <div>
                 <h2 className="font-display text-sm font-bold leading-tight text-cream">
@@ -323,41 +323,55 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </Badge>
           </div>
 
-          {/* Navigation Sections */}
-          <div className="mt-4">
-            {renderNavGroup("Main Control", coreTabs)}
-            {renderNavGroup("Kitchen & Supply", supplyOperationsTabs)}
-            {renderNavGroup("Customers & Finance", customerRetentionTabs)}
-            {renderNavGroup("Reports & Configuration", intelligenceSettingsTabs)}
+          {/* Quick Action: Go to Website button */}
+          <div className="mt-3">
+            <button
+              onClick={() => {
+                setCustomerPage("home");
+                setActiveRole("customer");
+              }}
+              className="w-full flex items-center justify-center gap-2 py-1.5 px-3 rounded-xl bg-cream/10 hover:bg-cream/20 text-cream text-xs font-semibold transition-all border border-cream/15 hover:border-cream/30"
+            >
+              <Home className="size-3.5 text-saffron" />
+              <span>Go to Website (Homepage)</span>
+            </button>
           </div>
         </div>
 
-        {/* Sidebar Footer */}
-        <div className="pt-3 border-t border-cream/10 space-y-2.5 mt-auto">
-          <div className="flex items-center gap-2.5 px-1">
-            <span className="grid size-7 place-items-center rounded-xl bg-cream/15 text-cream text-[11px] font-bold font-mono">
-              AD
-            </span>
-            <div className="text-left overflow-hidden">
-              <p className="font-display text-[11px] text-cream truncate">Chief Dispatcher</p>
-              <p className="text-[9px] text-emerald-400 font-mono flex items-center gap-1">
-                <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                {currentBranch.code} Hub Live
-              </p>
+        {/* Middle: Navigation Sections with its own independent smooth scroll */}
+        <div className="flex-1 overflow-y-auto pr-1 py-3 space-y-1 scrollbar-thin scrollbar-thumb-cream/20">
+          {renderNavGroup("Main Control", coreTabs)}
+          {renderNavGroup("Kitchen & Supply", supplyOperationsTabs)}
+          {renderNavGroup("Customers & Finance", customerRetentionTabs)}
+          {renderNavGroup("Reports & Configuration", intelligenceSettingsTabs)}
+        </div>
+
+        {/* Sidebar Footer with prominent user & Logout */}
+        <div className="pt-3 border-t border-cream/10 space-y-2 shrink-0">
+          <div className="flex items-center justify-between px-1">
+            <div className="flex items-center gap-2 overflow-hidden">
+              <span className="grid size-7 place-items-center rounded-xl bg-cream/15 text-cream text-[11px] font-bold font-mono shrink-0">
+                AD
+              </span>
+              <div className="text-left overflow-hidden">
+                <p className="font-display text-[11px] text-cream truncate">Chief Dispatcher</p>
+                <p className="text-[9px] text-emerald-400 font-mono flex items-center gap-1">
+                  <span className="size-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  {currentBranch.code} Hub Live
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="space-y-1.5">
-            <Button
-              variant="destructive"
-              size="sm"
-              onClick={logout}
-              className="w-full justify-start rounded-xl bg-red-600/20 text-red-300 hover:bg-red-600 hover:text-white border border-red-500/30 text-[11px] gap-2 h-8"
-            >
-              <LogOut className="size-3" />
-              <span>Logout Admin</span>
-            </Button>
-          </div>
+          <Button
+            variant="destructive"
+            size="sm"
+            onClick={logout}
+            className="w-full justify-center rounded-xl bg-red-600 text-white hover:bg-red-700 shadow-md text-xs font-bold gap-2 h-9"
+          >
+            <LogOut className="size-3.5" />
+            <span>Logout Admin Session</span>
+          </Button>
         </div>
       </aside>
 
@@ -382,15 +396,25 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Badge className="bg-emerald-600 text-cream font-mono text-[9px] px-1.5 py-0.5 border-none">
-              {currentBranch.code} LIVE
-            </Badge>
+          <div className="flex items-center gap-1.5">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                setCustomerPage("home");
+                setActiveRole("customer");
+              }}
+              className="text-xs bg-cream/10 text-cream hover:bg-cream/20 border-cream/20 px-2 h-7 rounded-lg"
+              title="Go to Homepage"
+            >
+              <Home className="size-3 mr-1 text-saffron" />
+              <span>Website</span>
+            </Button>
             <Button
               size="sm"
               variant="destructive"
               onClick={logout}
-              className="text-xs bg-red-600/30 text-red-200 hover:bg-red-600 hover:text-white border border-red-500/40 px-2.5 h-7 rounded-lg"
+              className="text-xs bg-red-600 text-white hover:bg-red-700 px-2.5 h-7 rounded-lg font-bold"
               title="Logout Admin"
             >
               <LogOut className="size-3.5 mr-1" />
@@ -487,6 +511,34 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 Anima's Kitchen Cloud Kitchen · {currentBranch.name} ({currentBranch.code})
               </p>
             </div>
+          </div>
+
+          {/* Quick Header Actions: Go to Website & Logout */}
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setCustomerPage("home");
+                setActiveRole("customer");
+              }}
+              className="rounded-xl border-ink/15 text-xs text-ink hover:border-spice hover:bg-cream/50 gap-1.5 h-9"
+              title="Go to Customer Homepage"
+            >
+              <Home className="size-3.5 text-spice" />
+              <span>Go to Website</span>
+            </Button>
+
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={logout}
+              className="rounded-xl bg-red-600 hover:bg-red-700 text-white text-xs font-bold gap-1.5 h-9 shadow-sm"
+              title="Logout from Admin"
+            >
+              <LogOut className="size-3.5" />
+              <span>Logout</span>
+            </Button>
           </div>
         </div>
 

@@ -453,6 +453,21 @@ export interface SocialPost {
   createdAt: string;
 }
 
+export interface KitchenVideo {
+  id: string;
+  title: string;
+  description?: string;
+  videoUrl: string; // Direct MP4 or YouTube embed/watch link or Cloudinary URL
+  thumbnailUrl?: string;
+  sourceType: "local" | "youtube" | "cloudinary";
+  youtubeId?: string;
+  viewsCount?: number;
+  likesCount?: number;
+  duration?: string;
+  tags?: string[];
+  createdAt: string;
+}
+
 export interface DaySpecialMeal {
   id: string;
   day: "Monday" | "Tuesday" | "Wednesday" | "Thursday" | "Friday" | "Saturday" | "Sunday" | "Daily";
@@ -467,3 +482,4 @@ export interface DaySpecialMeal {
   isVeg: boolean;
   itemsIncluded: string[];
 }
+

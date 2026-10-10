@@ -57,6 +57,7 @@ import { CustomerDashboardView } from "@/components/customer/CustomerDashboardVi
 import { DeliveryPartnerView } from "@/components/delivery/DeliveryPartnerView";
 import { AdminDashboardView } from "@/components/admin/AdminDashboardView";
 import { AppDownloadSection } from "@/components/customer/AppDownloadSection";
+import { KitchenVideoReelsSection } from "@/components/customer/KitchenVideoReelsSection";
 import { AuthModal } from "@/components/auth/AuthModal";
 
 import heroBgImage from "@/assets/animas-hero-bg.png";
@@ -304,79 +305,87 @@ function MainAppContent() {
                 </a>
               </aside>
 
-              {/* Customer App Navigation Header */}
-              <header className="sticky top-0 z-40 border-b border-ink/10 bg-frost/95 backdrop-blur-xl transition-all shadow-xs">
-                <div className="mx-auto flex max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5">
-                  {/* Left: Brand Logo */}
+              {/* Customer App Navigation Header (Dark Theme with Light Text per client request) */}
+              <header className="sticky top-0 z-40 border-b border-white/10 bg-[#160E08]/95 backdrop-blur-xl transition-all shadow-md text-cream">
+                <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-8 py-2">
+                  {/* Left: Brand Logo & Styled Text */}
                   <button
                     onClick={() => setCustomerPage("home")}
-                    className="flex items-center gap-2.5 sm:gap-3 text-left shrink-0 group"
+                    className="flex items-center gap-2.5 sm:gap-3.5 text-left shrink-0 group"
                     aria-label="Anima’s Kitchen home"
                   >
+                    {/* Clear, prominent logo without enclosing box */}
                     <img
-                      src="/logo.jpeg"
+                      src="/logo.png"
                       alt="Anima's Kitchen Logo"
-                      className="size-9 sm:size-10 rounded-xl object-cover shadow-xs border border-ink/10 group-hover:scale-105 transition-transform"
+                      className="size-13 sm:size-15 object-contain drop-shadow-lg group-hover:scale-105 transition-transform"
                     />
                     <div>
-                      <span className="block font-display text-base sm:text-lg font-black leading-none tracking-tight text-ink">
-                        ANIMA’S KITCHEN
-                      </span>
-                      <span className="mt-0.5 hidden sm:block font-mono text-[9px] uppercase tracking-[0.18em] text-ink/50">
-                        Vikash Nagar, Kurji, Patna
+                      {/* Font styled brand name matching logo image: 'Anima's' in flowing script with clean 'A', and 'Kitchen' in bold warm script */}
+                      <div className="flex items-baseline gap-1.5 leading-none">
+                        <span className="font-['Kaushan_Script',cursive] text-2xl sm:text-3xl text-[#10B981] drop-shadow-sm font-normal tracking-normal">
+                          Anima's
+                        </span>
+                        <span className="font-['Lobster_Two',cursive] italic font-bold text-2xl sm:text-3xl text-[#FF7A00] drop-shadow-sm tracking-normal">
+                          Kitchen
+                        </span>
+                      </div>
+                      <span className="hidden sm:flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.2em] text-cream/70 mt-1">
+                        <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
+                        Ghar Jaisa Shuddh Swaad · Patna
                       </span>
                     </div>
                   </button>
 
-                  {/* Center: Desktop Navigation Links (Cleanly spaced, neat hover effects) */}
+                  {/* Center: Desktop Navigation Links (Light text on Dark Navbar) */}
                   <nav
-                    className="hidden items-center gap-6 xl:gap-8 font-body text-xs sm:text-sm font-semibold text-ink/75 lg:flex"
+                    className="hidden items-center gap-6 xl:gap-8 font-body text-xs sm:text-sm font-semibold text-cream/80 lg:flex"
                     aria-label="Main navigation"
                   >
                     <button
                       onClick={() => setCustomerPage("menu")}
-                      className={`whitespace-nowrap transition-colors hover:text-spice ${
-                        customerPage === "menu" ? "text-spice font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
+                        customerPage === "menu" ? "text-orange-400 font-bold" : ""
                       }`}
                     >
                       Menu
                     </button>
                     <button
                       onClick={() => setCustomerPage("offers")}
-                      className={`whitespace-nowrap transition-colors hover:text-spice ${
-                        customerPage === "offers" ? "text-spice font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
+                        customerPage === "offers" ? "text-orange-400 font-bold" : ""
                       }`}
                     >
                       Offers
                     </button>
                     <button
                       onClick={() => setCustomerPage("about")}
-                      className={`whitespace-nowrap transition-colors hover:text-spice ${
-                        customerPage === "about" ? "text-spice font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
+                        customerPage === "about" ? "text-orange-400 font-bold" : ""
                       }`}
                     >
                       About Us
                     </button>
                     <button
                       onClick={() => setCustomerPage("reviews")}
-                      className={`whitespace-nowrap transition-colors hover:text-spice ${
-                        customerPage === "reviews" ? "text-spice font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
+                        customerPage === "reviews" ? "text-orange-400 font-bold" : ""
                       }`}
                     >
                       Reviews
                     </button>
                     <button
                       onClick={() => setCustomerPage("faq")}
-                      className={`whitespace-nowrap transition-colors hover:text-spice ${
-                        customerPage === "faq" ? "text-spice font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
+                        customerPage === "faq" ? "text-orange-400 font-bold" : ""
                       }`}
                     >
                       FAQ
                     </button>
                     <button
                       onClick={() => setCustomerPage("contact")}
-                      className={`whitespace-nowrap transition-colors hover:text-spice ${
-                        customerPage === "contact" ? "text-spice font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
+                        customerPage === "contact" ? "text-orange-400 font-bold" : ""
                       }`}
                     >
                       Contact
@@ -389,7 +398,7 @@ function MainAppContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="hidden xl:inline-flex rounded-full border-emerald-600/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-1 font-body text-xs font-bold shadow-xs transition-all hover:scale-105 shrink-0 gap-1.5 h-8"
+                      className="hidden xl:inline-flex rounded-full border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 px-3 py-1 font-body text-xs font-bold shadow-xs transition-all hover:scale-105 shrink-0 gap-1.5 h-8"
                       onClick={() => {
                         const appSection = document.getElementById("download-app");
                         if (appSection) appSection.scrollIntoView({ behavior: "smooth" });
@@ -404,7 +413,7 @@ function MainAppContent() {
                       }}
                       title="Download Android APK"
                     >
-                      <Download className="size-3 text-emerald-700" />
+                      <Download className="size-3 text-emerald-400" />
                       <span>Download App</span>
                     </Button>
 
@@ -412,7 +421,7 @@ function MainAppContent() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative size-8 sm:size-9 rounded-full border border-ink/10 bg-white/90 text-ink hover:text-rose-600 hover:border-rose-200 hover:bg-rose-50 shadow-xs shrink-0 transition-all"
+                      className="relative size-8 sm:size-9 rounded-full border border-white/10 bg-white/5 text-cream hover:text-rose-400 hover:border-rose-400/40 hover:bg-white/10 shadow-xs shrink-0 transition-all"
                       onClick={() => setProfileDrawerOpen(true)}
                       aria-label={`Open Wishlist with ${wishlistIds.length} saved dishes`}
                       title="Saved Dishes / Wishlist"
@@ -431,14 +440,14 @@ function MainAppContent() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative size-8 sm:size-9 rounded-full border border-ink/10 bg-white/90 text-ink hover:bg-white shadow-xs shrink-0 transition-all"
+                      className="relative size-8 sm:size-9 rounded-full border border-white/10 bg-white/5 text-cream hover:bg-white/10 shadow-xs shrink-0 transition-all"
                       onClick={() => setCartDrawerOpen(true)}
                       aria-label={`Open cart with ${cartCount} items`}
                       title="Shopping Cart"
                     >
                       <ShoppingBag className="size-3.5 sm:size-4" />
                       {cartCount > 0 && (
-                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-spice font-mono text-[9px] font-bold text-cream">
+                        <span className="absolute -right-1 -top-1 grid size-4 place-items-center rounded-full bg-orange-600 font-mono text-[9px] font-bold text-white">
                           {cartCount}
                         </span>
                       )}
@@ -454,7 +463,7 @@ function MainAppContent() {
                             setAuthModalTab("login");
                             setAuthModalOpen(true);
                           }}
-                          className="h-8 rounded-full px-3 text-xs font-semibold text-ink hover:text-spice hover:bg-cream/80"
+                          className="h-8 rounded-full px-3 text-xs font-semibold text-cream/90 hover:text-white hover:bg-white/10"
                         >
                           Sign In
                         </Button>
@@ -464,7 +473,7 @@ function MainAppContent() {
                             setAuthModalTab("signup");
                             setAuthModalOpen(true);
                           }}
-                          className="h-8 rounded-full bg-spice px-3.5 text-xs font-bold text-cream hover:bg-ink shadow-xs transition-all hover:scale-102"
+                          className="h-8 rounded-full bg-orange-600 px-3.5 text-xs font-bold text-white hover:bg-orange-700 shadow-sm transition-all hover:scale-102"
                         >
                           Account
                         </Button>
@@ -475,12 +484,12 @@ function MainAppContent() {
                           onClick={() => setCustomerPage("dashboard")}
                           className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all h-8 ${
                             customerPage === "dashboard"
-                              ? "border-spice bg-spice text-cream shadow-xs"
-                              : "border-ink/15 bg-white text-ink hover:border-spice"
+                              ? "border-orange-500 bg-orange-600 text-white shadow-xs"
+                              : "border-white/15 bg-white/10 text-cream hover:border-orange-400"
                           }`}
                           title="Open Customer Dashboard"
                         >
-                          <span className="grid size-5 place-items-center rounded-full bg-ink text-cream text-[10px] font-bold">
+                          <span className="grid size-5 place-items-center rounded-full bg-white/20 text-white text-[10px] font-bold">
                             {currentUser?.name?.charAt(0) || "U"}
                           </span>
                           <span className="truncate max-w-[80px]">
@@ -492,7 +501,7 @@ function MainAppContent() {
                           variant="ghost"
                           size="icon"
                           onClick={logout}
-                          className="size-8 rounded-full text-ink/60 hover:text-red-600 hover:bg-red-50"
+                          className="size-8 rounded-full text-cream/70 hover:text-red-400 hover:bg-white/10"
                           title="Logout"
                         >
                           <LogOut className="size-3.5" />
@@ -510,15 +519,15 @@ function MainAppContent() {
                           setAuthModalOpen(true);
                         }
                       }}
-                      className="grid size-8 place-items-center rounded-full border border-ink/12 bg-white/80 text-ink hover:bg-white shadow-xs lg:hidden shrink-0"
+                      className="grid size-8 place-items-center rounded-full border border-white/15 bg-white/10 text-cream hover:bg-white/20 shadow-xs lg:hidden shrink-0"
                       aria-label={isAuthenticated ? "Open Dashboard" : "Sign In"}
                     >
                       {isAuthenticated ? (
-                        <span className="grid size-5 place-items-center rounded-full bg-ink text-cream text-[10px] font-bold">
+                        <span className="grid size-5 place-items-center rounded-full bg-orange-600 text-white text-[10px] font-bold">
                           {currentUser?.name?.charAt(0) || "U"}
                         </span>
                       ) : (
-                        <User className="size-4 text-ink/80" />
+                        <User className="size-4 text-cream" />
                       )}
                     </button>
 
@@ -526,7 +535,7 @@ function MainAppContent() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="size-8 rounded-full border border-ink/12 bg-white/80 text-ink hover:bg-white shadow-xs lg:hidden shrink-0"
+                      className="size-8 rounded-full border border-white/15 bg-white/10 text-cream hover:bg-white/20 shadow-xs lg:hidden shrink-0"
                       onClick={() => setMobileNavOpen((o) => !o)}
                       aria-label="Toggle Navigation Menu"
                     >
@@ -810,17 +819,17 @@ function MainAppContent() {
               <section
                 ref={heroAccentRef}
                 id="top"
-                className="relative overflow-hidden min-h-[calc(100vh-64px)] lg:max-h-[820px] flex items-center bg-[#1A140E] border-b border-ink/10"
+                className="relative overflow-hidden min-h-[calc(100vh-64px)] lg:max-h-[840px] flex items-center bg-[#1A140E] border-b border-ink/10"
                 style={{
-                  backgroundImage: `url(${heroBgImage})`,
+                  backgroundImage: `url('/hero-kitchen-banner.png')`,
                   backgroundSize: "cover",
                   backgroundPosition: "center right",
                   backgroundRepeat: "no-repeat",
                 }}
               >
-                {/* Soft dark vignette on left side for 100% crisp typography and button contrast */}
-                <div className="absolute inset-0 bg-gradient-to-r from-black/90 via-black/60 to-transparent pointer-events-none md:max-w-[70%]" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/20 pointer-events-none" />
+                {/* Soft dark gradient vignette on left side for 100% crisp typography and button contrast */}
+                <div className="absolute inset-0 bg-gradient-to-r from-black/95 via-black/75 to-transparent pointer-events-none md:max-w-[65%]" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-black/20 pointer-events-none" />
 
                 {/* Ambient Glowing Orbs in the background */}
                 <div className="absolute top-1/4 left-1/3 size-64 rounded-full bg-orange-600/15 blur-3xl pointer-events-none animate-pulse-glow" />
@@ -1011,6 +1020,80 @@ function MainAppContent() {
                 </div>
               </div>
 
+              {/* 🕒 Anima's Kitchen Daily Order Booking Schedule Notice & Cutoffs */}
+              <section className="bg-[#FAF5EC] border-b border-amber-900/10 py-3.5 px-4 sm:px-6">
+                <div className="mx-auto max-w-6xl">
+                  <div className="flex flex-col lg:flex-row items-center justify-between gap-3 bg-white rounded-2xl p-4 sm:p-5 border-2 border-emerald-800/20 shadow-md">
+                    {/* Left: Heading & Subtitle */}
+                    <div className="flex items-center gap-3">
+                      <div className="size-11 sm:size-12 rounded-2xl bg-emerald-700/10 text-emerald-800 grid place-items-center text-2xl shrink-0 shadow-xs">
+                        ⏰
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-serif font-black text-base sm:text-lg text-stone-900">
+                            Daily Meal Order Booking & Delivery Schedule
+                          </span>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                            Pre-orders Only
+                          </span>
+                        </div>
+                        <p className="text-xs text-stone-600 mt-1 leading-relaxed">
+                          <strong>Note:</strong> If you order after the timing, please send an instant request on WhatsApp to confirm kitchen availability.
+                        </p>
+                      </div>
+                    </div>
+
+                    {/* Center: Booking Cutoff & Delivery Time Pills */}
+                    <div className="flex flex-wrap items-center justify-center gap-2 font-mono text-[11px] sm:text-xs">
+                      {/* Lunch Block */}
+                      <div className="flex flex-col sm:flex-row items-center gap-1.5 p-2 rounded-xl bg-orange-50 border border-orange-200">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-orange-600 text-white font-bold shadow-xs">
+                          <span>☀️ Lunch Booking:</span>
+                          <span className="underline decoration-white/60">8:00 AM – 10:00 AM</span>
+                        </div>
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white text-stone-800 font-semibold border border-orange-200">
+                          <span>🛵 Delivery:</span>
+                          <strong>1:30 PM – 2:30 PM</strong>
+                        </div>
+                      </div>
+
+                      {/* Dinner Block */}
+                      <div className="flex flex-col sm:flex-row items-center gap-1.5 p-2 rounded-xl bg-emerald-50 border border-emerald-200">
+                        <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-bold shadow-xs">
+                          <span>🌙 Dinner Booking:</span>
+                          <span className="underline decoration-white/60">4:00 PM – 6:00 PM</span>
+                        </div>
+                        <div className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-white text-stone-800 font-semibold border border-emerald-200">
+                          <span>🛵 Delivery:</span>
+                          <strong>7:30 PM – 10:30 PM</strong>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right: Quick Action Buttons */}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <a
+                        href="/order-menu.html"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-stone-900 text-white text-xs font-bold hover:bg-stone-800 transition-colors shadow-xs"
+                      >
+                        <span>📋 Booking Menu</span>
+                      </a>
+                      <a
+                        href="https://wa.me/917004960724?text=Hi%20Anima%27s%20Kitchen,%20I%20want%20to%20place%20a%20meal%20order"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-xl bg-[#08783E] text-white text-xs font-bold hover:bg-[#066132] transition-colors shadow-xs"
+                      >
+                        <span>💬 WhatsApp</span>
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
               {/* 📲 Official Mobile App Download Section (Hero Section Ke Baad) */}
               <AppDownloadSection />
 
@@ -1149,7 +1232,10 @@ function MainAppContent() {
                 onViewFullMenu={() => setCustomerPage("menu")}
               />
 
-              {/* 📸 Instagram & Social Feed Section (Directly after Menu) */}
+              {/* 🎬 Kitchen Video Showcase & Reels Section (Directly above Instagram Feed) */}
+              <KitchenVideoReelsSection />
+
+              {/* 📸 Instagram & Social Feed Section (Directly after Videos) */}
               <section
                 id="kitchen-stories"
                 className="py-14 sm:py-20 bg-gradient-to-b from-cream via-amber-500/5 to-cream border-t border-ink/10"
@@ -1398,46 +1484,33 @@ function MainAppContent() {
                 </section>
               )}
 
-              {/* Fresh From The Tawa Section */}
+              {/* Special Thali Showcase & Book Your Order Section */}
               <section
-                id="tawa"
-                className="border-y border-ink/10 bg-saffron/20 py-16 overflow-hidden"
+                id="thali-showcase"
+                className="border-y border-ink/10 bg-gradient-to-br from-amber-500/10 via-saffron/20 to-orange-500/10 py-16 overflow-hidden"
               >
                 <div className="mx-auto max-w-6xl px-5">
                   <div className="grid items-center gap-8 md:grid-cols-[1.15fr_0.85fr]">
-                    <div>
+                    <div className="relative group flex items-center justify-center">
                       <img
-                        src={rotiImage}
-                        alt="Fresh puffed rotis on a hot iron tawa with ghee"
-                        width={1200}
-                        height={900}
+                        src="/kitchen-thali-showcase.jpg"
+                        alt="Anima's Kitchen Fresh Homemade Meal Boxes and Thalis — Book Your Order"
                         loading="lazy"
-                        className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-xl shadow-ink/10 hover:scale-102 transition-transform duration-500"
+                        className="w-full max-h-[580px] rounded-3xl object-contain shadow-2xl shadow-ink/20 group-hover:scale-[1.01] transition-transform duration-500 border border-ink/10 bg-white"
                       />
                     </div>
                     <div>
-                      <p className="font-mono text-xs uppercase tracking-[0.3em] text-spice">
-                        (d) — straight off the tawa
+                      <p className="font-mono text-xs uppercase tracking-[0.3em] text-spice font-bold">
+                        (d) — Signature Homemade Thali Boxes
                       </p>
-                      <h2 className="mt-3 font-display text-4xl leading-none tracking-tight sm:text-5xl">
-                        Soft rotis.
+                      <h2 className="mt-3 font-display text-4xl leading-tight tracking-tight sm:text-5xl font-black">
+                        Pure Ghar Jaisa Khana,
                         <br />
-                        <span className="text-spice">Pure Desi Ghee.</span>
+                        <span className="text-spice">100% Homemade Special Thali.</span>
                       </h2>
-                      <p className="mt-4 max-w-[38ch] font-body text-sm leading-6 text-ink/70">
-                        Every roti is hand-rolled, puffed on iron tawa, and brushed with pure desi
-                        cow ghee just before leaving our kitchen in insulated containers.
+                      <p className="mt-4 max-w-[42ch] font-body text-sm leading-6 text-ink/80">
+                        Sanitized food-grade meal boxes packed with hot puffed rotis, dal tadka, fresh seasonal sabzi, aromatic basmati rice &amp; homemade dessert. Cooked with pure motherly love in Kurji, Patna!
                       </p>
-                      <Button
-                        className="mt-6 rounded-full bg-ink px-6 py-2.5 font-body text-sm font-semibold text-cream shadow-none hover:bg-spice transition-all hover:scale-105 active:scale-95"
-                        onClick={() => {
-                          const tawaRoti =
-                            menuItems.find((m) => m.name.includes("Tawa Roti")) || menuItems[0];
-                          if (tawaRoti) addToCart(tawaRoti);
-                        }}
-                      >
-                        Add Desi Ghee Rotis · ₹60 <Plus className="size-4 ml-1" />
-                      </Button>
                     </div>
                   </div>
                 </div>
@@ -1449,40 +1522,23 @@ function MainAppContent() {
                   <div className="grid items-center gap-8 md:grid-cols-2">
                     <div className="order-2 md:order-1">
                       <p className="font-mono text-xs uppercase tracking-[0.3em] text-leaf font-bold">
-                        (e) — ghar jaisa lunch
+                        (e) — 5-Compartment Executive Meal
                       </p>
-                      <h2 className="mt-3 font-display text-4xl leading-none tracking-tight sm:text-5xl">
-                        Jammu Rajma Chawal,
+                      <h2 className="mt-3 font-display text-4xl leading-tight tracking-tight sm:text-5xl font-black">
+                        Deluxe Tiffin Thali,
                         <br />
-                        <span className="text-leaf">no shortcuts.</span>
+                        <span className="text-leaf">Piping Hot &amp; Fresh.</span>
                       </h2>
-                      <p className="mt-4 max-w-[38ch] font-body text-sm leading-6 text-ink/70">
-                        Red kidney beans simmered low and slow, fluffy basmati rice, sharp pickled
-                        onions and a spoonful of homemade mango pickle—the kind of lunch that brings
-                        back childhood memories.
+                      <p className="mt-4 max-w-[42ch] font-body text-sm leading-6 text-ink/80">
+                        Hand-rolled soft rotis, slow-simmered dal tadka, roasted aloo gobhi, rich mix vegetable gravy, crisp green salad, and rich saffron dry fruit kheer in separate leak-proof compartments.
                       </p>
-                      <div className="mt-6 flex items-center gap-4">
-                        <span className="font-display text-3xl">₹180</span>
-                        <Button
-                          className="rounded-full bg-leaf px-6 py-2.5 font-body text-sm font-semibold text-cream shadow-none hover:bg-ink transition-all hover:scale-105 active:scale-95"
-                          onClick={() => {
-                            const rajma =
-                              menuItems.find((m) => m.name.includes("Rajma")) || menuItems[0];
-                            if (rajma) addToCart(rajma);
-                          }}
-                        >
-                          Add to Order <Plus className="size-4 ml-1" />
-                        </Button>
-                      </div>
                     </div>
-                    <div className="order-1 md:order-2">
+                    <div className="order-1 md:order-2 flex items-center justify-center">
                       <img
-                        src={rajmaImage}
-                        alt="Rajma chawal with onion salad and pickle in a brass thali"
-                        width={1200}
-                        height={900}
+                        src="/comfort-special-showcase.jpg"
+                        alt="Anima's Kitchen 5-Compartment Deluxe Thali with rotis, dal, mixed veg, salad and kheer"
                         loading="lazy"
-                        className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-xl hover:scale-102 transition-transform duration-500"
+                        className="w-full max-h-[500px] rounded-3xl object-contain shadow-2xl shadow-ink/15 hover:scale-[1.01] transition-transform duration-500 border border-ink/10 bg-white"
                       />
                     </div>
                   </div>
@@ -1494,81 +1550,130 @@ function MainAppContent() {
                 <div className="mx-auto max-w-6xl px-5">
                   <div className="grid items-center gap-8 md:grid-cols-[0.85fr_1.15fr]">
                     <div>
-                      <p className="font-mono text-xs uppercase tracking-[0.3em] text-saffron">
-                        (f) — the kitchen standard
+                      <p className="font-mono text-xs uppercase tracking-[0.3em] text-saffron font-bold">
+                        (f) — Shahi Paneer &amp; Basmati Lunch
                       </p>
-                      <h2 className="mt-3 font-display text-4xl leading-none tracking-tight sm:text-5xl">
-                        Stone-ground spices.
+                      <h2 className="mt-3 font-display text-4xl leading-tight tracking-tight sm:text-5xl font-black">
+                        Pure Shahi Paneer,
                         <br />
-                        Always.
+                        <span className="text-saffron">Fluffy Basmati Rice.</span>
                       </h2>
-                      <p className="mt-4 max-w-[38ch] font-body text-sm leading-6 text-cream/70">
-                        We roast whole spices daily, make curries in heavy-bottomed brass utensils
-                        and cook only what can be dispatched fresh within 25 minutes. Zero
-                        artificial food color. Zero frozen gravies.
+                      <p className="mt-4 max-w-[40ch] font-body text-sm leading-6 text-cream/80">
+                        Creamy rich Shahi Paneer in hand-ground tomato gravy, slow-cooked chana dal tadka, crunchy seasonal bhindi masala, steamed long-grain basmati rice, and fresh hot roti.
                       </p>
                       <div className="mt-7 grid max-w-sm grid-cols-2 gap-3 font-mono text-xs text-cream/70">
                         <span className="border-l-2 border-saffron pl-3">
-                          <b className="block font-display text-2xl text-cream">12</b>whole roasted
-                          spices
+                          <b className="block font-display text-2xl text-cream">100%</b>Pure Fresh
+                          Paneer
                         </span>
                         <span className="border-l-2 border-saffron pl-3">
-                          <b className="block font-display text-2xl text-cream">0</b>frozen
-                          shortcuts
+                          <b className="block font-display text-2xl text-cream">0</b>Chemical
+                          Colors
                         </span>
                       </div>
                     </div>
-                    <div>
+                    <div className="flex items-center justify-center">
                       <img
-                        src={spiceKitchenImage}
-                        alt="Whole Indian spices beside a simmering copper cooking pot"
-                        width={1200}
-                        height={900}
+                        src="/kitchen-standard-showcase.jpg"
+                        alt="Anima's Kitchen Fresh Shahi Paneer, Dal, Bhindi Masala, Rice and Roti Meal Box"
                         loading="lazy"
-                        className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-2xl shadow-black/40 hover:scale-102 transition-transform duration-500"
+                        className="w-full max-h-[500px] rounded-3xl object-contain shadow-2xl shadow-black/50 hover:scale-[1.01] transition-transform duration-500 border border-white/10 bg-black/30"
                       />
                     </div>
                   </div>
                 </div>
               </section>
 
-              {/* Sweet Finish Section */}
-              <section id="sweet" className="bg-saffron/20 py-16 overflow-hidden">
+              {/* VIP / Dignitary Endorsement Section (IPS Amitabh Das Litti Chokha & Homemade Food) */}
+              <section id="vip-endorsement" className="bg-gradient-to-br from-amber-500/10 via-saffron/20 to-orange-500/10 py-16 overflow-hidden border-t border-ink/10">
                 <div className="mx-auto max-w-6xl px-5">
-                  <div className="grid items-center gap-8 md:grid-cols-2">
-                    <div>
+                  <div className="text-center max-w-3xl mx-auto mb-10">
+                    <p className="font-mono text-xs uppercase tracking-[0.3em] text-spice font-bold">
+                      (g) — Patna Ki Pehchaan · Trusted By Dignitaries
+                    </p>
+                    <h2 className="mt-3 font-display text-3xl sm:text-5xl font-black leading-tight tracking-tight text-ink">
+                      पूर्व IPS अमिताभ दास ने मंगवाया <br />
+                      <span className="text-spice">स्वादिष्ट लिट्टी-चोखा &amp; शुद्ध घर जैसा खाना!</span>
+                    </h2>
+                    <p className="mt-3 font-body text-sm text-ink/80 max-w-2xl mx-auto">
+                      बिहार के जाने-माने पूर्व IPS अधिकारी अमिताभ दास जी ने पटना में Anima's Kitchen से पारंपरिक बिहारी लिट्टी-चोखा और शुद्ध भोजन का आनंद लिया और स्वाद व स्वच्छता की सराहना की।
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-center">
+                    {/* Photo 1: Special Delivery & Tiffin Handover with Media */}
+                    <div className="rounded-3xl overflow-hidden border border-ink/10 bg-white p-3 shadow-2xl hover:scale-[1.01] transition-transform duration-500">
                       <img
-                        src={gulabJamunImage}
-                        alt="Warm gulab jamun topped with pistachio and saffron"
-                        width={1200}
-                        height={900}
+                        src="/celebrity-review-1.png"
+                        alt="Anima's Kitchen presenting fresh meal box to Ex IPS Amitabh Das in Patna"
                         loading="lazy"
-                        className="aspect-[4/3] w-full rounded-[min(3vw,28px)] object-cover shadow-xl hover:scale-102 transition-transform duration-500"
+                        className="w-full max-h-[440px] rounded-2xl object-contain mx-auto"
                       />
+                      <div className="p-3 text-center">
+                        <span className="inline-block rounded-full bg-emerald-100 text-emerald-800 text-[11px] font-mono font-bold px-3 py-1">
+                          ✓ Special Thali Box Handover &amp; Live Media Coverage
+                        </span>
+                      </div>
                     </div>
-                    <div>
-                      <p className="font-mono text-xs uppercase tracking-[0.3em] text-spice">
-                        (h) — end on a sweet note
-                      </p>
-                      <h2 className="mt-3 font-display text-4xl leading-none tracking-tight sm:text-5xl">
-                        Shahi Gulab Jamun?
-                        <br />
-                        <span className="text-spice">Always a yes.</span>
-                      </h2>
-                      <p className="mt-4 max-w-[38ch] font-body text-sm leading-6 text-ink/70">
-                        Pure khoya dumplings dipped in saffron & cardamom syrup, finished with
-                        hand-sliced pistachios. The ideal ending to an honest thali meal.
-                      </p>
-                      <Button
-                        className="mt-6 rounded-full bg-spice px-6 py-2.5 font-body text-sm font-semibold text-cream shadow-none hover:bg-ink transition-all hover:scale-105 active:scale-95"
-                        onClick={() => {
-                          const jamun =
-                            menuItems.find((m) => m.name.includes("Gulab Jamun")) || menuItems[0];
-                          if (jamun) addToCart(jamun);
-                        }}
-                      >
-                        Add Dessert · ₹90 <Plus className="size-4 ml-1" />
-                      </Button>
+
+                    {/* Photo 2: Media Interview & Litti Chokha Tasting */}
+                    <div className="rounded-3xl overflow-hidden border border-ink/10 bg-white p-3 shadow-2xl hover:scale-[1.01] transition-transform duration-500">
+                      <img
+                        src="/celebrity-review-2.png"
+                        alt="Media coverage of Ex IPS Amitabh Das tasting Anima's Kitchen Litti Chokha in Patna"
+                        loading="lazy"
+                        className="w-full max-h-[440px] rounded-2xl object-contain mx-auto"
+                      />
+                      <div className="p-3 text-center">
+                        <span className="inline-block rounded-full bg-orange-100 text-orange-900 text-[11px] font-mono font-bold px-3 py-1">
+                          ✓ Patna Me Ghar Jaisa Khana · 100% Shuddh Swaad
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </section>
+
+              {/* 100% Hygienic Tamper-Proof & Leak-Proof Packaging Section */}
+              <section id="hygienic-packaging" className="bg-cream py-16 overflow-hidden border-t border-ink/10">
+                <div className="mx-auto max-w-6xl px-5">
+                  <div className="text-center max-w-3xl mx-auto mb-8">
+                    <p className="font-mono text-xs uppercase tracking-[0.3em] text-emerald-700 font-bold">
+                      (h) — 100% Food-Grade Sealed Packaging
+                    </p>
+                    <h2 className="mt-3 font-display text-3xl sm:text-5xl font-black leading-tight tracking-tight text-ink">
+                      Sanitized Containers, <br />
+                      <span className="text-spice">Leak-Proof &amp; Tamper-Proof Delivery.</span>
+                    </h2>
+                    <p className="mt-3 font-body text-sm text-ink/80 max-w-2xl mx-auto">
+                      Har ek meal box aur curry bowl par official Anima's Kitchen safety seal hoti hai. Leak-proof microwave-safe food containers me garma-garam dispatch, taaki aap tak pahuche 100% fresh aur surakshit bhojan!
+                    </p>
+                  </div>
+
+                  <div className="rounded-3xl border border-ink/10 bg-white p-4 sm:p-6 shadow-2xl overflow-hidden hover:scale-[1.01] transition-transform duration-500">
+                    <img
+                      src="/bulk-packaging-showcase.jpg"
+                      alt="Anima's Kitchen 100% Sealed Food-Grade Containers & Meal Bowls"
+                      loading="lazy"
+                      className="w-full max-h-[620px] rounded-2xl object-contain mx-auto shadow-md"
+                    />
+                    <div className="mt-6 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center font-mono text-xs">
+                      <div className="p-3 rounded-2xl bg-amber-500/10 border border-amber-500/20">
+                        <b className="block text-ink text-sm font-display">BPA Free</b>
+                        <span className="text-ink/70 text-[11px]">Food-Grade Plastic</span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-emerald-500/10 border border-emerald-500/20">
+                        <b className="block text-emerald-800 text-sm font-display">100% Sealed</b>
+                        <span className="text-ink/70 text-[11px]">Zero Leakage Guarantee</span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20">
+                        <b className="block text-spice text-sm font-display">Hot Insulated</b>
+                        <span className="text-ink/70 text-[11px]">Retains Steaming Heat</span>
+                      </div>
+                      <div className="p-3 rounded-2xl bg-blue-500/10 border border-blue-500/20">
+                        <b className="block text-blue-900 text-sm font-display">Safety Logo</b>
+                        <span className="text-ink/70 text-[11px]">Tamper-Proof Lids</span>
+                      </div>
                     </div>
                   </div>
                 </div>

@@ -172,7 +172,6 @@ export const CheckoutModal: React.FC = () => {
         const dist = calculateDistanceKm(KITCHEN_HUB.lat, KITCHEN_HUB.lng, lat, lng);
 
         // Strict Patna Geofence Check: Anima's Kitchen operates strictly inside Patna (Max service radius 12 KM)
-        // If detected GPS is outside Patna (e.g. Bangalore, Delhi, Mumbai, etc.), reject delivery with clear error!
         const MAX_PATNA_SERVICE_RADIUS_KM = 12.0;
 
         if (dist > MAX_PATNA_SERVICE_RADIUS_KM) {
@@ -196,19 +195,22 @@ export const CheckoutModal: React.FC = () => {
         });
 
         toast.success(
-          `GPS detected in Patna (${closestArea})! Approx ${dist} km from Kurji Hub (${dist <= 4.0 ? "Free delivery zone" : "Extra distance zone"}).`,
+          `GPS location captured (${closestArea})! Approx ${dist} km from Kurji Hub (${dist <= 4.0 ? "Free delivery zone" : "Extra distance zone"}). Ab kripya apna Flat / House No aur Landmark zaroor bharein.`,
+          { duration: 5000 },
         );
 
         const newGpsAddr: DeliveryAddress = {
           id: `addr-gps-${Date.now()}`,
           label: "Current GPS",
-          flatNo: gpsHouseNo || "Live Location",
-          street: `Exact GPS Pin: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
+          flatNo: gpsHouseNo.trim() || "",
+          street: gpsHouseNo.trim()
+            ? `${gpsHouseNo.trim()}, Pin: ${lat.toFixed(5)}, ${lng.toFixed(5)}`
+            : `Exact GPS Pin: ${lat.toFixed(5)}, ${lng.toFixed(5)}`,
           area: closestArea,
           city: "Patna",
           state: "Bihar",
           pincode: "800013",
-          landmark: gpsLandmark || "Live Device Geolocation",
+          landmark: gpsLandmark.trim() || "",
           coordinates: { lat, lng },
           contactPhone: customerProfile.phone,
           contactName: customerProfile.name,
@@ -221,11 +223,53 @@ export const CheckoutModal: React.FC = () => {
         setIsDetectingGps(false);
         toast.dismiss("gps-detect");
         toast.error(
-          "Could not fetch GPS: " + (err.message || "Please select manual Patna address option."),
+          "Could not fetch GPS: " + (err.message || "Please enable device location permission."),
         );
       },
       { enableHighAccuracy: true, timeout: 12000 },
     );
+  };
+
+  // Sync GPS Address updates when user types Flat / House No or Landmark
+  const handleSaveGpsAddressDetails = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!detectedGpsCoords) {
+      toast.error("Pehle 'Detect Now' daba kar apni GPS live location detect karein!");
+      return;
+    }
+    if (!gpsHouseNo.trim() || !gpsLandmark.trim()) {
+      toast.error("Dono mandatory hain: Flat/House No aur Landmark dono bharna zaroori hai!");
+      return;
+    }
+
+    let closestArea = "Patna Local Area";
+    let minD = 999;
+    PATNA_SERVICE_AREAS.forEach((a) => {
+      const d = calculateDistanceKm(detectedGpsCoords.lat, detectedGpsCoords.lng, a.lat, a.lng);
+      if (d < minD) {
+        minD = d;
+        closestArea = a.name;
+      }
+    });
+
+    const updatedAddr: DeliveryAddress = {
+      id: `addr-gps-${Date.now()}`,
+      label: "Current GPS",
+      flatNo: gpsHouseNo.trim(),
+      street: `${gpsHouseNo.trim()}, GPS Pin: ${detectedGpsCoords.lat.toFixed(5)}, ${detectedGpsCoords.lng.toFixed(5)}`,
+      area: closestArea,
+      city: "Patna",
+      state: "Bihar",
+      pincode: "800013",
+      landmark: gpsLandmark.trim(),
+      coordinates: { lat: detectedGpsCoords.lat, lng: detectedGpsCoords.lng },
+      contactPhone: customerProfile.phone,
+      contactName: customerProfile.name,
+    };
+
+    addDeliveryAddress(updatedAddr);
+    setSelectedAddressId(updatedAddr.id);
+    toast.success("GPS Location + Complete Address dono successfully save ho gaye!");
   };
 
   // Handle saving manual address
@@ -271,6 +315,27 @@ export const CheckoutModal: React.FC = () => {
     }
 
     if (orderType === "delivery") {
+      // 1. Mandatory Location / Coordinates Check
+      if (!selectedAddress.coordinates || !selectedAddress.coordinates.lat || !selectedAddress.coordinates.lng) {
+        toast.error("Location Mandatory: Kripya 'Detect Now' se apni live location capture karein!", {
+          duration: 5000,
+        });
+        return;
+      }
+
+      // 2. Mandatory Full Address Check (Flat/House No and Landmark/Street)
+      const hasFlatNo = (selectedAddress.flatNo && selectedAddress.flatNo.trim().length > 0 && selectedAddress.flatNo !== "Live Location") || (gpsHouseNo && gpsHouseNo.trim().length > 0);
+      const hasLandmark = (selectedAddress.landmark && selectedAddress.landmark.trim().length > 0 && selectedAddress.landmark !== "Live Device Geolocation") || (gpsLandmark && gpsLandmark.trim().length > 0);
+
+      if (!hasFlatNo || !hasLandmark) {
+        toast.error("Dono Chije Mandatory Hain: Flat / House No aur Landmark dono bharna compulsory hai!", {
+          description: "Delivery boy ko doorstep tak pahunchne ke liye exact Flat/House No aur Landmark dono zaroori hain.",
+          duration: 6000,
+        });
+        return;
+      }
+
+      // 3. Distance check from Kurji Hub
       const distance = calculateDistanceKm(
         KITCHEN_HUB.lat,
         KITCHEN_HUB.lng,
@@ -495,31 +560,48 @@ export const CheckoutModal: React.FC = () => {
                 </button>
               </div>
 
-              {/* Scheduled Order Slot */}
-              <div className="p-3 rounded-2xl bg-white border border-ink/10 flex items-center justify-between text-xs">
-                <div className="flex items-center gap-2">
-                  <Clock className="size-4 text-ink/50" />
-                  <div>
-                    <span className="font-semibold text-ink block">Delivery Timing</span>
-                    <span className="text-[10px] text-ink/50 font-mono">
-                      {scheduledTime ? `Scheduled: ${scheduledTime}` : "Immediate (20-30 mins)"}
+              {/* Scheduled Order Slot & Timings Notice */}
+              <div className="rounded-2xl bg-amber-50/70 border border-amber-200 p-3.5 space-y-2.5">
+                <div className="flex items-start gap-2.5">
+                  <Clock className="size-4 text-orange-600 shrink-0 mt-0.5" />
+                  <div className="text-xs">
+                    <span className="font-bold text-stone-900 block">
+                      Kitchen Order Booking & Delivery Schedule:
                     </span>
+                    <div className="text-[11px] text-stone-700 mt-1 space-y-0.5 font-mono">
+                      <div>☀️ <strong>Lunch Order:</strong> 8:00 AM – 10:00 AM · Delivery: 1:30 PM – 2:30 PM</div>
+                      <div>🌙 <strong>Dinner Order:</strong> 4:00 PM – 6:00 PM · Delivery: 7:30 PM – 10:30 PM</div>
+                    </div>
+                    <p className="text-[10px] text-amber-900 font-semibold mt-1 bg-amber-100/70 rounded-md p-1">
+                      ⚠️ If ordering after the cut-off timing, please confirm on WhatsApp!
+                    </p>
                   </div>
                 </div>
-                <select
-                  value={scheduledTime || "now"}
-                  onChange={(e) =>
-                    setScheduledTime(e.target.value === "now" ? null : e.target.value)
-                  }
-                  className="rounded-xl border border-ink/20 bg-frost text-xs p-1.5 focus:outline-none"
-                >
-                  <option value="now">⚡ Deliver Now (20-30m)</option>
-                  <option value="Today Lunch (1:00 PM - 1:30 PM)">Today Lunch (1:00 PM)</option>
-                  <option value="Today Dinner (8:00 PM - 8:30 PM)">Today Dinner (8:00 PM)</option>
-                  <option value="Tomorrow Lunch (1:00 PM - 1:30 PM)">
-                    Tomorrow Lunch (1:00 PM)
-                  </option>
-                </select>
+
+                <div className="flex items-center justify-between pt-1 border-t border-amber-200/60 text-xs">
+                  <span className="font-semibold text-ink">Choose Meal Slot:</span>
+                  <select
+                    value={scheduledTime || "now"}
+                    onChange={(e) =>
+                      setScheduledTime(e.target.value === "now" ? null : e.target.value)
+                    }
+                    className="rounded-xl border border-ink/20 bg-white text-xs p-1.5 focus:outline-none font-medium"
+                  >
+                    <option value="now">⚡ Immediate Dispatch (25-35m)</option>
+                    <option value="Lunch Delivery (1:30 PM - 2:30 PM)">
+                      Lunch Delivery (1:30 PM - 2:30 PM) [Book 8-10 AM]
+                    </option>
+                    <option value="Dinner Delivery (7:30 PM - 10:30 PM)">
+                      Dinner Delivery (7:30 PM - 10:30 PM) [Book 4-6 PM]
+                    </option>
+                    <option value="Tomorrow Lunch (1:30 PM - 2:30 PM)">
+                      Tomorrow Lunch (1:30 PM - 2:30 PM)
+                    </option>
+                    <option value="Tomorrow Dinner (7:30 PM - 10:30 PM)">
+                      Tomorrow Dinner (7:30 PM - 10:30 PM)
+                    </option>
+                  </select>
+                </div>
               </div>
             </div>
 
@@ -654,30 +736,47 @@ export const CheckoutModal: React.FC = () => {
                         </div>
                       )}
 
-                      <div className="grid grid-cols-2 gap-2 pt-1">
-                        <div>
-                          <label className="text-[10px] font-mono text-ink/70 font-semibold block mb-1">
-                            Flat / House No / Floor *
-                          </label>
-                          <Input
-                            placeholder="e.g. Flat 302, Block B"
-                            value={gpsHouseNo}
-                            onChange={(e) => setGpsHouseNo(e.target.value)}
-                            className="h-8 rounded-xl border-ink/15 text-xs bg-white"
-                          />
+                      <form onSubmit={handleSaveGpsAddressDetails} className="space-y-2 pt-1">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="text-[10px] font-mono text-emerald-950 font-bold block mb-1">
+                              Flat / House No / Floor <span className="text-red-500">* (Mandatory)</span>
+                            </label>
+                            <Input
+                              placeholder="e.g. Flat 302, Block B"
+                              value={gpsHouseNo}
+                              onChange={(e) => setGpsHouseNo(e.target.value)}
+                              required
+                              className="h-8 rounded-xl border-emerald-300 text-xs bg-white focus:border-emerald-600"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-[10px] font-mono text-emerald-950 font-bold block mb-1">
+                              Nearby Landmark <span className="text-red-500">* (Mandatory)</span>
+                            </label>
+                            <Input
+                              placeholder="e.g. Near Shiv Mandir / Golambar"
+                              value={gpsLandmark}
+                              onChange={(e) => setGpsLandmark(e.target.value)}
+                              required
+                              className="h-8 rounded-xl border-emerald-300 text-xs bg-white focus:border-emerald-600"
+                            />
+                          </div>
                         </div>
-                        <div>
-                          <label className="text-[10px] font-mono text-ink/70 font-semibold block mb-1">
-                            Nearby Landmark *
-                          </label>
-                          <Input
-                            placeholder="e.g. Near Shiv Mandir / Golambar"
-                            value={gpsLandmark}
-                            onChange={(e) => setGpsLandmark(e.target.value)}
-                            className="h-8 rounded-xl border-ink/15 text-xs bg-white"
-                          />
+
+                        <div className="flex items-center justify-between pt-1">
+                          <p className="text-[10px] text-emerald-800 font-semibold">
+                            ⚠️ GPS Coordinates + Full Doorstep Address dono compulsory hain.
+                          </p>
+                          <Button
+                            type="submit"
+                            size="sm"
+                            className="bg-emerald-700 hover:bg-emerald-800 text-cream text-[11px] h-7 px-3 rounded-lg"
+                          >
+                            Save GPS Address Details
+                          </Button>
                         </div>
-                      </div>
+                      </form>
                     </div>
                   )}
 
@@ -1178,22 +1277,27 @@ export const CheckoutModal: React.FC = () => {
                 </div>
               )}
 
-              {/* Customer Checkout Agreement Checkbox */}
-              <div className="pt-1 p-2 rounded-xl bg-rose-50/80 border border-rose-200/60 flex items-start gap-2 text-[11px] text-ink/80">
-                <input
-                  type="checkbox"
-                  id="checkout-agree-terms"
-                  checked={agreeTermsCheckout}
-                  onChange={(e) => setAgreeTermsCheckout(e.target.checked)}
-                  className="mt-0.5 size-3.5 rounded border-rose-400 text-rose-600 focus:ring-rose-500 cursor-pointer accent-[#e05320]"
-                />
-                <label htmlFor="checkout-agree-terms" className="leading-tight cursor-pointer">
-                  I understand and agree that{" "}
-                  <strong>
-                    orders for freshly cooked food cannot be cancelled or returned once placed
-                  </strong>
-                  , and receiving the parcel upon arrival is mandatory.
-                </label>
+              {/* Customer Checkout Agreement & Cancellation Policy Banner */}
+              <div className="p-3 rounded-2xl bg-amber-50/90 border-2 border-amber-300 space-y-2">
+                <div className="flex items-center gap-2 text-xs font-bold text-amber-950">
+                  <span className="flex size-5 items-center justify-center rounded-full bg-amber-200 text-amber-900 text-xs">⚠️</span>
+                  <span>Cancellation Policy & Order Notice:</span>
+                </div>
+                <p className="text-xs font-semibold text-stone-900 leading-snug">
+                  📌 <strong>Cancel policy only 20 minutes after order booking.</strong> Post 20 minutes, fresh kitchen preparation begins and food cannot be cancelled.
+                </p>
+                <div className="pt-2 border-t border-amber-200 flex items-start gap-2.5 text-xs text-stone-900">
+                  <input
+                    type="checkbox"
+                    id="checkout-agree-terms"
+                    checked={agreeTermsCheckout}
+                    onChange={(e) => setAgreeTermsCheckout(e.target.checked)}
+                    className="mt-0.5 size-4 rounded border-amber-400 text-orange-600 focus:ring-orange-500 cursor-pointer accent-[#e05320] shrink-0"
+                  />
+                  <label htmlFor="checkout-agree-terms" className="leading-snug cursor-pointer font-medium select-none text-stone-900">
+                    I understand and agree that <strong>orders for freshly cooked food cannot be cancelled or returned once placed</strong> (cancellation allowed only within <strong>20 minutes</strong> of booking), and receiving the parcel upon arrival is mandatory.
+                  </label>
+                </div>
               </div>
 
               <Button

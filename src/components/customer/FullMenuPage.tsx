@@ -13,6 +13,7 @@ const CATEGORY_META: Record<string, { emoji: string; tagline: string }> = {
   Thali: { emoji: "🥘", tagline: "Full steel thali meals — the soul of our kitchen" },
   "Paneer & Tandoor": { emoji: "🧀", tagline: "Clay-oven roasted, smoky & melt-in-mouth" },
   Biryani: { emoji: "🍚", tagline: "Saffron dum cooked in sealed handis" },
+  Sabzi: { emoji: "🥘", tagline: "Fresh homestyle curries & rich gravies" },
   "Roti & Rice": { emoji: "🫓", tagline: "Hand-rolled rotis & fragrant basmati" },
   Desserts: { emoji: "🍮", tagline: "Sweet endings made with pure khoya & desi ghee" },
   "Chai & More": { emoji: "☕", tagline: "Kulhad chai, cold mint lime cooler & beverages" },
@@ -41,6 +42,7 @@ export const FullMenuPage: React.FC<{
   const categories = [
     "All",
     "Thali",
+    "Sabzi",
     "Paneer & Tandoor",
     "Biryani",
     "Roti & Rice",
@@ -120,6 +122,35 @@ export const FullMenuPage: React.FC<{
                 {activeCategory === "All" ? "COMPLETE MENU" : activeCategory.toUpperCase()}
               </h2>
               <p className="text-xs text-ink/60 mt-0.5">{categoryInfo.tagline}</p>
+            </div>
+          </div>
+
+          {/* 📢 Client's Pre-Order Booking Schedule Notice & Pills */}
+          <div className="mb-4 rounded-2xl bg-white/95 border-2 border-emerald-800/20 p-4 shadow-sm">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-600 animate-pulse" />
+                  <span className="text-xs font-black text-stone-900 uppercase tracking-wide">
+                    Daily Meal Booking & Delivery Schedule
+                  </span>
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+                    Pre-orders Only
+                  </span>
+                </div>
+                <p className="text-[11px] text-stone-600 mt-0.5">
+                  If you order after the timing, please send an instant request on WhatsApp to confirm availability!
+                </p>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-2 font-mono text-[10px] sm:text-[11px]">
+                <span className="px-2.5 py-1 rounded-lg bg-orange-600 text-white font-bold shadow-xs">
+                  ☀️ Lunch Order: 8 AM – 10 AM · Delivery: 1:30 PM – 2:30 PM
+                </span>
+                <span className="px-2.5 py-1 rounded-lg bg-emerald-700 text-white font-bold shadow-xs">
+                  🌙 Dinner Order: 4 PM – 6 PM · Delivery: 7:30 PM – 10:30 PM
+                </span>
+              </div>
             </div>
           </div>
 

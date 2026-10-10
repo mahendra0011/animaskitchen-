@@ -546,6 +546,7 @@ export const MenuManagerTab: React.FC = () => {
                   className="w-full rounded-xl border border-ink/15 bg-cream p-2 text-xs font-medium text-ink"
                 >
                   <option value="Thali">Thali</option>
+                  <option value="Sabzi">Sabzi & Curries</option>
                   <option value="Paneer & Tandoor">Paneer & Tandoor</option>
                   <option value="Biryani">Biryani</option>
                   <option value="Roti & Rice">Roti & Rice</option>

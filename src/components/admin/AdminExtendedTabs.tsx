@@ -31,6 +31,11 @@ import {
   Instagram,
   Facebook,
   ExternalLink,
+  Film,
+  Video,
+  Play,
+  Youtube,
+  Upload,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -1337,7 +1342,10 @@ export const AdminHomepageCustomizerTab: React.FC = () => {
       {/* 4. Day Special Meal Manager (Day-wise meal plan control) */}
       <AdminDaySpecialMealSection />
 
-      {/* 5. Instagram & Social Feed Manager */}
+      {/* 5. 🎬 Live Kitchen Video Reels & YouTube Upload Manager (Above Instagram) */}
+      <AdminKitchenVideosSection />
+
+      {/* 6. Instagram & Social Feed Manager */}
       <AdminSocialPostsSection />
     </div>
   );
@@ -1748,3 +1756,657 @@ const AdminSocialPostsSection: React.FC = () => {
     </div>
   );
 };
+
+/* =========================================================================
+   11. 🎬 Live Kitchen Video Reels & YouTube Upload Manager Component
+   ========================================================================= */
+export const AdminKitchenVideosSection: React.FC = () => {
+  const {
+    kitchenVideos,
+    addKitchenVideo,
+    updateKitchenVideo,
+    deleteKitchenVideo,
+    resetKitchenVideosToDefault,
+  } = useDemoStore();
+
+  const [videoTitle, setVideoTitle] = useState("");
+  const [videoDesc, setVideoDesc] = useState("");
+  const [videoSourceType, setVideoSourceType] = useState<"local" | "youtube">("local");
+  const [videoUrl, setVideoUrl] = useState("");
+  const [duration, setDuration] = useState("0:35");
+  const [tagsInput, setTagsInput] = useState("Desi Ghee, Live Kitchen");
+  const [youtubeApiKey, setYoutubeApiKey] = useState(
+    import.meta.env.VITE_YOUTUBE_API_KEY || "AIzaSyA6pyHfG6mtjsUKzgifkKBDtWIWTSLHQII",
+  );
+  const [fetchingYoutube, setFetchingYoutube] = useState(false);
+  const [uploadingLocal, setUploadingLocal] = useState(false);
+
+  // Edit modal state
+  const [editingVideo, setEditingVideo] = useState<KitchenVideo | null>(null);
+  const [editTitle, setEditTitle] = useState("");
+  const [editDesc, setEditDesc] = useState("");
+  const [editUrl, setEditUrl] = useState("");
+  const [editDuration, setEditDuration] = useState("");
+  const [editSourceType, setEditSourceType] = useState<"local" | "youtube">("local");
+
+  // Quick preset from copied local reels
+  const localPresets = [
+    { name: "Reel 1 (Dal Tadka Tarka)", path: "/videos/kitchen-reel-1.mp4", dur: "0:24" },
+    { name: "Reel 2 (Hot Tawa Roti)", path: "/videos/kitchen-reel-2.mp4", dur: "0:45" },
+    { name: "Reel 3 (Shahi Paneer Handi)", path: "/videos/kitchen-reel-3.mp4", dur: "0:52" },
+    { name: "Reel 4 (Sanitized Packaging)", path: "/videos/kitchen-reel-4.mp4", dur: "1:08" },
+    { name: "Reel 5 (Chef Special Plating)", path: "/videos/kitchen-reel-5.mp4", dur: "1:45" },
+  ];
+
+  const handleStartEditVideo = (video: KitchenVideo) => {
+    setEditingVideo(video);
+    setEditTitle(video.title);
+    setEditDesc(video.description || "");
+    setEditUrl(video.videoUrl);
+    setEditDuration(video.duration || "0:30");
+    setEditSourceType(
+      video.sourceType === "youtube" || video.videoUrl.includes("youtube") ? "youtube" : "local",
+    );
+  };
+
+  const handleEditFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    try {
+      const blobUrl = URL.createObjectURL(file);
+      setEditUrl(blobUrl);
+      if (!editTitle) {
+        setEditTitle(file.name.replace(/\.[^/.]+$/, ""));
+      }
+      toast.success(`Selected file: ${file.name}`);
+    } catch {
+      toast.error("Failed to read file");
+    }
+  };
+
+  const handleSaveEditVideo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingVideo) return;
+    if (!editTitle.trim()) {
+      toast.error("Please provide a title");
+      return;
+    }
+    if (!editUrl.trim()) {
+      toast.error("Please provide a video URL or file");
+      return;
+    }
+
+    updateKitchenVideo(editingVideo.id, {
+      title: editTitle.trim(),
+      description: editDesc.trim(),
+      videoUrl: editUrl.trim(),
+      duration: editDuration.trim() || "0:30",
+      sourceType: editSourceType,
+    });
+
+    setEditingVideo(null);
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingLocal(true);
+    try {
+      // Create local blob preview URL for instant playback
+      const localBlobUrl = URL.createObjectURL(file);
+      setVideoUrl(localBlobUrl);
+      if (!videoTitle) {
+        setVideoTitle(file.name.replace(/\.[^/.]+$/, ""));
+      }
+      toast.success(`Video file loaded: ${file.name}`);
+    } catch {
+      toast.error("Failed to read video file");
+    } finally {
+      setUploadingLocal(false);
+    }
+  };
+
+  // Fetch YouTube metadata automatically via YouTube API Key
+  const handleFetchYouTubeMeta = async (urlToFetch: string) => {
+    if (!urlToFetch) return;
+
+    let extractedId = "";
+    if (urlToFetch.includes("youtu.be/")) {
+      extractedId = urlToFetch.split("youtu.be/")[1]?.split("?")[0] || "";
+    } else if (urlToFetch.includes("watch?v=")) {
+      extractedId = urlToFetch.split("watch?v=")[1]?.split("&")[0] || "";
+    } else if (urlToFetch.includes("embed/")) {
+      extractedId = urlToFetch.split("embed/")[1]?.split("?")[0] || "";
+    } else if (urlToFetch.length === 11) {
+      extractedId = urlToFetch;
+    }
+
+    if (!extractedId) {
+      toast.error("Invalid YouTube URL or Video ID");
+      return;
+    }
+
+    setFetchingYoutube(true);
+    try {
+      if (youtubeApiKey) {
+        const res = await fetch(
+          `https://www.googleapis.com/youtube/v3/videos?part=snippet,contentDetails&id=${extractedId}&key=${youtubeApiKey}`,
+        );
+        const data = await res.json();
+        if (data.items && data.items.length > 0) {
+          const item = data.items[0];
+          setVideoTitle(item.snippet.title || videoTitle);
+          setVideoDesc(item.snippet.description?.slice(0, 160) || videoDesc);
+          toast.success("Fetched YouTube Video Details successfully!");
+        } else {
+          toast.info("YouTube ID found. (API returned no item, saving link directly)");
+        }
+      }
+    } catch {
+      toast.info("Using direct YouTube URL");
+    } finally {
+      setFetchingYoutube(false);
+    }
+  };
+
+  const handleAddVideo = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!videoTitle.trim()) {
+      toast.error("Please provide a video title");
+      return;
+    }
+    if (!videoUrl.trim()) {
+      toast.error("Please provide a video URL or select an MP4 file");
+      return;
+    }
+
+    const tags = tagsInput
+      .split(",")
+      .map((t) => t.trim())
+      .filter(Boolean);
+
+    addKitchenVideo({
+      title: videoTitle.trim(),
+      description: videoDesc.trim(),
+      videoUrl: videoUrl.trim(),
+      sourceType: videoSourceType,
+      duration: duration.trim() || "0:30",
+      viewsCount: Math.floor(Math.random() * 2000) + 500,
+      likesCount: Math.floor(Math.random() * 300) + 50,
+      tags: tags.length > 0 ? tags : ["Anima Kitchen", "Live Cooking"],
+    });
+
+    // Reset form
+    setVideoTitle("");
+    setVideoDesc("");
+    setVideoUrl("");
+  };
+
+  return (
+    <div className="rounded-2xl border border-orange-500/20 bg-gradient-to-br from-frost via-white to-orange-500/5 p-5 sm:p-6 space-y-6 shadow-md mt-6">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-ink/10 pb-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <span className="p-2 rounded-xl bg-orange-600 text-white shadow-sm">
+              <Film className="size-4" />
+            </span>
+            <h3 className="font-serif text-lg font-bold text-ink">
+              Live Kitchen Video Reels &amp; YouTube Manager
+            </h3>
+          </div>
+          <p className="text-xs text-ink/70 mt-1">
+            Display live cooking video reels directly above the Instagram posts section. Supports
+            direct MP4 video files, local uploads, and YouTube embeds!
+          </p>
+        </div>
+
+        <Badge className="bg-orange-600 text-white font-mono text-xs w-fit">
+          {kitchenVideos.length} Videos Active
+        </Badge>
+      </div>
+
+      {/* YouTube API Configuration Strip */}
+      <div className="rounded-xl border border-red-500/20 bg-red-500/5 p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+        <div className="flex items-center gap-2">
+          <Youtube className="size-4 text-red-600 shrink-0" />
+          <span className="font-mono font-bold text-ink">YouTube Data API v3 Key:</span>
+          <code className="bg-white/80 px-2 py-0.5 rounded border border-ink/10 text-[11px] font-mono text-ink/80 truncate max-w-[220px]">
+            {youtubeApiKey || "Not configured"}
+          </code>
+        </div>
+        <span className="text-[11px] text-emerald-700 font-bold bg-emerald-100 px-2 py-0.5 rounded-full shrink-0">
+          ✓ API Active &amp; Ready
+        </span>
+      </div>
+
+      {/* Form: Upload / Add New Video */}
+      <form onSubmit={handleAddVideo} className="space-y-4 rounded-xl border border-ink/10 bg-white/70 p-4">
+        <h4 className="font-bold text-xs uppercase font-mono tracking-wider text-ink/70 flex items-center gap-1.5">
+          <Plus className="size-3.5 text-spice" /> Add New Video Reel to Customer Homepage
+        </h4>
+
+        {/* Source Selector Tab */}
+        <div className="flex gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setVideoSourceType("local");
+              setVideoUrl("");
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              videoSourceType === "local"
+                ? "bg-orange-600 text-white border-orange-600 shadow-sm"
+                : "bg-frost text-ink/70 border-ink/15 hover:bg-white"
+            }`}
+          >
+            <Video className="size-3.5" />
+            <span>Local MP4 / Video File</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              setVideoSourceType("youtube");
+              setVideoUrl("");
+            }}
+            className={`flex-1 py-2 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-2 ${
+              videoSourceType === "youtube"
+                ? "bg-red-600 text-white border-red-600 shadow-sm"
+                : "bg-frost text-ink/70 border-ink/15 hover:bg-white"
+            }`}
+          >
+            <Youtube className="size-3.5" />
+            <span>YouTube URL / Shorts</span>
+          </button>
+        </div>
+
+        {/* Video Path / Upload Row */}
+        {videoSourceType === "local" ? (
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-ink/80 block">
+              Video File Path or File Upload:
+            </label>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="/videos/kitchen-reel-1.mp4 or CDN URL"
+                className="flex-1 rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+              />
+              <label className="cursor-pointer inline-flex items-center justify-center gap-1.5 rounded-xl bg-ink/10 hover:bg-ink/20 text-ink px-4 py-2 text-xs font-bold transition-colors">
+                <Upload className="size-3.5" />
+                <span>Upload From PC</span>
+                <input
+                  type="file"
+                  accept="video/mp4,video/webm,video/quicktime"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
+              </label>
+            </div>
+
+            {/* Quick Presets from C:\Users\mahen\Videos\video shorr */}
+            <div className="pt-1">
+              <span className="text-[11px] text-ink/60 font-mono block mb-1">
+                ⚡ Quick Presets (From your copied kitchen video folder):
+              </span>
+              <div className="flex flex-wrap gap-1.5">
+                {localPresets.map((preset, pIdx) => (
+                  <button
+                    key={pIdx}
+                    type="button"
+                    onClick={() => {
+                      setVideoUrl(preset.path);
+                      setVideoTitle(preset.name);
+                      setDuration(preset.dur);
+                    }}
+                    className="rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-950 border border-orange-500/20 px-2 py-1 text-[11px] font-mono transition-colors"
+                  >
+                    + {preset.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-ink/80 block">
+              YouTube Video URL or Shorts Link:
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={videoUrl}
+                onChange={(e) => setVideoUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+                className="flex-1 rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-red-500"
+              />
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleFetchYouTubeMeta(videoUrl)}
+                disabled={fetchingYoutube || !videoUrl}
+                className="rounded-xl border-red-500/30 text-red-600 hover:bg-red-50 text-xs gap-1"
+              >
+                {fetchingYoutube ? "Fetching..." : "Fetch Info"}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {/* Video Title and Duration */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div className="sm:col-span-2 space-y-1">
+            <label className="text-xs font-bold text-ink/80 block">Video Title:</label>
+            <input
+              type="text"
+              required
+              value={videoTitle}
+              onChange={(e) => setVideoTitle(e.target.value)}
+              placeholder="e.g. Pure Desi Ghee Dal Tadka Simmering"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-ink/80 block">Duration / Tags:</label>
+            <input
+              type="text"
+              value={duration}
+              onChange={(e) => setDuration(e.target.value)}
+              placeholder="0:45"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+            />
+          </div>
+        </div>
+
+        {/* Description & Tags */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-ink/80 block">Short Description:</label>
+            <input
+              type="text"
+              value={videoDesc}
+              onChange={(e) => setVideoDesc(e.target.value)}
+              placeholder="Live cooking inside Kurji kitchen with pure ingredients"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="text-xs font-bold text-ink/80 block">Tags (comma separated):</label>
+            <input
+              type="text"
+              value={tagsInput}
+              onChange={(e) => setTagsInput(e.target.value)}
+              placeholder="Desi Ghee, Hot Roti, Patna"
+              className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+            />
+          </div>
+        </div>
+
+        {/* Submit Button */}
+        <div className="pt-2">
+          <Button
+            type="submit"
+            className="w-full sm:w-auto rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-6 py-2.5 shadow-md gap-2"
+          >
+            <Plus className="size-4" />
+            <span>Publish Video Reel to Homepage</span>
+          </Button>
+        </div>
+      </form>
+
+      {/* Active Videos List & Management */}
+      <div className="space-y-3 pt-2">
+        <div className="flex items-center justify-between">
+          <h4 className="font-bold text-xs uppercase font-mono tracking-wider text-ink/70">
+            Currently Live Homepage Videos ({kitchenVideos.length})
+          </h4>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={resetKitchenVideosToDefault}
+            className="rounded-xl border-ink/20 text-xs font-mono gap-1.5 h-8 text-ink/70 hover:text-ink"
+            title="Reset to default 5 fresh kitchen reels"
+          >
+            <RotateCcw className="size-3" />
+            <span>Reset Default 5 Videos</span>
+          </Button>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {kitchenVideos.map((video) => (
+            <div
+              key={video.id}
+              className="rounded-2xl border border-ink/15 bg-white p-3 space-y-2 shadow-xs hover:shadow-md transition-shadow"
+            >
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-black/90">
+                {video.sourceType === "youtube" || video.videoUrl.includes("youtube") ? (
+                  <div className="w-full h-full flex items-center justify-center bg-red-950/40 text-red-400">
+                    <Youtube className="size-8" />
+                  </div>
+                ) : (
+                  <video
+                    src={video.videoUrl}
+                    className="w-full h-full object-cover"
+                    muted
+                    preload="metadata"
+                  />
+                )}
+                <div className="absolute top-1.5 left-1.5 bg-black/70 text-white text-[9px] font-mono px-2 py-0.5 rounded-full">
+                  {video.sourceType.toUpperCase()}
+                </div>
+                <div className="absolute bottom-1.5 right-1.5 bg-black/70 text-white text-[9px] font-mono px-1.5 py-0.5 rounded">
+                  {video.duration || "0:30"}
+                </div>
+              </div>
+
+              <div>
+                <h5 className="font-bold text-xs text-ink truncate">{video.title}</h5>
+                <p className="text-[11px] text-ink/60 truncate mt-0.5">
+                  {video.description || "Video reel on homepage"}
+                </p>
+                <div className="mt-1 flex items-center gap-1.5 text-[10px] font-mono text-ink/50 truncate">
+                  <span className="truncate">URL: {video.videoUrl}</span>
+                </div>
+              </div>
+
+              {/* Action Buttons: Edit/Change Video or Delete */}
+              <div className="flex items-center justify-between pt-2 border-t border-ink/10 text-xs">
+                <span className="text-[10px] font-mono text-ink/50">{video.createdAt}</span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => handleStartEditVideo(video)}
+                    className="inline-flex items-center gap-1 text-orange-600 hover:text-orange-800 px-2 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 transition-colors font-bold text-[11px]"
+                    title="Change / Edit this video"
+                  >
+                    <Edit3 className="size-3" />
+                    <span>Change</span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => deleteKitchenVideo(video.id)}
+                    className="text-red-600 hover:text-red-800 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                    title="Delete Video"
+                  >
+                    <Trash2 className="size-3.5" />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Modal / Dialog for Changing / Editing Existing Video */}
+      {editingVideo && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="relative w-full max-w-lg rounded-3xl border border-ink/15 bg-white p-6 shadow-2xl space-y-4">
+            <div className="flex items-center justify-between border-b border-ink/10 pb-3">
+              <div className="flex items-center gap-2">
+                <span className="p-2 rounded-xl bg-orange-600 text-white shadow-sm">
+                  <Edit3 className="size-4" />
+                </span>
+                <div>
+                  <h4 className="font-serif text-base font-bold text-ink">Change / Update Video Reel</h4>
+                  <p className="text-[11px] text-ink/60">Change the video file, title, duration or YouTube link</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingVideo(null)}
+                className="size-8 rounded-full bg-ink/5 hover:bg-ink/10 text-ink/60 flex items-center justify-center"
+              >
+                ✕
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEditVideo} className="space-y-3.5">
+              {/* Change Source Type */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditSourceType("local")}
+                  className={`flex-1 py-1.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    editSourceType === "local"
+                      ? "bg-orange-600 text-white border-orange-600"
+                      : "bg-frost text-ink/70 border-ink/15"
+                  }`}
+                >
+                  <Video className="size-3.5" />
+                  <span>Local MP4 Video</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setEditSourceType("youtube")}
+                  className={`flex-1 py-1.5 px-3 rounded-xl border text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                    editSourceType === "youtube"
+                      ? "bg-red-600 text-white border-red-600"
+                      : "bg-frost text-ink/70 border-ink/15"
+                  }`}
+                >
+                  <Youtube className="size-3.5" />
+                  <span>YouTube URL</span>
+                </button>
+              </div>
+
+              {/* Video URL or File */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-ink/80 block">Video URL or File Path:</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    value={editUrl}
+                    onChange={(e) => setEditUrl(e.target.value)}
+                    placeholder="/videos/kitchen-reel-1.mp4 or YouTube link"
+                    className="flex-1 rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+                  />
+                  {editSourceType === "local" && (
+                    <label className="cursor-pointer inline-flex items-center justify-center gap-1.5 rounded-xl bg-ink/10 hover:bg-ink/20 text-ink px-3 py-2 text-xs font-bold">
+                      <Upload className="size-3.5" />
+                      <span>Select PC Video</span>
+                      <input
+                        type="file"
+                        accept="video/mp4,video/webm,video/quicktime"
+                        onChange={handleEditFileUpload}
+                        className="hidden"
+                      />
+                    </label>
+                  )}
+                </div>
+              </div>
+
+              {/* Quick Preset Selector inside Edit Modal */}
+              {editSourceType === "local" && (
+                <div>
+                  <span className="text-[10px] text-ink/60 font-mono block mb-1">
+                    ⚡ Quick Presets (Click to swap video immediately):
+                  </span>
+                  <div className="flex flex-wrap gap-1">
+                    {localPresets.map((preset, pIdx) => (
+                      <button
+                        key={pIdx}
+                        type="button"
+                        onClick={() => {
+                          setEditUrl(preset.path);
+                          setEditDuration(preset.dur);
+                        }}
+                        className="rounded-lg bg-orange-500/10 hover:bg-orange-500/20 text-orange-950 border border-orange-500/20 px-2 py-0.5 text-[10px] font-mono"
+                      >
+                        {preset.name.split(" ")[0]} {preset.name.split(" ")[1]}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Title & Duration */}
+              <div className="grid grid-cols-3 gap-2">
+                <div className="col-span-2 space-y-1">
+                  <label className="text-xs font-bold text-ink/80 block">Video Title:</label>
+                  <input
+                    type="text"
+                    required
+                    value={editTitle}
+                    onChange={(e) => setEditTitle(e.target.value)}
+                    className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-ink/80 block">Duration:</label>
+                  <input
+                    type="text"
+                    value={editDuration}
+                    onChange={(e) => setEditDuration(e.target.value)}
+                    placeholder="0:45"
+                    className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="space-y-1">
+                <label className="text-xs font-bold text-ink/80 block">Description:</label>
+                <textarea
+                  rows={2}
+                  value={editDesc}
+                  onChange={(e) => setEditDesc(e.target.value)}
+                  className="w-full rounded-xl border border-ink/20 px-3 py-2 text-xs bg-white focus:outline-none focus:border-spice"
+                />
+              </div>
+
+              {/* Buttons */}
+              <div className="flex items-center justify-end gap-2 pt-2 border-t border-ink/10">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setEditingVideo(null)}
+                  className="rounded-xl text-xs"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  size="sm"
+                  className="rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs px-5 shadow-sm"
+                >
+                  Save &amp; Update Live Video
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
