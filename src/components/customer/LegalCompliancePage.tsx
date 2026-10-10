@@ -13,7 +13,6 @@ import {
   MapPin,
   ArrowLeft,
   ChevronRight,
-  ExternalLink,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -472,15 +471,6 @@ export function LegalCompliancePage({
               <span className="block font-bold text-ink">Grievance Officer: Anima Kumari</span>
               <span>Email: animaskitchen24@gmail.com · Phone: +91 70049 60724</span>
             </div>
-            <a
-              href="https://wa.me/917004960724?text=Hi%20Anima's%20Kitchen,%20I%20have%20a%20query%20about%20policies."
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/10 text-emerald-700 hover:bg-emerald-500 hover:text-white font-bold transition-colors"
-            >
-              <span>Instant WhatsApp Support</span>
-              <ExternalLink className="size-3" />
-            </a>
           </div>
         </div>
       </div>
