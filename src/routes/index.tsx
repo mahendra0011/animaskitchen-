@@ -319,22 +319,20 @@ function MainAppContent() {
                     <img
                       src="/logo.png"
                       alt="Anima's Kitchen Logo"
-                      className="size-13 sm:size-15 object-contain drop-shadow-lg group-hover:scale-105 transition-transform"
+                      className="size-12 sm:size-14 object-contain rounded-full shadow-md group-hover:scale-105 transition-transform border border-amber-500/30"
                     />
-                    <div>
-                      {/* Font styled brand name matching logo image: 'Anima's' in flowing script with clean 'A', and 'Kitchen' in bold warm script */}
-                      <div className="flex items-baseline gap-1.5 leading-none">
-                        <span className="font-['Kaushan_Script',cursive] text-2xl sm:text-3xl text-[#10B981] drop-shadow-sm font-normal tracking-normal">
-                          Anima's
-                        </span>
-                        <span className="font-['Lobster_Two',cursive] italic font-bold text-2xl sm:text-3xl text-[#FF7A00] drop-shadow-sm tracking-normal">
-                          Kitchen
+                    <div className="flex items-center gap-2">
+                      <img
+                        src="/navbar-banner.jpeg"
+                        alt="Anima's Kitchen Navbar Banner"
+                        className="h-9 sm:h-11 w-auto max-w-[150px] sm:max-w-[200px] object-contain rounded-lg drop-shadow-md group-hover:scale-102 transition-transform"
+                      />
+                      <div className="hidden xl:block">
+                        <span className="flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.2em] text-cream/70">
+                          <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
+                          Ghar Jaisa Shuddh Swaad · Patna
                         </span>
                       </div>
-                      <span className="hidden sm:flex items-center gap-1 font-mono text-[9px] uppercase tracking-[0.2em] text-cream/70 mt-1">
-                        <span className="size-1 rounded-full bg-emerald-400 animate-pulse" />
-                        Ghar Jaisa Shuddh Swaad · Patna
-                      </span>
                     </div>
                   </button>
 
