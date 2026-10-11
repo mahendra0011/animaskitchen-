@@ -312,24 +312,15 @@ function MainAppContent() {
                   {/* Left: Brand Logo & Styled Text */}
                   <button
                     onClick={() => setCustomerPage("home")}
-                    className="flex items-center gap-2.5 sm:gap-3.5 text-left shrink-0 group"
+                    className="flex items-center gap-2 text-left shrink-0 group py-1"
                     aria-label="Anima’s Kitchen home"
                   >
-                    {/* Circular Brand Logo */}
+                    {/* Official Clean Brand Logo (Cropped tightly without top/bottom empty space, large & crisp) */}
                     <img
                       src="/logo.png"
-                      alt="Anima's Kitchen Logo"
-                      className="size-11 sm:size-13 object-contain rounded-full shadow-sm group-hover:scale-105 transition-transform border border-amber-600/20 shrink-0"
+                      alt="Anima's Kitchen"
+                      className="h-12 sm:h-14 md:h-16 w-auto max-w-[220px] sm:max-w-[280px] md:max-w-[340px] object-contain group-hover:scale-102 transition-transform drop-shadow-xs"
                     />
-
-                    {/* Official Transparent Brand Lettering (Exact original artwork: Ani-माँ Kitchen + spoon + tagline) */}
-                    <div className="flex items-center">
-                      <img
-                        src="/brand-transparent.png"
-                        alt="Anima's Kitchen"
-                        className="h-10 sm:h-12 w-auto object-contain group-hover:scale-102 transition-transform"
-                      />
-                    </div>
                   </button>
 
                   {/* Center: Desktop Navigation Links (Dark readable text on Light Navbar) */}
