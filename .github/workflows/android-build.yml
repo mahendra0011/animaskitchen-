@@ -43,7 +43,7 @@ jobs:
           sdkmanager "platforms;android-34" "platforms;android-35" "build-tools;35.0.0" || true
 
       - name: Install Dependencies
-        run: npm ci --include=dev --no-audit --fund=false
+        run: npm install --include=dev --no-audit --fund=false
 
       - name: Build Web App and Static Assets
         run: npm run build:frontend
