@@ -306,8 +306,8 @@ function MainAppContent() {
                 </a>
               </aside>
 
-              {/* Customer App Navigation Header (Dark Theme with Light Text per client request) */}
-              <header className="sticky top-0 z-40 border-b border-white/10 bg-[#160E08]/95 backdrop-blur-xl transition-all shadow-md text-cream">
+              {/* Customer App Navigation Header (Light Theme for high-contrast crisp logo readability) */}
+              <header className="sticky top-0 z-40 border-b border-black/10 bg-[#FAF6F0]/95 backdrop-blur-xl transition-all shadow-sm text-[#24180F]">
                 <div className="mx-auto flex max-w-7xl items-center justify-between px-3.5 sm:px-6 lg:px-8 py-2">
                   {/* Left: Brand Logo & Styled Text */}
                   <button
@@ -319,7 +319,7 @@ function MainAppContent() {
                     <img
                       src="/logo.png"
                       alt="Anima's Kitchen Logo"
-                      className="size-11 sm:size-13 object-contain rounded-full shadow-md group-hover:scale-105 transition-transform border border-amber-500/30 shrink-0"
+                      className="size-11 sm:size-13 object-contain rounded-full shadow-sm group-hover:scale-105 transition-transform border border-amber-600/20 shrink-0"
                     />
 
                     {/* Official Transparent Brand Lettering (Exact original artwork: Ani-माँ Kitchen + spoon + tagline) */}
@@ -327,60 +327,60 @@ function MainAppContent() {
                       <img
                         src="/brand-transparent.png"
                         alt="Anima's Kitchen"
-                        className="h-10 sm:h-12 w-auto object-contain drop-shadow-md group-hover:scale-102 transition-transform"
+                        className="h-10 sm:h-12 w-auto object-contain group-hover:scale-102 transition-transform"
                       />
                     </div>
                   </button>
 
-                  {/* Center: Desktop Navigation Links (Light text on Dark Navbar) */}
+                  {/* Center: Desktop Navigation Links (Dark readable text on Light Navbar) */}
                   <nav
-                    className="hidden items-center gap-6 xl:gap-8 font-body text-xs sm:text-sm font-semibold text-cream/80 lg:flex"
+                    className="hidden items-center gap-6 xl:gap-8 font-body text-xs sm:text-sm font-semibold text-[#382B20] lg:flex"
                     aria-label="Main navigation"
                   >
                     <button
                       onClick={() => setCustomerPage("menu")}
-                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
-                        customerPage === "menu" ? "text-orange-400 font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-600 ${
+                        customerPage === "menu" ? "text-orange-600 font-bold" : ""
                       }`}
                     >
                       Menu
                     </button>
                     <button
                       onClick={() => setCustomerPage("offers")}
-                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
-                        customerPage === "offers" ? "text-orange-400 font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-600 ${
+                        customerPage === "offers" ? "text-orange-600 font-bold" : ""
                       }`}
                     >
                       Offers
                     </button>
                     <button
                       onClick={() => setCustomerPage("about")}
-                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
-                        customerPage === "about" ? "text-orange-400 font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-600 ${
+                        customerPage === "about" ? "text-orange-600 font-bold" : ""
                       }`}
                     >
                       About Us
                     </button>
                     <button
                       onClick={() => setCustomerPage("reviews")}
-                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
-                        customerPage === "reviews" ? "text-orange-400 font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-600 ${
+                        customerPage === "reviews" ? "text-orange-600 font-bold" : ""
                       }`}
                     >
                       Reviews
                     </button>
                     <button
                       onClick={() => setCustomerPage("faq")}
-                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
-                        customerPage === "faq" ? "text-orange-400 font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-600 ${
+                        customerPage === "faq" ? "text-orange-600 font-bold" : ""
                       }`}
                     >
                       FAQ
                     </button>
                     <button
                       onClick={() => setCustomerPage("contact")}
-                      className={`whitespace-nowrap transition-colors hover:text-orange-400 ${
-                        customerPage === "contact" ? "text-orange-400 font-bold" : ""
+                      className={`whitespace-nowrap transition-colors hover:text-orange-600 ${
+                        customerPage === "contact" ? "text-orange-600 font-bold" : ""
                       }`}
                     >
                       Contact
@@ -393,7 +393,7 @@ function MainAppContent() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="hidden xl:inline-flex rounded-full border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 px-3 py-1 font-body text-xs font-bold shadow-xs transition-all hover:scale-105 shrink-0 gap-1.5 h-8"
+                      className="hidden xl:inline-flex rounded-full border-emerald-600/30 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-3 py-1 font-body text-xs font-bold shadow-xs transition-all hover:scale-105 shrink-0 gap-1.5 h-8"
                       onClick={() => {
                         const appSection = document.getElementById("download-app");
                         if (appSection) appSection.scrollIntoView({ behavior: "smooth" });
@@ -408,7 +408,7 @@ function MainAppContent() {
                       }}
                       title="Download Android APK"
                     >
-                      <Download className="size-3 text-emerald-400" />
+                      <Download className="size-3 text-emerald-700" />
                       <span>Download App</span>
                     </Button>
 
@@ -416,7 +416,7 @@ function MainAppContent() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative size-8 sm:size-9 rounded-full border border-white/10 bg-white/5 text-cream hover:text-rose-400 hover:border-rose-400/40 hover:bg-white/10 shadow-xs shrink-0 transition-all"
+                      className="relative size-8 sm:size-9 rounded-full border border-black/10 bg-white text-[#382B20] hover:text-rose-600 hover:border-rose-400 hover:bg-rose-50 shadow-xs shrink-0 transition-all"
                       onClick={() => setProfileDrawerOpen(true)}
                       aria-label={`Open Wishlist with ${wishlistIds.length} saved dishes`}
                       title="Saved Dishes / Wishlist"
@@ -435,7 +435,7 @@ function MainAppContent() {
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="relative size-8 sm:size-9 rounded-full border border-white/10 bg-white/5 text-cream hover:bg-white/10 shadow-xs shrink-0 transition-all"
+                      className="relative size-8 sm:size-9 rounded-full border border-black/10 bg-white text-[#382B20] hover:bg-orange-50 hover:text-orange-600 shadow-xs shrink-0 transition-all"
                       onClick={() => setCartDrawerOpen(true)}
                       aria-label={`Open cart with ${cartCount} items`}
                       title="Shopping Cart"
@@ -458,7 +458,7 @@ function MainAppContent() {
                             setAuthModalTab("login");
                             setAuthModalOpen(true);
                           }}
-                          className="h-8 rounded-full px-3 text-xs font-semibold text-cream/90 hover:text-white hover:bg-white/10"
+                          className="h-8 rounded-full px-3 text-xs font-semibold text-[#382B20] hover:text-black hover:bg-black/5"
                         >
                           Sign In
                         </Button>
@@ -480,11 +480,11 @@ function MainAppContent() {
                           className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all h-8 ${
                             customerPage === "dashboard"
                               ? "border-orange-500 bg-orange-600 text-white shadow-xs"
-                              : "border-white/15 bg-white/10 text-cream hover:border-orange-400"
+                              : "border-black/10 bg-white text-[#382B20] hover:border-orange-400"
                           }`}
                           title="Open Customer Dashboard"
                         >
-                          <span className="grid size-5 place-items-center rounded-full bg-white/20 text-white text-[10px] font-bold">
+                          <span className="grid size-5 place-items-center rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold">
                             {currentUser?.name?.charAt(0) || "U"}
                           </span>
                           <span className="truncate max-w-[80px]">
@@ -496,7 +496,7 @@ function MainAppContent() {
                           variant="ghost"
                           size="icon"
                           onClick={logout}
-                          className="size-8 rounded-full text-cream/70 hover:text-red-400 hover:bg-white/10"
+                          className="size-8 rounded-full text-[#382B20]/70 hover:text-red-500 hover:bg-red-50"
                           title="Logout"
                         >
                           <LogOut className="size-3.5" />
@@ -514,7 +514,7 @@ function MainAppContent() {
                           setAuthModalOpen(true);
                         }
                       }}
-                      className="grid size-8 place-items-center rounded-full border border-white/15 bg-white/10 text-cream hover:bg-white/20 shadow-xs lg:hidden shrink-0"
+                      className="grid size-8 place-items-center rounded-full border border-black/10 bg-white text-[#382B20] hover:bg-black/5 shadow-xs lg:hidden shrink-0"
                       aria-label={isAuthenticated ? "Open Dashboard" : "Sign In"}
                     >
                       {isAuthenticated ? (
