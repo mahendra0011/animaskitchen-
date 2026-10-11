@@ -312,14 +312,21 @@ function MainAppContent() {
                   {/* Left: Brand Logo & Styled Text */}
                   <button
                     onClick={() => setCustomerPage("home")}
-                    className="flex items-center gap-2.5 text-left shrink-0 group py-0.5"
+                    className="flex items-center gap-2.5 sm:gap-3.5 text-left shrink-0 group py-0.5"
                     aria-label="Anima’s Kitchen home"
                   >
-                    {/* Official Clean Brand Logo with Maa Cooking + Ani-माँ Typography */}
+                    {/* Left: Chef / Mascot Brand Logo */}
                     <img
                       src="/logo.png"
+                      alt="Anima's Kitchen Mascot"
+                      className="h-12 sm:h-14 md:h-16 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-xs shrink-0"
+                    />
+
+                    {/* Right: Original Ani-माँ Kitchen Brand Typography with Spoon */}
+                    <img
+                      src="/brand-transparent.png"
                       alt="Anima's Kitchen"
-                      className="h-14 sm:h-16 md:h-18 w-auto max-w-[200px] sm:max-w-[240px] md:max-w-[280px] object-contain group-hover:scale-102 transition-transform drop-shadow-xs"
+                      className="h-9 sm:h-11 md:h-12 w-auto max-w-[170px] sm:max-w-[220px] md:max-w-[270px] object-contain group-hover:scale-102 transition-transform drop-shadow-xs"
                     />
                   </button>
 
