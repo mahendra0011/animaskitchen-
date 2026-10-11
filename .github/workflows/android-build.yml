@@ -1,0 +1,81 @@
+name: Build Android APK and AAB
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/android-build.yml"
+      - "src/**"
+      - "public/**"
+      - "android/**"
+      - "capacitor.config.ts"
+      - "package.json"
+
+permissions:
+  contents: write
+
+jobs:
+  build-android:
+    name: Build Anima's Kitchen APK & AAB
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Install Android build tools
+        run: |
+          sdkmanager "platforms;android-35" "build-tools;35.0.0"
+          yes | sdkmanager --licenses >/dev/null
+
+      - name: Install Dependencies
+        run: npm ci --include=dev --no-audit --fund=false
+
+      - name: Build Web App and Static Assets
+        run: npm run build:frontend
+
+      - name: Sync Capacitor Android
+        run: npx cap sync android
+
+      - name: Build Debug APK and Release AAB
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug bundleRelease
+
+      - name: Copy & Rename Artifacts
+        working-directory: android
+        run: |
+          mkdir -p ../dist-artifacts
+          cp app/build/outputs/apk/debug/app-debug.apk ../dist-artifacts/AnimasKitchen.apk
+          cp app/build/outputs/bundle/release/app-release.aab ../dist-artifacts/AnimasKitchen.aab || cp app/build/outputs/bundle/debug/app-debug.aab ../dist-artifacts/AnimasKitchen.aab
+
+      - name: Upload APK & AAB as Workflow Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: AnimasKitchen-Builds
+          path: dist-artifacts/*
+
+      - name: Publish APK & AAB to GitHub Releases
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release view app-latest >/dev/null 2>&1 || gh release create app-latest --title "Anima's Kitchen Android App" --notes "Latest installable Android APK and Play Store AAB builds."
+          gh release upload app-latest dist-artifacts/AnimasKitchen.apk dist-artifacts/AnimasKitchen.aab --clobber

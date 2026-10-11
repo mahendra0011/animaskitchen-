@@ -22,11 +22,18 @@ import {
 export const AppDownloadSection: React.FC = () => {
   const [showIosGuide, setShowIosGuide] = useState(false);
 
+  const APK_DOWNLOAD_URL =
+    "https://github.com/mahendra0011/animaskitchen-/releases/download/app-latest/AnimasKitchen.apk";
+  const AAB_DOWNLOAD_URL =
+    "https://github.com/mahendra0011/animaskitchen-/releases/download/app-latest/AnimasKitchen.aab";
+
   const handleDownloadApk = () => {
     // Direct link to trigger APK file download or release bundle
     const link = document.createElement("a");
-    link.href = "/animas-kitchen.apk";
-    link.download = "AnimasKitchen-release.apk";
+    link.href = APK_DOWNLOAD_URL;
+    link.download = "AnimasKitchen.apk";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -35,8 +42,10 @@ export const AppDownloadSection: React.FC = () => {
   const handleDownloadAab = () => {
     // Direct link to trigger Android App Bundle (.aab) / Play Store Package
     const link = document.createElement("a");
-    link.href = "/animas-kitchen.aab";
-    link.download = "AnimasKitchen-release.aab";
+    link.href = AAB_DOWNLOAD_URL;
+    link.download = "AnimasKitchen.aab";
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
