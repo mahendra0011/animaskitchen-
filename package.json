@@ -21,7 +21,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "cap:sync": "cap sync android",
+    "cap:sync": "npm run build:frontend && cap sync android",
     "cap:open": "cap open android"
   },
   "overrides": {
