@@ -322,43 +322,13 @@ function MainAppContent() {
                       className="size-11 sm:size-13 object-contain rounded-full shadow-md group-hover:scale-105 transition-transform border border-amber-500/30 shrink-0"
                     />
 
-                    {/* Styled Brand Typography (Matching Logo Artwork) */}
-                    <div className="flex flex-col justify-center">
-                      <div className="flex items-center gap-1 leading-none">
-                        {/* Ani in elegant green script */}
-                        <span className="font-['Kaushan_Script',cursive] text-2xl sm:text-3xl font-extrabold text-[#15803D] drop-shadow-sm tracking-tight">
-                          Ani
-                        </span>
-
-                        {/* माँ with little chef hat & heart in warm vermilion/red */}
-                        <span className="relative inline-flex items-center">
-                          <span className="font-['Rozha_One','Yatra_One',serif] text-2xl sm:text-3xl font-black text-[#DC2626] drop-shadow-sm tracking-normal">
-                            माँ
-                          </span>
-                          {/* Chef Hat accent above Maa */}
-                          <svg
-                            className="absolute -top-3.5 left-1/2 -translate-x-1/2 size-4 text-[#F97316] drop-shadow-xs"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                          >
-                            <path d="M12 3a4 4 0 0 0-3.5 2.05A3.5 3.5 0 0 0 4 8.5c0 1.63 1.1 3 2.62 3.39A2 2 0 0 0 8 13.5v2.5h8v-2.5a2 2 0 0 0 1.38-1.61A3.5 3.5 0 0 0 20 8.5a3.5 3.5 0 0 0-4.5-3.45A4 4 0 0 0 12 3z" />
-                          </svg>
-                        </span>
-
-                        {/* Kitchen in clean bold dark green */}
-                        <span className="font-['Outfit',sans-serif] text-2xl sm:text-3xl font-black text-[#14532D] drop-shadow-sm tracking-tight ml-0.5">
-                          Kitchen
-                        </span>
-                      </div>
-
-                      {/* Subtitle matching the logo ribbon: Healthy, Homemade & Hygienic Food */}
-                      <div className="flex items-center gap-1.5 mt-0.5">
-                        <span className="h-[1px] w-3 bg-[#E25C1D]/40 hidden sm:inline-block" />
-                        <span className="text-[9px] sm:text-[10px] font-semibold text-[#E25C1D] tracking-wide font-body flex items-center gap-1">
-                          ♥ Healthy, Homemade &amp; Hygienic Food ♥
-                        </span>
-                        <span className="h-[1px] w-3 bg-[#E25C1D]/40 hidden sm:inline-block" />
-                      </div>
+                    {/* Official Transparent Brand Lettering (Exact original artwork: Ani-माँ Kitchen + spoon + tagline) */}
+                    <div className="flex items-center">
+                      <img
+                        src="/brand-transparent.png"
+                        alt="Anima's Kitchen"
+                        className="h-10 sm:h-12 w-auto object-contain drop-shadow-md group-hover:scale-102 transition-transform"
+                      />
                     </div>
                   </button>
 
