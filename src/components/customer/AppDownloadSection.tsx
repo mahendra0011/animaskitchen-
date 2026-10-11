@@ -32,6 +32,26 @@ export const AppDownloadSection: React.FC = () => {
     document.body.removeChild(link);
   };
 
+  const handleDownloadAab = () => {
+    // Direct link to trigger Android App Bundle (.aab) / Play Store Package
+    const link = document.createElement("a");
+    link.href = "/animas-kitchen.aab";
+    link.download = "AnimasKitchen-release.aab";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDownloadIpa = () => {
+    // Direct link to trigger iOS Package (.ipa) file download
+    const link = document.createElement("a");
+    link.href = "/animas-kitchen.ipa";
+    link.download = "AnimasKitchen-iOS.ipa";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
     <section
       id="download-app"
@@ -125,40 +145,58 @@ export const AppDownloadSection: React.FC = () => {
               </div>
             </div>
 
-            {/* Dual Download CTA Bar (Android + iOS) */}
+            {/* Dual Download CTA Bar (Android APK, Android AAB Bundle & iOS) */}
             <div className="space-y-3 pt-4">
-              <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {/* Android APK Button */}
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                   <Button
                     onClick={handleDownloadApk}
-                    className="w-full rounded-2xl bg-gradient-to-r from-[#E25C1D] via-[#FF7A00] to-[#E25C1D] hover:opacity-95 text-white font-display text-sm font-bold px-6 py-3.5 h-auto shadow-xl shadow-orange-950/40 gap-3 border border-orange-400/30"
+                    className="w-full rounded-2xl bg-gradient-to-r from-[#E25C1D] via-[#FF7A00] to-[#E25C1D] hover:opacity-95 text-white font-display text-xs sm:text-sm font-bold px-4 py-3.5 h-auto shadow-xl shadow-orange-950/40 gap-2.5 border border-orange-400/30"
                   >
                     <Smartphone className="size-5 shrink-0 text-white" />
                     <div className="text-left">
                       <span className="block text-[9px] uppercase tracking-wider font-mono opacity-80">
-                        For Android Phones
+                        Android Direct
                       </span>
-                      <span className="text-sm font-black flex items-center gap-1.5">
-                        Download Android APK <Download className="size-3.5" />
+                      <span className="text-xs sm:text-sm font-black flex items-center gap-1">
+                        Download APK <Download className="size-3.5" />
+                      </span>
+                    </div>
+                  </Button>
+                </motion.div>
+
+                {/* Android AAB (App Bundle) Button */}
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                  <Button
+                    onClick={handleDownloadAab}
+                    className="w-full rounded-2xl bg-white/10 hover:bg-white/15 text-white font-display text-xs sm:text-sm font-bold px-4 py-3.5 h-auto shadow-xl border border-emerald-500/40 gap-2.5 backdrop-blur-md"
+                  >
+                    <Smartphone className="size-5 shrink-0 text-emerald-400" />
+                    <div className="text-left">
+                      <span className="block text-[9px] uppercase tracking-wider font-mono text-emerald-300">
+                        Play Store Bundle
+                      </span>
+                      <span className="text-xs sm:text-sm font-black flex items-center gap-1 text-white">
+                        Download AAB <Download className="size-3.5 text-emerald-400" />
                       </span>
                     </div>
                   </Button>
                 </motion.div>
 
                 {/* iOS / iPhone Button */}
-                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="flex-1">
+                <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }} className="sm:col-span-2 lg:col-span-1">
                   <Button
                     onClick={() => setShowIosGuide(true)}
-                    className="w-full rounded-2xl bg-white/10 hover:bg-white/15 text-white font-display text-sm font-bold px-6 py-3.5 h-auto shadow-xl border border-white/20 gap-3 backdrop-blur-md"
+                    className="w-full rounded-2xl bg-white/10 hover:bg-white/15 text-white font-display text-xs sm:text-sm font-bold px-4 py-3.5 h-auto shadow-xl border border-white/20 gap-2.5 backdrop-blur-md"
                   >
                     <Apple className="size-5 shrink-0 text-white" />
                     <div className="text-left">
                       <span className="block text-[9px] uppercase tracking-wider font-mono text-zinc-300">
-                        For iPhone / iPad (iOS)
+                        iPhone / iPad (iOS)
                       </span>
-                      <span className="text-sm font-black flex items-center gap-1.5 text-white">
-                        Install on iOS / iPhone <Sparkles className="size-3.5 text-amber-300" />
+                      <span className="text-xs sm:text-sm font-black flex items-center gap-1 text-white">
+                        Install on iOS <Sparkles className="size-3.5 text-amber-300" />
                       </span>
                     </div>
                   </Button>
@@ -170,7 +208,7 @@ export const AppDownloadSection: React.FC = () => {
                   <ShieldCheck className="size-4" /> 100% Verified Safe &amp; Fast
                 </span>
                 <span className="hidden sm:inline text-white/30">•</span>
-                <span>Android 8.0+ &amp; iOS 15+ Supported</span>
+                <span>Android (APK &amp; AAB) &amp; iOS Supported</span>
               </div>
             </div>
           </div>
@@ -392,11 +430,19 @@ export const AppDownloadSection: React.FC = () => {
                 <span>Anima's Kitchen app icon will appear directly on your iPhone home screen!</span>
               </div>
 
-              {/* Action Button */}
-              <div className="mt-5">
+              {/* Action Buttons */}
+              <div className="mt-5 space-y-2.5">
+                <Button
+                  onClick={handleDownloadIpa}
+                  className="w-full rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold py-3 border border-white/20 flex items-center justify-center gap-2"
+                >
+                  <Apple className="size-4 text-white" />
+                  <span>Download iOS IPA / App Package</span>
+                  <Download className="size-4" />
+                </Button>
                 <Button
                   onClick={() => setShowIosGuide(false)}
-                  className="w-full rounded-full bg-gradient-to-r from-[#E25C1D] to-[#FF7A00] text-white font-bold py-3 hover:opacity-95"
+                  className="w-full rounded-2xl bg-gradient-to-r from-[#E25C1D] to-[#FF7A00] text-white font-bold py-3 hover:opacity-95"
                 >
                   Got It, Thanks!
                 </Button>

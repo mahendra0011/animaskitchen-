@@ -21,8 +21,11 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "cap:sync": "npm run build:frontend && cap sync android",
-    "cap:open": "cap open android"
+    "cap:sync": "npm run build:frontend && cap sync",
+    "cap:sync:android": "npm run build:frontend && cap sync android",
+    "cap:sync:ios": "npm run build:frontend && cap sync ios",
+    "cap:open": "cap open android",
+    "cap:open:ios": "cap open ios"
   },
   "overrides": {
     "rolldown": "1.2.1"
