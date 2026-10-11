@@ -312,14 +312,14 @@ function MainAppContent() {
                   {/* Left: Brand Logo & Styled Text */}
                   <button
                     onClick={() => setCustomerPage("home")}
-                    className="flex items-center gap-2 text-left shrink-0 group py-1"
+                    className="flex items-center gap-2.5 text-left shrink-0 group py-0.5"
                     aria-label="Anima’s Kitchen home"
                   >
-                    {/* Official Clean Brand Logo (Cropped tightly without top/bottom empty space, large & crisp) */}
+                    {/* Official Clean Brand Logo with Maa Cooking + Ani-माँ Typography */}
                     <img
                       src="/logo.png"
                       alt="Anima's Kitchen"
-                      className="h-12 sm:h-14 md:h-16 w-auto max-w-[220px] sm:max-w-[280px] md:max-w-[340px] object-contain group-hover:scale-102 transition-transform drop-shadow-xs"
+                      className="h-14 sm:h-16 md:h-18 w-auto max-w-[200px] sm:max-w-[240px] md:max-w-[280px] object-contain group-hover:scale-102 transition-transform drop-shadow-xs"
                     />
                   </button>
 
