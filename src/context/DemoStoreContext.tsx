@@ -6,7 +6,6 @@ import {
   INITIAL_COUPONS,
   INITIAL_TIFFIN_PLANS,
   INITIAL_SUBSCRIPTIONS,
-  INITIAL_DEMO_ORDER,
   INITIAL_CUSTOMER_PROFILE,
   KITCHEN_LOCATION,
   INITIAL_INVENTORY_ITEMS,
@@ -271,7 +270,18 @@ export const DEFAULT_MENU_CATEGORIES: string[] = [
   "Combos",
 ];
 
-const STORAGE_KEY = "animas_kitchen_prototype_v1";
+const STORAGE_KEY = "animas_kitchen_v2";
+
+// Clean up legacy prototype mock state from client localStorage if present
+if (typeof window !== "undefined") {
+  try {
+    Object.keys(localStorage).forEach((key) => {
+      if (key.startsWith("animas_kitchen_prototype_v1")) {
+        localStorage.removeItem(key);
+      }
+    });
+  } catch {}
+}
 
 const safeGetItem = (key: string) => {
   if (typeof window === "undefined") return null;

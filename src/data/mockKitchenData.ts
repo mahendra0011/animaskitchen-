@@ -710,90 +710,27 @@ export const INITIAL_MENU_ITEMS: MenuItem[] = [
   },
 ];
 
-export const INITIAL_SAVED_ADDRESSES: DeliveryAddress[] = [
-  {
-    id: "addr-home",
-    label: "Home",
-    street: "House No 14, Near Water Tank",
-    area: "Patliputra Colony",
-    city: "Patna",
-    pincode: "800013",
-    landmark: "Near Patliputra Golambar",
-    coordinates: { lat: 25.6268, lng: 85.1118 },
-    contactPhone: "+91 98765 43210",
-    contactName: "Rahul Sharma",
-  },
-  {
-    id: "addr-office",
-    label: "Office",
-    street: "3rd Floor, Kashyap Shailja Complex",
-    area: "Boring Road",
-    city: "Patna",
-    pincode: "800001",
-    landmark: "Opposite Domino's, Boring Road Crossing",
-    coordinates: { lat: 25.6173, lng: 85.1212 },
-    contactPhone: "+91 98765 43210",
-    contactName: "Rahul Sharma",
-  },
-];
+export const INITIAL_SAVED_ADDRESSES: DeliveryAddress[] = [];
 
 export const INITIAL_DELIVERY_PARTNERS: DeliveryPartner[] = [
   {
-    id: "partner-rajesh",
-    name: "Rajesh Kumar",
+    id: "partner-sanjay",
+    name: "Sanjay K Singh",
     phone: "+91 98450 12345",
-    rating: 4.92,
-    totalDeliveries: 1420,
+    rating: 5.0,
+    totalDeliveries: 0,
     vehicle: {
-      model: "Honda Activa 6G (Silver)",
-      plateNumber: "KA 04 EL 9842",
-      type: "scooter",
+      model: "Hero Splendor Plus",
+      plateNumber: "BR 01 EA 4210",
+      type: "bike",
     },
-    currentLocation: { lat: 12.972, lng: 77.635, heading: 45 },
-    status: "available",
-    avatar:
-      "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80",
-    todayEarnings: 780,
-    weeklyEarnings: 5240,
-    walletBalance: 2450,
-  },
-  {
-    id: "partner-amit",
-    name: "Amit Sharma",
-    phone: "+91 97123 45678",
-    rating: 4.88,
-    totalDeliveries: 980,
-    vehicle: {
-      model: "TVS Jupiter (Grey)",
-      plateNumber: "KA 01 HY 4421",
-      type: "scooter",
-    },
-    currentLocation: { lat: 12.969, lng: 77.642, heading: 90 },
+    currentLocation: { lat: 25.6425, lng: 85.1095, heading: 0 },
     status: "available",
     avatar:
       "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80",
-    todayEarnings: 640,
-    weeklyEarnings: 4320,
-    walletBalance: 1890,
-  },
-  {
-    id: "partner-vikram",
-    name: "Vikram Singh",
-    phone: "+91 99887 76655",
-    rating: 4.95,
-    totalDeliveries: 2150,
-    vehicle: {
-      model: "Ather 450X EV (Green)",
-      plateNumber: "KA 05 EV 1008",
-      type: "ev",
-    },
-    currentLocation: { lat: 12.975, lng: 77.646, heading: 180 },
-    status: "busy",
-    avatar:
-      "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80",
-    todayEarnings: 920,
-    weeklyEarnings: 6100,
-    walletBalance: 3200,
+    todayEarnings: 0,
+    weeklyEarnings: 0,
+    walletBalance: 0,
   },
 ];
 
@@ -880,21 +817,7 @@ export const INITIAL_TIFFIN_PLANS: TiffinPlan[] = [
   },
 ];
 
-export const INITIAL_SUBSCRIPTIONS: ActiveSubscription[] = [
-  {
-    id: "sub-101",
-    planId: "plan-weekly",
-    planName: "5-Day Weekday Lunch Pass",
-    startDate: "2026-09-15",
-    endDate: "2026-09-21",
-    status: "active",
-    mealSlot: "lunch",
-    deliveryAddress: INITIAL_SAVED_ADDRESSES[0]!,
-    pausedDates: [],
-    totalDays: 5,
-    daysRemaining: 3,
-  },
-];
+export const INITIAL_SUBSCRIPTIONS: ActiveSubscription[] = [];
 
 export const KITCHEN_LOCATION = {
   lat: 25.6425,
@@ -902,93 +825,14 @@ export const KITCHEN_LOCATION = {
   address: "Anima's Kitchen, Vikash Nagar, Kurji, Patna, Bihar, India",
 };
 
-// Seed demo order showing Out for Delivery with animated rider
-export const INITIAL_DEMO_ORDER: Order = {
-  id: "ord-8491",
-  orderNumber: "AK-8491",
-  createdAt: new Date(Date.now() - 14 * 60 * 1000).toISOString(),
-  customerName: "Rahul Sharma",
-  customerPhone: "+91 98765 43210",
-  deliveryAddress: INITIAL_SAVED_ADDRESSES[0]!,
-  items: [
-    {
-      id: "ci-1",
-      menuItem: INITIAL_MENU_ITEMS[0]!, // Dal Tadka Thali
-      quantity: 1,
-      selectedAddons: [
-        { addon: REQUIRED_THALI_ADDONS[0]!, quantity: 2 }, // LA Lachha Paratha 2 pcs
-        { addon: REQUIRED_THALI_ADDONS[6]!, quantity: 1 }, // PA Paneer 250gm
-      ],
-      specialInstructions: "Please make dal tadka medium spicy, extra lemon.",
-      itemTotal: 189 + 20 * 2 + 90,
-    },
-  ],
-  itemTotal: 319,
-  taxAmount: 16,
-  deliveryFee: 0,
-  discountAmount: 120,
-  appliedCoupon: "ANIMA120",
-  finalTotal: 215,
-  paymentMethod: "upi",
-  paymentStatus: "paid",
-  status: "out_for_delivery",
-  deliveryPartnerId: "partner-rajesh",
-  deliveryOtp: "4826",
-  estimatedDeliveryMinutes: 12,
-  timeline: [
-    {
-      status: "placed",
-      label: "Order Placed",
-      timestamp: "12:15 PM",
-      description: "Received & payment confirmed via UPI",
-    },
-    {
-      status: "confirmed",
-      label: "Confirmed by Kitchen",
-      timestamp: "12:16 PM",
-      description: "Chef accepted order ticket",
-    },
-    {
-      status: "preparing",
-      label: "Food Preparing",
-      timestamp: "12:18 PM",
-      description: "Tawa rotis puffed & dal simmering in ghee",
-    },
-    {
-      status: "ready",
-      label: "Packed Hot & Sealed",
-      timestamp: "12:26 PM",
-      description: "Insulated steel containers packed",
-    },
-    {
-      status: "picked_up",
-      label: "Picked Up by Rider",
-      timestamp: "12:28 PM",
-      description: "Rajesh Kumar verified order ticket",
-    },
-    {
-      status: "out_for_delivery",
-      label: "Out for Delivery",
-      timestamp: "12:29 PM",
-      description: "Rider is 1.4 km away from your location",
-    },
-  ],
-  coordinates: {
-    kitchen: KITCHEN_LOCATION,
-    currentRider: { lat: 12.9752, lng: 77.641, heading: 32 },
-    customer: INITIAL_SAVED_ADDRESSES[0]!.coordinates,
-    progressRatio: 0.65,
-  },
-  currentDeliveryStep: "out_for_delivery",
-  deliveryInstructions: "Please leave at security desk or ring the bell once.",
-};
+export const INITIAL_DEMO_ORDER: Order | null = null;
 
 export const INITIAL_CUSTOMER_PROFILE: CustomerProfile = {
-  name: "Guest Customer",
-  phone: "+91 ",
+  name: "",
+  phone: "",
   email: "",
-  savedAddresses: INITIAL_SAVED_ADDRESSES,
-  defaultAddressId: "addr-home",
+  savedAddresses: [],
+  defaultAddressId: "",
   totalOrdersCount: 0,
   totalSpend: 0,
   favoriteItemIds: [],
@@ -1359,79 +1203,9 @@ export const INITIAL_DELIVERY_ZONES: DeliveryZone[] = [
   },
 ];
 
-export const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [
-  {
-    id: "tkt-101",
-    ticketNumber: "SUP-8821",
-    customerName: "Rahul Sharma",
-    phone: "+91 98765 43210",
-    orderNumber: "AK-8491",
-    issueType: "delayed_delivery",
-    description: "Order is delayed by 10 minutes due to rain near 100ft road.",
-    status: "in_progress",
-    createdAt: "10 mins ago",
-  },
-  {
-    id: "tkt-102",
-    ticketNumber: "SUP-8819",
-    customerName: "Ananya Iyer",
-    phone: "+91 98440 99881",
-    orderNumber: "AK-8488",
-    issueType: "missing_item",
-    description: "Extra Lachha Paratha was missing from the package.",
-    status: "resolved",
-    createdAt: "1 hour ago",
-  },
-];
+export const INITIAL_SUPPORT_TICKETS: SupportTicket[] = [];
 
-export const INITIAL_KOT_TICKETS: KOTTicket[] = [
-  {
-    id: "kot-1",
-    orderNumber: "AK-8491",
-    items: [
-      { name: "Dal Tadka Thali", quantity: 1, notes: "Medium spicy, extra lemon" },
-      { name: "Lachha Paratha (Add-on)", quantity: 2 },
-      { name: "Paneer 250gm (Add-on)", quantity: 1 },
-    ],
-    station: "Tawa Station",
-    prepTimeMinutes: 14,
-    isPriority: true,
-    isDelayed: false,
-    notes: "VIP Gold customer · pack piping hot in insulated bag",
-    status: "preparing",
-    createdAt: "12:18 PM",
-  },
-  {
-    id: "kot-2",
-    orderNumber: "AK-8492",
-    items: [
-      { name: "Anima's Royal Shahi Thali", quantity: 2, notes: "No onion, Jain friendly" },
-      { name: "Gulab Jamun (2 pcs)", quantity: 1 },
-    ],
-    station: "Handi & Curry",
-    prepTimeMinutes: 18,
-    isPriority: false,
-    isDelayed: false,
-    notes: "Jain preparation strictly",
-    status: "new",
-    createdAt: "12:24 PM",
-  },
-  {
-    id: "kot-3",
-    orderNumber: "AK-8490",
-    items: [
-      { name: "Smoked Paneer Tikka (8 pcs)", quantity: 1 },
-      { name: "Handi Dum Biryani", quantity: 1 },
-    ],
-    station: "Packing Station",
-    prepTimeMinutes: 0,
-    isPriority: false,
-    isDelayed: false,
-    notes: "Sealed & ready for pickup",
-    status: "ready",
-    createdAt: "12:10 PM",
-  },
-];
+export const INITIAL_KOT_TICKETS: KOTTicket[] = [];
 
 export const DEFAULT_GST_BILLING_CONFIG: GstBillingConfig = {
   isGstEnabled: true,
@@ -1467,42 +1241,8 @@ export const DEFAULT_GST_BILLING_CONFIG: GstBillingConfig = {
 };
 
 export const INITIAL_CUSTOMER_WALLET: CustomerWallet = {
-  balance: 250,
-  transactions: [
-    {
-      id: "tx-1",
-      type: "credit",
-      amount: 100,
-      description: "Welcome Cashback to Anima's Kitchen Wallet",
-      date: "10 Sep 2026",
-    },
-    {
-      id: "tx-2",
-      type: "credit",
-      amount: 150,
-      description: "Referral Bonus (Friend ordered first meal)",
-      date: "14 Sep 2026",
-    },
-  ],
+  balance: 0,
+  transactions: [],
 };
 
-export const INITIAL_WHATSAPP_LOGS: WhatsAppLog[] = [
-  {
-    id: "wa-1",
-    timestamp: "12:15 PM",
-    recipientPhone: "+91 98765 43210",
-    recipientName: "Rahul Sharma",
-    event: "order_confirmed",
-    message:
-      "🍱 *Anima's Kitchen*: Namaste Rahul! Order #AK-8491 (Dal Tadka Thali + 2 Add-ons) confirmed. Our chefs have fired the tawa! ETA: 24 mins.",
-  },
-  {
-    id: "wa-2",
-    timestamp: "12:28 PM",
-    recipientPhone: "+91 98765 43210",
-    recipientName: "Rahul Sharma",
-    event: "rider_assigned",
-    message:
-      "🛵 *Delivery Partner Assigned*: Rajesh Kumar (+91 98450 12345) has picked up your warm thali from Indiranagar Hub. Delivery OTP is *4826*.",
-  },
-];
+export const INITIAL_WHATSAPP_LOGS: WhatsAppLog[] = [];
