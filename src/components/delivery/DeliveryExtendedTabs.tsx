@@ -397,19 +397,23 @@ export const DeliveryAvailabilityTab: React.FC = () => {
    6. Rider Profile & KYC Documents Tab
    ========================================================================= */
 export const DeliveryProfileDocsTab: React.FC = () => {
+  const { activeRider } = useDemoStore();
+
+  const riderPhoneClean = activeRider?.phone?.replace(/[^0-9]/g, "").slice(-10) || "9845012345";
+
   return (
     <div className="space-y-6">
       {/* Profile Details */}
       <div className="bg-frost/90 border border-ink/10 rounded-2xl p-5 shadow-sm space-y-4">
-        <h3 className="font-display text-lg font-bold text-ink">Rider Identity & Vehicle</h3>
+        <h3 className="font-display text-lg font-bold text-ink">Rider Identity &amp; Vehicle</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
           <div>
             <span className="text-ink/50 block">Full Name</span>
-            <span className="font-bold text-ink">Rahul Verma</span>
+            <span className="font-bold text-ink">{activeRider?.name || "Sanjay K Singh"}</span>
           </div>
           <div>
             <span className="text-ink/50 block">Mobile Phone</span>
-            <span className="font-mono font-bold text-ink">+91 98765 43210</span>
+            <span className="font-mono font-bold text-ink">{activeRider?.phone || "+91 98450 12345"}</span>
           </div>
           <div>
             <span className="text-ink/50 block">Vehicle Model</span>
@@ -417,15 +421,15 @@ export const DeliveryProfileDocsTab: React.FC = () => {
           </div>
           <div>
             <span className="text-ink/50 block">Registration Plate</span>
-            <span className="font-mono font-bold text-spice">KA-03-HA-8821</span>
+            <span className="font-mono font-bold text-spice">BR-01-HA-8821</span>
           </div>
           <div>
             <span className="text-ink/50 block">Emergency Contact</span>
-            <span className="font-bold text-ink">Sunita Verma (Mother) · +91 98450 11223</span>
+            <span className="font-bold text-ink">Verified Family Contact · +91 98450 11223</span>
           </div>
           <div>
-            <span className="text-ink/50 block">Registered Bank / UPI</span>
-            <span className="font-mono font-bold text-emerald-700">rahul@okhdfcbank</span>
+            <span className="text-ink/50 block">Registered Payout UPI</span>
+            <span className="font-mono font-bold text-emerald-700">{riderPhoneClean}@okaxis</span>
           </div>
         </div>
       </div>

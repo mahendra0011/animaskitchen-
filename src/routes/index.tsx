@@ -32,7 +32,7 @@ import {
   Bike,
   Shield,
 } from "lucide-react";
-import { useState, useEffect, useRef, type ReactNode } from "react";
+import { useState, useEffect, useRef, useCallback, type ReactNode } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import gsap from "gsap";
 
@@ -60,6 +60,7 @@ import { AppDownloadSection } from "@/components/customer/AppDownloadSection";
 import { KitchenVideoReelsSection } from "@/components/customer/KitchenVideoReelsSection";
 import { FoodGallerySection } from "@/components/customer/FoodGallerySection";
 import { AuthModal } from "@/components/auth/AuthModal";
+import { AnimaAiConciergeModal } from "@/components/customer/AnimaAiConciergeModal";
 
 import heroBgImage from "@/assets/animas-hero-bg.png";
 import heroThali from "@/assets/animas-hero-thali.jpg";
@@ -128,13 +129,44 @@ function MainAppContent() {
     daySpecialMeal,
     customerPage,
     setCustomerPage,
+    setActiveRole,
   } = useDemoStore();
 
   const [areaChecked, setAreaChecked] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const [selectedDishPageId, setSelectedDishPageId] = useState<string | null>(null);
+  const [aiModalOpen, setAiModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      if (params.get("page") === "menu" || params.get("source") === "qr_menu") {
+        setActiveRole("customer");
+        setCustomerPage("menu");
+      }
+    }
+  }, [setActiveRole, setCustomerPage]);
 
   const heroAccentRef = useRef<HTMLDivElement>(null);
+
+  const handleOpenDashboard = useCallback(() => {
+    if (!isAuthenticated) {
+      setAuthModalTab("login");
+      setAuthModalOpen(true);
+      return;
+    }
+    const role = currentUser?.role;
+    if (role === "admin" || role === "kds") {
+      setActiveRole(role);
+      setCustomerPage("home");
+    } else if (role === "rider") {
+      setActiveRole("rider");
+      setCustomerPage("home");
+    } else {
+      setActiveRole("customer");
+      setCustomerPage("dashboard");
+    }
+  }, [isAuthenticated, currentUser?.role, setActiveRole, setCustomerPage, setAuthModalTab, setAuthModalOpen]);
 
   const canAccessRole =
     activeRole === "customer" || (isAuthenticated && currentUser?.role === activeRole);
@@ -188,17 +220,53 @@ function MainAppContent() {
 
       {activeRole === "customer" && (
         <>
+          {/* Staff Preview Mode: Instant quick-switch bar back to official staff dashboard */}
+          {isAuthenticated &&
+            (currentUser?.role === "admin" ||
+              currentUser?.role === "rider" ||
+              currentUser?.role === "kds") && (
+              <div className="bg-gradient-to-r from-emerald-950 via-stone-900 to-emerald-950 text-white text-xs px-4 py-2 flex items-center justify-between border-b border-emerald-500/30 sticky top-0 z-50 shadow-md">
+                <div className="flex items-center gap-2">
+                  <span className="size-2 rounded-full bg-emerald-400 animate-pulse" />
+                  <span className="text-[11px] font-medium">
+                    Staff Preview Mode: Logged in as{" "}
+                    <strong className="text-emerald-300 uppercase tracking-wide">
+                      {currentUser.role}
+                    </strong>{" "}
+                    ({currentUser.name})
+                  </span>
+                </div>
+                <button
+                  onClick={handleOpenDashboard}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold px-3 py-1 rounded-full text-[11px] transition-all flex items-center gap-1.5 shadow-sm active:scale-95 cursor-pointer"
+                >
+                  <span>
+                    Return to{" "}
+                    {currentUser.role === "admin"
+                      ? "Admin Dashboard"
+                      : currentUser.role === "rider"
+                      ? "Rider Portal"
+                      : "Kitchen KDS"}
+                  </span>
+                  <span className="font-mono">→</span>
+                </button>
+              </div>
+            )}
           {trackingViewOpen ? (
             <LiveTrackingView />
           ) : selectedDishPageId ? (
             <DishDetailPage
               dishId={selectedDishPageId}
-              onBack={() => setSelectedDishPageId(null)}
+              onBack={() => {
+                setSelectedDishPageId(null);
+                setCustomerPage("menu");
+              }}
             />
           ) : customerPage === "dashboard" ? (
             isAuthenticated ? (
               <CustomerDashboardView
                 onBackToStore={() => setCustomerPage("home")}
+                onOpenMenu={() => setCustomerPage("menu")}
                 onOpenDishPage={(id) => setSelectedDishPageId(id)}
               />
             ) : (
@@ -312,22 +380,35 @@ function MainAppContent() {
                   {/* Left: Brand Logo & Styled Text */}
                   <button
                     onClick={() => setCustomerPage("home")}
-                    className="flex items-center gap-2.5 sm:gap-3.5 text-left shrink-0 group py-0.5"
+                    className="flex items-center gap-2.5 sm:gap-3 text-left shrink-0 group py-0.5"
                     aria-label="Anima’s Kitchen home"
                   >
-                    {/* Left: Chef / Mascot Brand Logo */}
                     <img
                       src="/logo.png"
-                      alt="Anima's Kitchen Mascot"
-                      className="h-12 sm:h-14 md:h-16 w-auto object-contain group-hover:scale-105 transition-transform drop-shadow-xs shrink-0"
-                    />
-
-                    {/* Right: Original Ani-माँ Kitchen Brand Typography with Spoon */}
-                    <img
-                      src="/brand-transparent.png"
                       alt="Anima's Kitchen"
-                      className="h-9 sm:h-11 md:h-12 w-auto max-w-[170px] sm:max-w-[220px] md:max-w-[270px] object-contain group-hover:scale-102 transition-transform drop-shadow-xs"
+                      className="size-11 sm:size-13 md:size-14 object-contain group-hover:scale-105 transition-transform drop-shadow-sm shrink-0 rounded-full"
                     />
+                    <div className="flex flex-col justify-center leading-none">
+                      <div className="flex items-baseline gap-1 sm:gap-1.5">
+                        <span
+                          className="text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight text-[#186338] drop-shadow-2xs select-none"
+                          style={{ fontFamily: "'Kaushan Script', 'Pacifico', cursive" }}
+                        >
+                          Anima's
+                        </span>
+                        <span
+                          className="text-2xl sm:text-3xl md:text-[34px] font-bold tracking-tight text-[#E45312] drop-shadow-2xs select-none"
+                          style={{ fontFamily: "'Kaushan Script', 'Pacifico', cursive" }}
+                        >
+                          Kitchen
+                        </span>
+                      </div>
+                      <span className="font-mono text-[9px] sm:text-[10px] text-[#186338] font-black tracking-[0.18em] uppercase mt-0.5 flex items-center gap-1 select-none">
+                        <span>•</span>
+                        <span>HEALTHY FOOD</span>
+                        <span>•</span>
+                      </span>
+                    </div>
                   </button>
 
                   {/* Center: Desktop Navigation Links (Dark readable text on Light Navbar) */}
@@ -474,19 +555,45 @@ function MainAppContent() {
                     ) : (
                       <div className="hidden lg:flex items-center gap-1.5 ml-1">
                         <button
-                          onClick={() => setCustomerPage("dashboard")}
-                          className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all h-8 ${
-                            customerPage === "dashboard"
+                          onClick={handleOpenDashboard}
+                          className={`flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-xs font-semibold transition-all h-8 cursor-pointer ${
+                            currentUser?.role === "admin" || currentUser?.role === "kds"
+                              ? "border-emerald-500 bg-emerald-600 text-white shadow-xs hover:bg-emerald-700"
+                              : currentUser?.role === "rider"
+                              ? "border-amber-500 bg-amber-600 text-white shadow-xs hover:bg-amber-700"
+                              : customerPage === "dashboard"
                               ? "border-orange-500 bg-orange-600 text-white shadow-xs"
                               : "border-black/10 bg-white text-[#382B20] hover:border-orange-400"
                           }`}
-                          title="Open Customer Dashboard"
+                          title={
+                            currentUser?.role === "admin"
+                              ? "Open Admin Dashboard"
+                              : currentUser?.role === "rider"
+                              ? "Open Delivery Partner Dashboard"
+                              : "Open Customer Dashboard"
+                          }
                         >
-                          <span className="grid size-5 place-items-center rounded-full bg-orange-100 text-orange-700 text-[10px] font-bold">
-                            {currentUser?.name?.charAt(0) || "U"}
+                          <span
+                            className={`grid size-5 place-items-center rounded-full text-[10px] font-bold ${
+                              currentUser?.role === "admin"
+                                ? "bg-white text-emerald-800"
+                                : currentUser?.role === "rider"
+                                ? "bg-white text-amber-800"
+                                : "bg-orange-100 text-orange-700"
+                            }`}
+                          >
+                            {currentUser?.role === "admin"
+                              ? "⚙️"
+                              : currentUser?.role === "rider"
+                              ? "🛵"
+                              : currentUser?.name?.charAt(0) || "U"}
                           </span>
-                          <span className="truncate max-w-[80px]">
-                            {currentUser?.name?.split(" ")[0]}
+                          <span className="truncate max-w-[110px]">
+                            {currentUser?.role === "admin"
+                              ? "Admin Panel"
+                              : currentUser?.role === "rider"
+                              ? "Rider Portal"
+                              : currentUser?.name?.split(" ")[0]}
                           </span>
                         </button>
 
@@ -504,20 +611,33 @@ function MainAppContent() {
 
                     {/* Mobile User Icon / Dashboard Trigger */}
                     <button
-                      onClick={() => {
-                        if (isAuthenticated) {
-                          setCustomerPage("dashboard");
-                        } else {
-                          setAuthModalTab("login");
-                          setAuthModalOpen(true);
-                        }
-                      }}
-                      className="grid size-8 place-items-center rounded-full border border-black/10 bg-white text-[#382B20] hover:bg-black/5 shadow-xs lg:hidden shrink-0"
-                      aria-label={isAuthenticated ? "Open Dashboard" : "Sign In"}
+                      onClick={handleOpenDashboard}
+                      className="grid size-8 place-items-center rounded-full border border-black/10 bg-white text-[#382B20] hover:bg-black/5 shadow-xs lg:hidden shrink-0 cursor-pointer"
+                      aria-label={
+                        currentUser?.role === "admin"
+                          ? "Open Admin Dashboard"
+                          : currentUser?.role === "rider"
+                          ? "Open Delivery Dashboard"
+                          : isAuthenticated
+                          ? "Open Dashboard"
+                          : "Sign In"
+                      }
                     >
                       {isAuthenticated ? (
-                        <span className="grid size-5 place-items-center rounded-full bg-orange-600 text-white text-[10px] font-bold">
-                          {currentUser?.name?.charAt(0) || "U"}
+                        <span
+                          className={`grid size-5 place-items-center rounded-full text-[10px] font-bold ${
+                            currentUser?.role === "admin"
+                              ? "bg-emerald-600 text-white"
+                              : currentUser?.role === "rider"
+                              ? "bg-amber-600 text-white"
+                              : "bg-orange-600 text-white"
+                          }`}
+                        >
+                          {currentUser?.role === "admin"
+                            ? "⚙"
+                            : currentUser?.role === "rider"
+                            ? "🛵"
+                            : currentUser?.name?.charAt(0) || "U"}
                         </span>
                       ) : (
                         <User className="size-4 text-cream" />
@@ -550,28 +670,46 @@ function MainAppContent() {
                         <div className="flex items-center justify-between rounded-2xl bg-ink p-3 text-cream">
                           <div className="flex items-center gap-2.5">
                             <span className="grid size-8 place-items-center rounded-full bg-cream text-ink font-bold text-xs">
-                              {currentUser?.name?.charAt(0) || "U"}
+                              {currentUser?.role === "admin"
+                                ? "⚙️"
+                                : currentUser?.role === "rider"
+                                ? "🛵"
+                                : currentUser?.name?.charAt(0) || "U"}
                             </span>
                             <div>
                               <span className="text-xs font-bold block">{currentUser?.name}</span>
                               <span className="text-[10px] text-cream/60 font-mono block">
-                                Customer Account
+                                {currentUser?.role === "admin"
+                                  ? "Administrator"
+                                  : currentUser?.role === "rider"
+                                  ? "Delivery Partner"
+                                  : "Customer Account"}
                               </span>
                             </div>
                           </div>
                           <div className="flex items-center gap-1.5">
                             <button
                               onClick={() => {
-                                setCustomerPage("dashboard");
+                                handleOpenDashboard();
                                 setMobileNavOpen(false);
                               }}
-                              className="rounded-lg bg-spice px-2.5 py-1 text-[11px] font-bold text-cream hover:bg-white hover:text-ink transition-colors"
+                              className={`rounded-lg px-2.5 py-1 text-[11px] font-bold transition-colors cursor-pointer ${
+                                currentUser?.role === "admin"
+                                  ? "bg-emerald-600 text-white hover:bg-emerald-500"
+                                  : currentUser?.role === "rider"
+                                  ? "bg-amber-600 text-white hover:bg-amber-500"
+                                  : "bg-spice text-cream hover:bg-white hover:text-ink"
+                              }`}
                             >
-                              Dashboard
+                              {currentUser?.role === "admin"
+                                ? "Admin Panel"
+                                : currentUser?.role === "rider"
+                                ? "Rider Portal"
+                                : "Dashboard"}
                             </button>
                             <button
                               onClick={logout}
-                              className="rounded-lg bg-white/10 p-1 text-cream hover:bg-red-600 transition-colors"
+                              className="rounded-lg bg-white/10 p-1 text-cream hover:bg-red-600 transition-colors cursor-pointer"
                               title="Logout"
                             >
                               <LogOut className="size-3.5" />
@@ -611,15 +749,10 @@ function MainAppContent() {
                     <div className="flex flex-col gap-1 font-body text-sm font-semibold">
                       <button
                         onClick={() => {
-                          if (isAuthenticated) {
-                            setCustomerPage("dashboard");
-                          } else {
-                            setAuthModalTab("login");
-                            setAuthModalOpen(true);
-                          }
+                          handleOpenDashboard();
                           setMobileNavOpen(false);
                         }}
-                        className={`flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors ${
+                        className={`flex items-center justify-between py-2.5 px-3 rounded-xl transition-colors cursor-pointer ${
                           customerPage === "dashboard"
                             ? "bg-spice text-cream font-bold"
                             : "text-ink hover:bg-cream/60"
@@ -628,10 +761,13 @@ function MainAppContent() {
                         <span className="flex items-center gap-2.5">
                           <User className="size-4 text-spice" />
                           <span>
-                            👤{" "}
-                            {isAuthenticated
-                              ? "My Customer Dashboard"
-                              : "Sign In / Customer Account"}
+                            {currentUser?.role === "admin"
+                              ? "⚙️ Admin Dashboard"
+                              : currentUser?.role === "rider"
+                              ? "🛵 Delivery Dashboard"
+                              : isAuthenticated
+                              ? "👤 My Customer Dashboard"
+                              : "👤 Sign In / Customer Account"}
                           </span>
                         </span>
                         <ArrowRight className="size-3.5 opacity-50" />
@@ -920,6 +1056,18 @@ function MainAppContent() {
                         <Smartphone className="size-3.5 text-emerald-400" />
                         <span>Download APK</span>
                         <Download className="size-3 text-emerald-400" />
+                      </Button>
+
+                      {/* AI Concierge Action Button */}
+                      <Button
+                        className="rounded-full bg-gradient-to-r from-[#186338] via-emerald-600 to-[#E45312] hover:opacity-95 text-white px-5 sm:px-6 py-3 font-body text-xs sm:text-sm font-bold shadow-xl shadow-emerald-950/60 transition-all hover:scale-105 h-auto justify-center gap-2 active:scale-95 border-2 border-amber-300/60 ring-2 ring-emerald-400/20 shrink-0"
+                        onClick={() => setAiModalOpen(true)}
+                      >
+                        <Sparkles className="size-4 text-amber-200 animate-spin" style={{ animationDuration: "3s" }} />
+                        <span>Ask Anima AI</span>
+                        <span className="text-[10px] bg-white/25 px-1.5 py-0.5 rounded-full font-mono uppercase tracking-wider text-amber-100">
+                          24/7 Chef
+                        </span>
                       </Button>
                     </div>
 
@@ -2036,23 +2184,33 @@ function MainAppContent() {
               </button>
 
               <button
-                onClick={() => {
-                  if (isAuthenticated) {
-                    setCustomerPage("dashboard");
-                  } else {
-                    setAuthModalTab("login");
-                    setAuthModalOpen(true);
-                  }
-                }}
-                className={`flex flex-col items-center gap-1 px-3 py-1 text-[11px] font-medium transition-colors ${
-                  customerPage === "dashboard"
+                onClick={handleOpenDashboard}
+                className={`flex flex-col items-center gap-1 px-3 py-1 text-[11px] font-medium transition-colors cursor-pointer ${
+                  customerPage === "dashboard" ||
+                  (isAuthenticated && (currentUser?.role === "admin" || currentUser?.role === "rider"))
                     ? "text-spice font-bold"
                     : "text-ink/60 hover:text-ink"
                 }`}
-                aria-label={isAuthenticated ? "Customer Dashboard" : "Sign In"}
+                aria-label={
+                  currentUser?.role === "admin"
+                    ? "Admin Dashboard"
+                    : currentUser?.role === "rider"
+                    ? "Delivery Dashboard"
+                    : isAuthenticated
+                    ? "Customer Dashboard"
+                    : "Sign In"
+                }
               >
                 <User className="size-4" />
-                <span>{isAuthenticated ? "Account" : "Sign In"}</span>
+                <span>
+                  {currentUser?.role === "admin"
+                    ? "Admin"
+                    : currentUser?.role === "rider"
+                    ? "Rider"
+                    : isAuthenticated
+                    ? "Account"
+                    : "Sign In"}
+                </span>
               </button>
             </nav>
           )}
@@ -2062,10 +2220,27 @@ function MainAppContent() {
           <CartDrawer />
           <CheckoutModal />
           <CustomerProfileDrawer />
+          <AnimaAiConciergeModal
+            open={aiModalOpen}
+            onOpenChange={setAiModalOpen}
+            onNavigateToMenu={() => setCustomerPage("menu")}
+            onNavigateToOffers={() => setCustomerPage("offers")}
+          />
 
           {/* ─── FLOATING QUICK ACTION BUTTONS (WHATSAPP & CALL) ─── */}
           {customerPage === "home" && !trackingViewOpen && (
             <div className="fixed bottom-24 lg:bottom-6 right-3 sm:right-6 z-50 flex flex-col items-end gap-2.5 pointer-events-auto">
+              {/* Anima AI Floating Quick Button */}
+              <button
+                onClick={() => setAiModalOpen(true)}
+                className="group flex items-center gap-2 rounded-full bg-gradient-to-r from-[#186338] via-emerald-600 to-[#E45312] text-white px-3.5 py-2.5 sm:px-4 sm:py-2.5 shadow-xl hover:scale-105 active:scale-95 transition-all duration-300 ring-2 ring-white/30 border border-amber-300/40"
+                aria-label="Ask Anima AI"
+                title="Ask Anima AI Chef"
+              >
+                <Sparkles className="size-4 text-amber-200 animate-pulse" />
+                <span className="font-bold text-xs sm:text-sm tracking-tight pr-1">Ask AI Chef</span>
+              </button>
+
               {/* WhatsApp Action Button */}
               <a
                 href="https://wa.me/917004960724?text=Namaste%20Anima's%20Kitchen,%20I%20want%20to%20order%20food"

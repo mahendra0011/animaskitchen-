@@ -24,22 +24,23 @@ export const CustomerMenuSection: React.FC<{
   onOpenDishPage?: (dishId: string) => void;
   onViewFullMenu?: () => void;
 }> = ({ onOpenDishPage, onViewFullMenu }) => {
-  const { menuItems, thaliAddons, addToCart, setThaliModalItem, toggleWishlist, isWishlisted } =
-    useDemoStore();
+  const {
+    menuItems,
+    thaliAddons,
+    addToCart,
+    setThaliModalItem,
+    toggleWishlist,
+    isWishlisted,
+    allCategories,
+  } = useDemoStore();
 
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [onlyVeg, setOnlyVeg] = useState(false);
 
-  const categories = [
-    "All",
-    "Thali",
-    "Paneer & Tandoor",
-    "Biryani",
-    "Roti & Rice",
-    "Desserts",
-    "Chai & More",
-  ];
+  const categories = useMemo(() => {
+    return ["All", ...(allCategories || [])];
+  }, [allCategories]);
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {

@@ -352,7 +352,7 @@ export const KitchenVideoReelsSection: React.FC = () => {
                         onClick={() => {
                           const currentIdx = kitchenVideos.findIndex((v) => v.id === selectedVideo.id);
                           const prevIdx = (currentIdx - 1 + kitchenVideos.length) % kitchenVideos.length;
-                          setSelectedVideo(kitchenVideos[prevIdx]);
+                          setSelectedVideo(kitchenVideos[prevIdx] || null);
                         }}
                         className="flex-1 rounded-xl border-white/20 bg-white/5 hover:bg-white/10 text-white text-xs gap-1 py-2 font-mono"
                       >
@@ -366,7 +366,7 @@ export const KitchenVideoReelsSection: React.FC = () => {
                         onClick={() => {
                           const currentIdx = kitchenVideos.findIndex((v) => v.id === selectedVideo.id);
                           const nextIdx = (currentIdx + 1) % kitchenVideos.length;
-                          setSelectedVideo(kitchenVideos[nextIdx]);
+                          setSelectedVideo(kitchenVideos[nextIdx] || null);
                         }}
                         className="flex-1 rounded-xl border-white/20 bg-white/5 hover:bg-white/10 text-white text-xs gap-1 py-2 font-mono"
                       >

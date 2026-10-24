@@ -35,7 +35,13 @@ export const DishDetailPage: React.FC<{
     setCartDrawerOpen,
     toggleWishlist,
     isWishlisted,
+    setCustomerPage,
   } = useDemoStore();
+
+  const handleBack = () => {
+    setCustomerPage("menu");
+    onBack();
+  };
 
   const item = useMemo(() => {
     return menuItems.find((m) => m.id === dishId) || menuItems[0];
@@ -118,7 +124,7 @@ export const DishDetailPage: React.FC<{
       <header className="sticky top-0 z-40 border-b border-ink/10 bg-frost/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-5 py-3.5">
           <button
-            onClick={onBack}
+            onClick={handleBack}
             className="flex items-center gap-2 rounded-full border border-ink/15 bg-white px-3.5 py-1.5 text-xs font-bold text-ink shadow-xs hover:border-spice hover:text-spice transition-all"
           >
             <ArrowLeft className="size-4" />

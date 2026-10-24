@@ -60,7 +60,7 @@ export const WhatsAppAutomationTab: React.FC = () => {
       event: "delivered",
       title: "Order Delivered + Review Request",
       preview:
-        "✅ Hope you loved your meal! Rate your experience with Anima's Kitchen and get 50 bonus loyalty points.",
+        "✅ Hope you loved your meal! Rate your experience with Anima's Kitchen and get ₹50 off your next homestyle order.",
     },
   ];
 

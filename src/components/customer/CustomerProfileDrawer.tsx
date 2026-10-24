@@ -48,8 +48,6 @@ export const CustomerProfileDrawer: React.FC = () => {
     setActiveOrderId,
     setTrackingViewOpen,
     logout,
-    loyaltyProfile,
-    redeemLoyaltyPoints,
     customerWallet,
     addWalletMoney,
     hasKitchenPass,
@@ -59,6 +57,7 @@ export const CustomerProfileDrawer: React.FC = () => {
     wishlistIds,
     toggleWishlist,
     menuItems,
+    setCustomerPage,
   } = useDemoStore();
 
   const [activeTab, setActiveTab] = useState<
@@ -127,15 +126,6 @@ export const CustomerProfileDrawer: React.FC = () => {
     toast.success(`Re-ordered items from #${order.orderNumber}!`);
   };
 
-  const handleRedeem = (points: number, rewardLabel: string) => {
-    const success = redeemLoyaltyPoints(points, rewardLabel);
-    if (success) {
-      toast.success(`Redeemed ${points} points for "${rewardLabel}"!`);
-    } else {
-      toast.error("Not enough loyalty points available.");
-    }
-  };
-
   const handleCreateTicket = (e: React.FormEvent) => {
     e.preventDefault();
     if (!ticketDesc.trim()) return;
@@ -153,9 +143,9 @@ export const CustomerProfileDrawer: React.FC = () => {
   };
 
   const handleShareReferral = () => {
-    const text = `Hey! Order authentic home-style thalis from Anima's Kitchen using my referral code ${loyaltyProfile.referralCode} and get ₹50 off your first meal! https://animas-kitchen.in`;
+    const text = `Hey! Order authentic home-style thalis from Anima's Kitchen using promo code ANIMA50 and get ₹50 off your first meal! https://animas-kitchen.in`;
     navigator.clipboard.writeText(text);
-    toast.success("Referral link copied to clipboard! Share on WhatsApp.");
+    toast.success("Promo link copied to clipboard! Share on WhatsApp.");
   };
 
   return (
@@ -304,6 +294,7 @@ export const CustomerProfileDrawer: React.FC = () => {
                         onClick={() => {
                           setActiveOrderId(ord.id);
                           setProfileDrawerOpen(false);
+                          setCustomerPage("menu");
                           setTrackingViewOpen(true);
                         }}
                         className="h-7 rounded-full text-[11px] border-ink/15 text-ink"

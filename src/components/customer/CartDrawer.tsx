@@ -33,6 +33,7 @@ export const CartDrawer: React.FC = () => {
     setCheckoutModalOpen,
     customerProfile,
     coupons,
+    gstBillingConfig,
   } = useDemoStore();
 
   const [couponInput, setCouponInput] = useState("");
@@ -63,10 +64,35 @@ export const CartDrawer: React.FC = () => {
     }
   }
 
-  const tax = Math.round(cartTotal * 0.05);
-  // Under 4 km is FREE delivery (for orders >= ₹250), extra beyond 4 km
-  const deliveryFee = cartTotal >= 250 || appliedCoupon === "FREEDEL" ? 0 : 35;
-  const grandTotal = Math.max(0, cartTotal + tax + deliveryFee - discount);
+  const effectiveTaxRate = gstBillingConfig.isGstEnabled ? gstBillingConfig.gstRatePercent : 0;
+  const tax = Math.round((cartTotal * effectiveTaxRate) / 100);
+  const packagingFee = gstBillingConfig.packagingFee > 0
+    ? (gstBillingConfig.isPackagingFeePerItem
+        ? cart.reduce((sum, item) => sum + item.quantity, 0) * gstBillingConfig.packagingFee
+        : gstBillingConfig.packagingFee)
+    : 0;
+  const customTaxesBreakdown = (gstBillingConfig.customTaxes || [])
+    .filter((t) => t.isEnabled && t.value > 0)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      type: t.type,
+      value: t.value,
+      amount:
+        t.type === "percent"
+          ? Number(((cartTotal * t.value) / 100).toFixed(2))
+          : Number(t.value.toFixed(2)),
+    }));
+  const customTaxesTotal = Number(
+    customTaxesBreakdown.reduce((sum, it) => sum + it.amount, 0).toFixed(2),
+  );
+
+  const isFreeDel = cartTotal >= gstBillingConfig.freeDeliveryThreshold || appliedCoupon === "FREEDEL";
+  const deliveryFee = isFreeDel ? 0 : gstBillingConfig.deliveryFee;
+  const grandTotal = Math.max(
+    0,
+    cartTotal + tax + customTaxesTotal + packagingFee + deliveryFee - discount,
+  );
 
   const handleApplyCoupon = (code: string) => {
     const found = coupons.find((c) => c.code.toUpperCase() === code.toUpperCase());
@@ -361,15 +387,41 @@ export const CartDrawer: React.FC = () => {
                 <span>Items Subtotal</span>
                 <span className="font-mono">₹{cartTotal}</span>
               </div>
-              <div className="flex justify-between">
-                <span>GST & Restaurant Packaging (5%)</span>
-                <span className="font-mono">₹{tax}</span>
-              </div>
+              {packagingFee > 0 && (
+                <div className="flex justify-between">
+                  <span>Eco Packaging Charge</span>
+                  <span className="font-mono">₹{packagingFee}</span>
+                </div>
+              )}
+              {gstBillingConfig.isGstEnabled && effectiveTaxRate > 0 ? (
+                <div className="flex justify-between">
+                  <span>
+                    GST ({effectiveTaxRate}%)
+                    <span className="text-[10px] text-ink/50 block">
+                      CGST {gstBillingConfig.cgstPercent}% + SGST {gstBillingConfig.sgstPercent}%
+                    </span>
+                  </span>
+                  <span className="font-mono font-semibold">₹{tax}</span>
+                </div>
+              ) : (
+                <div className="flex justify-between text-emerald-700">
+                  <span>GST & Tax</span>
+                  <span className="font-mono font-semibold">₹0 (Exempt)</span>
+                </div>
+              )}
+              {customTaxesBreakdown.map((ct) => (
+                <div key={ct.id} className="flex justify-between items-center text-spice font-medium">
+                  <span>
+                    {ct.name} {ct.type === "percent" ? `(${ct.value}%)` : ""}
+                  </span>
+                  <span className="font-mono font-semibold">+₹{ct.amount}</span>
+                </div>
+              ))}
               <div className="flex justify-between items-center">
                 <div>
                   <span className="block font-medium">Delivery Partner Fee</span>
                   <span className="text-[10px] text-ink/60">
-                    Free under 4 km · Extra beyond 4 km
+                    Free above ₹{gstBillingConfig.freeDeliveryThreshold}
                   </span>
                 </div>
                 <span className="font-mono font-semibold">

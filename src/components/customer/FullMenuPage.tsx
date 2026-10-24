@@ -24,7 +24,16 @@ export const FullMenuPage: React.FC<{
   onBack: () => void;
   onOpenDishPage?: (dishId: string) => void;
 }> = ({ onBack, onOpenDishPage }) => {
-  const { menuItems, thaliAddons, addToCart, cartCount, setCartDrawerOpen } = useDemoStore();
+  const {
+    menuItems,
+    thaliAddons,
+    addToCart,
+    cartCount,
+    setCartDrawerOpen,
+    allCategories,
+    activeOrder,
+    setTrackingViewOpen,
+  } = useDemoStore();
 
   const [activeCategory, setActiveCategory] = useState<string>("All");
   const [searchQuery, setSearchQuery] = useState("");
@@ -39,16 +48,9 @@ export const FullMenuPage: React.FC<{
     }
   };
 
-  const categories = [
-    "All",
-    "Thali",
-    "Sabzi",
-    "Paneer & Tandoor",
-    "Biryani",
-    "Roti & Rice",
-    "Desserts",
-    "Chai & More",
-  ];
+  const categories = useMemo(() => {
+    return ["All", ...(allCategories || [])];
+  }, [allCategories]);
 
   const filteredItems = useMemo(() => {
     return menuItems.filter((item) => {
@@ -111,6 +113,41 @@ export const FullMenuPage: React.FC<{
           </div>
         </div>
       </header>
+
+      {/* 🔴 Active Order Live Tracker Banner (If customer has order in progress) */}
+      {activeOrder && activeOrder.status !== "delivered" && activeOrder.status !== "cancelled" && (
+        <div className="bg-ink text-cream border-b border-cream/10 px-5 py-3 shadow-md">
+          <div className="mx-auto max-w-6xl flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <span className="relative flex size-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full size-3 bg-emerald-500"></span>
+              </span>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-cream">
+                    Active Order #{activeOrder.orderNumber}
+                  </span>
+                  <span className="rounded-full bg-saffron/20 text-saffron text-[10px] font-mono px-2 py-0.5 uppercase font-bold">
+                    {activeOrder.status.replace(/_/g, " ")}
+                  </span>
+                </div>
+                <p className="text-[11px] text-cream/70 mt-0.5">
+                  {activeOrder.items.length} items • Fresh preparation in kitchen
+                </p>
+              </div>
+            </div>
+            <Button
+              size="sm"
+              onClick={() => setTrackingViewOpen(true)}
+              className="rounded-xl bg-spice hover:bg-spice/90 text-cream text-xs font-bold gap-1.5 h-8 shrink-0 shadow-sm"
+            >
+              <Eye className="size-3.5" />
+              <span>Track Live Order</span>
+            </Button>
+          </div>
+        </div>
+      )}
 
       {/* Category header */}
       <div className="border-b border-ink/10 bg-gradient-to-r from-saffron/10 via-frost to-spice/5 py-6">
@@ -199,7 +236,7 @@ export const FullMenuPage: React.FC<{
                   : "border border-ink/12 bg-white/90 text-ink/70 hover:border-spice hover:text-spice"
               }`}
             >
-              <span className="mr-1.5">{CATEGORY_META[cat]?.emoji}</span>
+              <span className="mr-1.5">{CATEGORY_META[cat]?.emoji || "🍲"}</span>
               {cat}
             </motion.button>
           ))}

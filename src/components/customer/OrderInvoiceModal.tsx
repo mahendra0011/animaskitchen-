@@ -1,5 +1,6 @@
 import React, { useRef } from "react";
 import { Order } from "@/types/kitchen";
+import { useDemoStore } from "@/context/DemoStoreContext";
 import {
   Dialog,
   DialogContent,
@@ -23,11 +24,30 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
   onOpenChange,
 }) => {
   const invoiceRef = useRef<HTMLDivElement>(null);
+  const { gstBillingConfig } = useDemoStore();
 
   if (!order) return null;
 
-  const invoiceNumber = `BILL-AK-2026-${order.orderNumber.replace("#", "")}`;
+  const invoiceNumber = `${gstBillingConfig.invoicePrefix || "INV-AK"}-2026-${order.orderNumber.replace("#", "")}`;
   const subtotal = order.subtotal ?? order.itemTotal;
+  const effectiveTaxRate = gstBillingConfig.isGstEnabled ? gstBillingConfig.gstRatePercent : 0;
+  const totalTax = order.taxAmount ?? Math.round((subtotal * effectiveTaxRate) / 100);
+  const cgst = Number(((subtotal * (gstBillingConfig.isGstEnabled ? gstBillingConfig.cgstPercent : 0)) / 100).toFixed(2));
+  const sgst = Number(((subtotal * (gstBillingConfig.isGstEnabled ? gstBillingConfig.sgstPercent : 0)) / 100).toFixed(2));
+  const packagingFee = order.packagingFee ?? (gstBillingConfig.packagingFee > 0 ? gstBillingConfig.packagingFee : 0);
+
+  const customTaxesList = order.customTaxesBreakdown?.length
+    ? order.customTaxesBreakdown
+    : (gstBillingConfig.customTaxes || [])
+        .filter((t) => t.isEnabled && t.value > 0)
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          amount:
+            t.type === "percent"
+              ? Number(((subtotal * t.value) / 100).toFixed(2))
+              : Number(t.value.toFixed(2)),
+        }));
 
   const handlePrint = () => {
     window.print();
@@ -60,10 +80,11 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
       </head>
       <body>
         <div class="header">
-          <h1>ANIMA'S KITCHEN</h1>
-          <div class="sub">Fresh, Homemade Ghar Jaisa Khana | Vikash Nagar, Kurji, Patna - 800013</div>
-          <div class="sub">Small Enterprise Food Hub | FSSAI Lic. No: 20424001000512</div>
-          <div class="badge">OFFICIAL ORDER RECEIPT / CASH MEMO</div>
+          <img src="/logo.png" alt="Anima's Kitchen" style="width: 72px; height: 72px; object-fit: contain; border-radius: 50%; margin: 0 auto 10px auto; display: block;" />
+          <h1>${gstBillingConfig.businessLegalName || "ANIMA'S KITCHEN"}</h1>
+          <div class="sub">${gstBillingConfig.billingAddress}</div>
+          <div class="sub">GSTIN: <strong>${gstBillingConfig.restaurantGstin}</strong> | FSSAI Lic. No: <strong>${gstBillingConfig.fssaiNumber}</strong> | SAC: ${gstBillingConfig.hsnSacCode}</div>
+          <div class="badge">${gstBillingConfig.isGstEnabled && effectiveTaxRate > 0 ? `GST TAX INVOICE (${effectiveTaxRate}%)` : "OFFICIAL ORDER RECEIPT / CASH MEMO"}</div>
         </div>
 
         <div class="meta">
@@ -85,6 +106,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
           <thead>
             <tr>
               <th>Dish Item</th>
+              <th>SAC</th>
               <th class="text-right">Qty</th>
               <th class="text-right">Price</th>
               <th class="text-right">Amount</th>
@@ -103,6 +125,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
                       : ""
                   }
                 </td>
+                <td>${gstBillingConfig.hsnSacCode}</td>
                 <td class="text-right">${item.quantity}</td>
                 <td class="text-right">₹${item.menuItem?.price || item.itemTotal}</td>
                 <td class="text-right">₹${item.itemTotal * item.quantity}</td>
@@ -114,13 +137,20 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
         </table>
 
         <div class="totals">
-          <div class="totals-row"><span>Item Subtotal:</span><span>₹${subtotal}</span></div>
-          <div class="totals-row"><span>Delivery Fee:</span><span>${order.deliveryFee === 0 ? "FREE (Under 4km)" : `₹${order.deliveryFee}`}</span></div>
+          <div class="totals-row"><span>Taxable Subtotal:</span><span>₹${subtotal}</span></div>
+          ${packagingFee > 0 ? `<div class="totals-row"><span>Eco Packaging:</span><span>₹${packagingFee}</span></div>` : ""}
+          ${gstBillingConfig.isGstEnabled && effectiveTaxRate > 0 ? `
+            <div class="totals-row"><span>CGST (${gstBillingConfig.cgstPercent}%):</span><span>₹${cgst}</span></div>
+            <div class="totals-row"><span>SGST (${gstBillingConfig.sgstPercent}%):</span><span>₹${sgst}</span></div>
+          ` : `<div class="totals-row"><span>GST:</span><span>₹0 (Exempt)</span></div>`}
+          ${customTaxesList.map((ct) => `<div class="totals-row" style="color: #ea580c;"><span>${ct.name}:</span><span>+₹${ct.amount}</span></div>`).join("")}
+          <div class="totals-row"><span>Delivery Fee:</span><span>${order.deliveryFee === 0 ? "FREE" : `₹${order.deliveryFee}`}</span></div>
           ${order.discountAmount ? `<div class="totals-row" style="color: #047857;"><span>Discount / Coupon:</span><span>-₹${order.discountAmount}</span></div>` : ""}
           <div class="totals-row grand-total"><span>Total Paid:</span><span>₹${order.finalTotal}</span></div>
         </div>
 
         <div class="footer">
+          Tax Invoice issued in accordance with Rule 46 of CGST Rules, 2017.<br>
           Thank you for choosing Anima's Kitchen Patna! Prepared with 100% cow desi ghee and zero preservatives.<br>
           For orders & queries: +91 70049 60724 | animaskitchen24@gmail.com
         </div>
@@ -201,15 +231,15 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
           {/* Header */}
           <div className="flex justify-between items-start border-b border-ink/10 pb-4">
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-3">
                 <img
-                  src="/logo.jpeg"
+                  src="/logo.png"
                   alt="Anima's Kitchen Logo"
-                  className="size-10 rounded-xl object-cover border border-ink/10"
+                  className="size-14 rounded-full object-contain border-2 border-spice/20 shadow-xs shrink-0 bg-white"
                 />
                 <div>
                   <h3 className="font-display text-lg font-extrabold text-ink leading-tight">
-                    ANIMA'S KITCHEN
+                    {gstBillingConfig.businessLegalName || "ANIMA'S KITCHEN"}
                   </h3>
                   <span className="text-[10px] font-mono text-ink/60 uppercase">
                     Patna Cloud & Tiffin Hub
@@ -217,17 +247,17 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
                 </div>
               </div>
               <p className="mt-2 text-xs text-ink/70">
-                Road No. 4, Vikash Nagar, Kurji, Patna - 800013
+                {gstBillingConfig.billingAddress}
               </p>
-              <p className="text-[11px] text-ink/50 font-mono">
-                FSSAI Lic. No: 20424001000512 · Fresh Homemade Kitchen
+              <p className="text-[11px] text-ink/60 font-mono">
+                <strong>GSTIN:</strong> {gstBillingConfig.restaurantGstin} · <strong>FSSAI:</strong> {gstBillingConfig.fssaiNumber}
               </p>
             </div>
 
             <div className="text-right">
               <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-0.5 text-[10px] font-mono font-bold text-emerald-800 border border-emerald-200">
                 <CheckCircle2 className="size-3 text-emerald-600" />
-                PAID RECEIPT
+                {gstBillingConfig.isGstEnabled && effectiveTaxRate > 0 ? "GST TAX INVOICE" : "PAID RECEIPT"}
               </span>
               <p className="font-mono text-xs font-bold text-ink mt-2">{invoiceNumber}</p>
               <p className="text-[11px] font-mono text-ink/60">
@@ -270,6 +300,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
               <thead className="bg-frost/80 text-ink/70 font-mono text-[10px] uppercase border-b border-ink/10">
                 <tr>
                   <th className="p-3">Dish / Item</th>
+                  <th className="p-3">SAC</th>
                   <th className="p-3 text-center">Qty</th>
                   <th className="p-3 text-right">Rate</th>
                   <th className="p-3 text-right pr-4">Total</th>
@@ -289,6 +320,7 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
                         </p>
                       )}
                     </td>
+                    <td className="p-3 font-mono text-[11px] text-ink/60">{gstBillingConfig.hsnSacCode}</td>
                     <td className="p-3 text-center font-mono font-medium">{item.quantity}</td>
                     <td className="p-3 text-right font-mono text-ink/70">
                       ₹{item.menuItem?.price || item.itemTotal}
@@ -322,15 +354,44 @@ export const OrderInvoiceModal: React.FC<OrderInvoiceModalProps> = ({
                 </span>
               </div>
               <p className="text-[10px] text-ink/50 pt-1">
-                Small Enterprise / Cloud Kitchen · Direct Honest Pricing
+                Rule 46 Tax Invoice · SAC: {gstBillingConfig.hsnSacCode}
               </p>
             </div>
 
             <div className="w-full sm:w-60 space-y-1.5 text-xs font-mono">
               <div className="flex justify-between text-ink/70">
-                <span>Item Subtotal:</span>
+                <span>Taxable Subtotal:</span>
                 <span>₹{subtotal}</span>
               </div>
+              {packagingFee > 0 && (
+                <div className="flex justify-between text-ink/70">
+                  <span>Eco Packaging:</span>
+                  <span>₹{packagingFee}</span>
+                </div>
+              )}
+              {gstBillingConfig.isGstEnabled && effectiveTaxRate > 0 ? (
+                <>
+                  <div className="flex justify-between text-ink/80">
+                    <span>CGST ({gstBillingConfig.cgstPercent}%):</span>
+                    <span>₹{cgst}</span>
+                  </div>
+                  <div className="flex justify-between text-ink/80">
+                    <span>SGST ({gstBillingConfig.sgstPercent}%):</span>
+                    <span>₹{sgst}</span>
+                  </div>
+                </>
+              ) : (
+                <div className="flex justify-between text-emerald-700">
+                  <span>GST:</span>
+                  <span>₹0 (Exempt)</span>
+                </div>
+              )}
+              {customTaxesList.map((ct) => (
+                <div key={ct.id} className="flex justify-between text-spice font-medium">
+                  <span>{ct.name}:</span>
+                  <span className="font-mono font-semibold">+₹{ct.amount}</span>
+                </div>
+              ))}
               <div className="flex justify-between text-ink/70">
                 <span>Delivery:</span>
                 <span>{order.deliveryFee === 0 ? "FREE" : `₹${order.deliveryFee}`}</span>

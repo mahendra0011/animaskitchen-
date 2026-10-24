@@ -16,7 +16,7 @@ import {
   INITIAL_DELIVERY_ZONES,
   INITIAL_SUPPORT_TICKETS,
   INITIAL_KOT_TICKETS,
-  INITIAL_LOYALTY_PROFILE,
+  DEFAULT_GST_BILLING_CONFIG,
   INITIAL_CUSTOMER_WALLET,
   INITIAL_WHATSAPP_LOGS,
 } from "@/data/mockKitchenData";
@@ -41,7 +41,7 @@ import type {
   DeliveryZone,
   SupportTicket,
   KOTTicket,
-  LoyaltyProfile,
+  GstBillingConfig,
   CustomerWallet,
   WhatsAppLog,
   HomepageCustomization,
@@ -93,8 +93,19 @@ interface DemoStoreContextType {
   // Enterprise Cloud Kitchen Modules
   inventoryItems: InventoryItem[];
   updateInventoryStock: (itemId: string, delta: number) => void;
+  setInventoryStockDirect: (itemId: string, newStock: number) => void;
   recordWastage: (itemId: string, amount: number, reason: string) => void;
+  addInventoryItem: (item: Omit<InventoryItem, "id" | "lastRestocked">) => void;
+  updateInventoryItem: (item: InventoryItem) => void;
+  deleteInventoryItem: (itemId: string) => void;
+
   recipeCostings: RecipeCosting[];
+  isAutoDeductionEnabled: boolean;
+  setIsAutoDeductionEnabled: (enabled: boolean) => void;
+  addRecipeCosting: (recipe: RecipeCosting) => void;
+  updateRecipeCosting: (recipe: RecipeCosting) => void;
+  deleteRecipeCosting: (itemId: string) => void;
+  simulateRecipeDeduction: (itemId: string, quantity?: number) => void;
 
   staffList: StaffMember[];
   toggleStaffDuty: (staffId: string) => void;
@@ -119,8 +130,8 @@ interface DemoStoreContextType {
   rushHourMode: boolean;
   setRushHourMode: (active: boolean) => void;
 
-  loyaltyProfile: LoyaltyProfile;
-  redeemLoyaltyPoints: (points: number, rewardLabel: string) => boolean;
+  gstBillingConfig: GstBillingConfig;
+  updateGstBillingConfig: (config: Partial<GstBillingConfig>) => void;
 
   customerWallet: CustomerWallet;
   addWalletMoney: (amount: number) => void;
@@ -212,6 +223,9 @@ interface DemoStoreContextType {
     opts?: { verifiedPaid?: boolean },
   ) => Order;
   updateOrderStatus: (orderId: string, status: OrderStatus, customMessage?: string) => void;
+  updateOrder: (orderId: string, updatedData: Partial<Order>) => void;
+  deleteOrder: (orderId: string) => void;
+  createCustomOrder: (customOrder: Order) => void;
   assignDeliveryPartner: (orderId: string, partnerId: string) => void;
   advanceDeliveryStep: (orderId: string) => void;
   verifyDeliveryOtp: (orderId: string, inputOtp: string) => boolean;
@@ -222,6 +236,10 @@ interface DemoStoreContextType {
   updateMenuItem: (item: MenuItem) => void;
   addMenuItem: (item: MenuItem) => void;
   deleteMenuItem: (itemId: string) => void;
+  customCategories: string[];
+  allCategories: string[];
+  addCustomCategory: (categoryName: string) => boolean;
+  deleteCustomCategory: (categoryName: string) => boolean;
   createCoupon: (coupon: Coupon) => void;
 
   // Subscriptions & Profile
@@ -241,6 +259,17 @@ interface DemoStoreContextType {
     scenarioKey: "thali_order" | "rider_assign" | "out_for_delivery" | "delivered",
   ) => void;
 }
+
+export const DEFAULT_MENU_CATEGORIES: string[] = [
+  "Thali",
+  "Sabzi",
+  "Paneer & Tandoor",
+  "Biryani",
+  "Roti & Rice",
+  "Desserts",
+  "Chai & More",
+  "Combos",
+];
 
 const STORAGE_KEY = "animas_kitchen_prototype_v1";
 
@@ -649,8 +678,9 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         if (!existing) return initItem;
         return {
           ...initItem,
+          ...existing,
           isAvailable: existing.isAvailable ?? initItem.isAvailable,
-          image: initItem.image || existing.image,
+          image: existing.image || initItem.image,
         };
       });
       const customItems = parsed.filter((p) => !INITIAL_MENU_ITEMS.some((i) => i.id === p.id));
@@ -658,6 +688,17 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch {
       return INITIAL_MENU_ITEMS;
     }
+  });
+
+  const [customCategories, setCustomCategories] = useState<string[]>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_custom_categories`);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        if (Array.isArray(parsed)) return parsed;
+      } catch {}
+    }
+    return [];
   });
 
   const [thaliAddons, setThaliAddons] = useState<ThaliAddon[]>(() => {
@@ -737,7 +778,16 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return saved ? JSON.parse(saved) : INITIAL_INVENTORY_ITEMS;
   });
 
-  const [recipeCostings] = useState<RecipeCosting[]>(INITIAL_RECIPE_COSTING);
+  const [isAutoDeductionEnabled, setIsAutoDeductionEnabled] = useState<boolean>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_auto_deduction_enabled`);
+    return saved !== null ? JSON.parse(saved) : true;
+  });
+
+  const [recipeCostings, setRecipeCostings] = useState<RecipeCosting[]>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_recipe_costings`);
+    const list: RecipeCosting[] = saved ? JSON.parse(saved) : INITIAL_RECIPE_COSTING;
+    return list.filter((r) => r.itemId !== "dish-paneer-tikka");
+  });
 
   const [staffList, setStaffList] = useState<StaffMember[]>(() => {
     const saved = safeGetItem(`${STORAGE_KEY}_staff`);
@@ -767,9 +817,9 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const [rushHourMode, setRushHourMode] = useState<boolean>(false);
 
-  const [loyaltyProfile, setLoyaltyProfile] = useState<LoyaltyProfile>(() => {
-    const saved = safeGetItem(`${STORAGE_KEY}_loyalty`);
-    return saved ? JSON.parse(saved) : INITIAL_LOYALTY_PROFILE;
+  const [gstBillingConfig, setGstBillingConfig] = useState<GstBillingConfig>(() => {
+    const saved = safeGetItem(`${STORAGE_KEY}_gst_billing_config`);
+    return saved ? JSON.parse(saved) : DEFAULT_GST_BILLING_CONFIG;
   });
 
   const [customerWallet, setCustomerWallet] = useState<CustomerWallet>(() => {
@@ -797,6 +847,10 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       safeSetItem(`${STORAGE_KEY}_wallet`, JSON.stringify(customerWallet));
       safeSetItem(`${STORAGE_KEY}_homepage_customization`, JSON.stringify(homepageCustomization));
       safeSetItem(`${STORAGE_KEY}_subs`, JSON.stringify(subscriptions));
+      safeSetItem(`${STORAGE_KEY}_inventory`, JSON.stringify(inventoryItems));
+      safeSetItem(`${STORAGE_KEY}_recipe_costings`, JSON.stringify(recipeCostings));
+      safeSetItem(`${STORAGE_KEY}_auto_deduction_enabled`, JSON.stringify(isAutoDeductionEnabled));
+      safeSetItem(`${STORAGE_KEY}_gst_billing_config`, JSON.stringify(gstBillingConfig));
     }, 400);
 
     return () => clearTimeout(timer);
@@ -808,6 +862,10 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     customerWallet,
     homepageCustomization,
     subscriptions,
+    inventoryItems,
+    recipeCostings,
+    isAutoDeductionEnabled,
+    gstBillingConfig,
   ]);
 
   // Realtime Database Synchronizer: Fetch live orders from MongoDB without UI freeze
@@ -1208,8 +1266,9 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     ): Order => {
       const orderNum = `AK-${Math.floor(1000 + Math.random() * 9000)}`;
       const subtotal = cartTotal;
-      // Small food startup — Zero extra GST tax
-      const tax = 0;
+      const effectiveTaxRate = gstBillingConfig.isGstEnabled ? gstBillingConfig.gstRatePercent : 0;
+      const tax = Math.round((subtotal * effectiveTaxRate) / 100);
+      const packagingFee = gstBillingConfig.packagingFee;
 
       let discount = 0;
       if (couponCode) {
@@ -1226,9 +1285,31 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
       }
 
-      // Under 4 km is FREE delivery (for orders >= ₹250), extra delivery beyond 4 km
-      const deliveryFee = orderType === "pickup" || hasKitchenPass || subtotal >= 250 ? 0 : 35;
-      let preWalletAmt = Math.max(0, subtotal + tax + deliveryFee - discount);
+      // Delivery fee based on customizable GST & billing configuration
+      const deliveryFee =
+        orderType === "pickup" || hasKitchenPass || subtotal >= gstBillingConfig.freeDeliveryThreshold
+          ? 0
+          : gstBillingConfig.deliveryFee;
+
+      // Custom Bill Taxes (Rain Tax, Road Tax, Cess, etc.)
+      const customTaxesBreakdown = (gstBillingConfig.customTaxes || [])
+        .filter((t) => t.isEnabled && t.value > 0)
+        .map((t) => ({
+          id: t.id,
+          name: t.name,
+          amount:
+            t.type === "percent"
+              ? Number(((subtotal * t.value) / 100).toFixed(2))
+              : Number(t.value.toFixed(2)),
+        }));
+      const customTaxesTotal = Number(
+        customTaxesBreakdown.reduce((sum, it) => sum + it.amount, 0).toFixed(2),
+      );
+
+      let preWalletAmt = Math.max(
+        0,
+        subtotal + tax + customTaxesTotal + packagingFee + deliveryFee - discount,
+      );
       let walletDeduction = 0;
 
       if ((paymentMethod === "wallet" || useWalletDiscount) && customerWallet.balance > 0) {
@@ -1254,35 +1335,28 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const randomOtp = Math.floor(1000 + Math.random() * 9000).toString();
 
       // Automatic Recipe-based Inventory Stock Deduction!
-      setInventoryItems((prev) => {
-        let updated = [...prev];
-        cart.forEach((cartItem) => {
-          const recipe = INITIAL_RECIPE_COSTING.find((rc) => rc.itemId === cartItem.menuItem.id);
-          if (recipe) {
-            recipe.requirements.forEach((req) => {
-              const needed = req.quantityNeeded * cartItem.quantity;
-              updated = updated.map((inv) => {
-                if (inv.id === req.rawMaterialId) {
-                  return {
-                    ...inv,
-                    currentStock: Math.max(0, Number((inv.currentStock - needed).toFixed(2))),
-                  };
-                }
-                return inv;
+      if (isAutoDeductionEnabled) {
+        setInventoryItems((prev) => {
+          let updated = [...prev];
+          cart.forEach((cartItem) => {
+            const recipe = recipeCostings.find((rc) => rc.itemId === cartItem.menuItem.id);
+            if (recipe) {
+              recipe.requirements.forEach((req) => {
+                const needed = req.quantityNeeded * cartItem.quantity;
+                updated = updated.map((inv) => {
+                  if (inv.id === req.rawMaterialId) {
+                    return {
+                      ...inv,
+                      currentStock: Math.max(0, Number((inv.currentStock - needed).toFixed(2))),
+                    };
+                  }
+                  return inv;
+                });
               });
-            });
-          }
+            }
+          });
+          return updated;
         });
-        return updated;
-      });
-
-      // Earn Loyalty Points (10 points per ₹100)
-      const earnedPts = Math.floor(finalAmt / 10);
-      if (earnedPts > 0) {
-        setLoyaltyProfile((prev) => ({
-          ...prev,
-          points: prev.points + earnedPts,
-        }));
       }
 
       // Generate KOT Ticket for Kitchen Display System
@@ -1329,7 +1403,11 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         deliveryAddress: address,
         items: [...cart],
         itemTotal: subtotal,
+        subtotal,
         taxAmount: tax,
+        customTaxesTotal,
+        customTaxesBreakdown,
+        packagingFee,
         deliveryFee,
         discountAmount: discount,
         appliedCoupon: couponCode,
@@ -1490,6 +1568,23 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     },
     [logActivity],
   );
+
+  const updateOrder = useCallback((orderId: string, updatedData: Partial<Order>) => {
+    setOrders((prev) =>
+      prev.map((o) => (o.id === orderId ? { ...o, ...updatedData } : o)),
+    );
+    toast.success("Bill / Invoice updated successfully!");
+  }, []);
+
+  const deleteOrder = useCallback((orderId: string) => {
+    setOrders((prev) => prev.filter((o) => o.id !== orderId));
+    toast.info("Invoice removed / voided successfully.");
+  }, []);
+
+  const createCustomOrder = useCallback((customOrder: Order) => {
+    setOrders((prev) => [customOrder, ...prev]);
+    toast.success(`Custom Invoice ${customOrder.orderNumber} created successfully!`);
+  }, []);
 
   // Assign Delivery Partner
   const assignDeliveryPartner = useCallback(
@@ -1712,6 +1807,56 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     toast.info("Item removed from menu");
   }, []);
 
+  const addCustomCategory = useCallback((categoryName: string): boolean => {
+    const trimmed = categoryName.trim();
+    if (!trimmed) {
+      toast.error("Category name cannot be empty");
+      return false;
+    }
+    const isExistingDefault = DEFAULT_MENU_CATEGORIES.some(
+      (c) => c.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (isExistingDefault) {
+      toast.info(`"${trimmed}" is already available in standard categories.`);
+      return true;
+    }
+    setCustomCategories((prev) => {
+      const alreadyHas = prev.some((c) => c.toLowerCase() === trimmed.toLowerCase());
+      if (alreadyHas) return prev;
+      const next = [...prev, trimmed];
+      safeSetItem(`${STORAGE_KEY}_custom_categories`, JSON.stringify(next));
+      return next;
+    });
+    toast.success(`Custom category "${trimmed}" created!`);
+    return true;
+  }, []);
+
+  const deleteCustomCategory = useCallback((categoryName: string): boolean => {
+    const trimmed = categoryName.trim();
+    const inUse = menuItems.some(
+      (m) => m.category.toLowerCase() === trimmed.toLowerCase(),
+    );
+    if (inUse) {
+      toast.error(`Cannot delete "${trimmed}" because dishes are currently assigned to it.`);
+      return false;
+    }
+    setCustomCategories((prev) => {
+      const next = prev.filter((c) => c.toLowerCase() !== trimmed.toLowerCase());
+      safeSetItem(`${STORAGE_KEY}_custom_categories`, JSON.stringify(next));
+      return next;
+    });
+    toast.info(`Category "${trimmed}" removed.`);
+    return true;
+  }, [menuItems]);
+
+  const allCategories = useMemo(() => {
+    const itemCats = menuItems.map((m) => m.category).filter(Boolean);
+    const combined = Array.from(
+      new Set([...DEFAULT_MENU_CATEGORIES, ...customCategories, ...itemCats]),
+    );
+    return combined;
+  }, [customCategories, menuItems]);
+
   const addThaliAddon = useCallback((addon: ThaliAddon) => {
     setThaliAddons((prev) => {
       const next = [addon, ...prev];
@@ -1857,6 +2002,108 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     toast.success(`Inventory Stock Updated`);
   }, []);
 
+  const setInventoryStockDirect = useCallback((itemId: string, newStock: number) => {
+    setInventoryItems((prev) =>
+      prev.map((item) => {
+        if (item.id !== itemId) return item;
+        return {
+          ...item,
+          currentStock: Math.max(0, Number(newStock.toFixed(2))),
+          lastRestocked: "Just now",
+        };
+      }),
+    );
+    toast.success("Stock level updated");
+  }, []);
+
+  const addInventoryItem = useCallback((itemData: Omit<InventoryItem, "id" | "lastRestocked">) => {
+    const newItem: InventoryItem = {
+      ...itemData,
+      id: `raw-${Date.now()}`,
+      lastRestocked: "Today",
+    };
+    setInventoryItems((prev) => [...prev, newItem]);
+    toast.success(`Added raw material SKU: ${newItem.name}`);
+  }, []);
+
+  const updateInventoryItem = useCallback((updated: InventoryItem) => {
+    setInventoryItems((prev) =>
+      prev.map((item) => (item.id === updated.id ? updated : item)),
+    );
+    toast.success(`Updated raw material: ${updated.name}`);
+  }, []);
+
+  const deleteInventoryItem = useCallback((itemId: string) => {
+    setInventoryItems((prev) => prev.filter((item) => item.id !== itemId));
+    // Also clean up any recipe requirements referencing this deleted raw material
+    setRecipeCostings((prev) =>
+      prev.map((r) => ({
+        ...r,
+        requirements: r.requirements.filter((req) => req.rawMaterialId !== itemId),
+      })),
+    );
+    toast.info("Raw material deleted from inventory");
+  }, []);
+
+  const addRecipeCosting = useCallback((newCosting: RecipeCosting) => {
+    setRecipeCostings((prev) => {
+      const idx = prev.findIndex((r) => r.itemId === newCosting.itemId);
+      if (idx >= 0) {
+        const copy = [...prev];
+        copy[idx] = newCosting;
+        return copy;
+      }
+      return [...prev, newCosting];
+    });
+    toast.success(`Recipe deduction linked for "${newCosting.itemName}"`);
+  }, []);
+
+  const updateRecipeCosting = useCallback((updated: RecipeCosting) => {
+    setRecipeCostings((prev) =>
+      prev.map((r) => (r.itemId === updated.itemId ? updated : r)),
+    );
+    toast.success(`Recipe updated for "${updated.itemName}"`);
+  }, []);
+
+  const deleteRecipeCosting = useCallback((itemId: string) => {
+    setRecipeCostings((prev) => prev.filter((r) => r.itemId !== itemId));
+    toast.info("Recipe mapping removed");
+  }, []);
+
+  const simulateRecipeDeduction = useCallback((itemId: string, quantity = 1) => {
+    const recipe = recipeCostings.find((r) => r.itemId === itemId);
+    if (!recipe) {
+      toast.error("Is dish ke liye koi recipe rule configure nahi hai.");
+      return;
+    }
+    if (recipe.requirements.length === 0) {
+      toast.warning("Is recipe me koi raw materials linked nahi hain.");
+      return;
+    }
+
+    setInventoryItems((prev) => {
+      let updated = [...prev];
+      recipe.requirements.forEach((req) => {
+        const needed = req.quantityNeeded * quantity;
+        updated = updated.map((inv) => {
+          if (inv.id === req.rawMaterialId) {
+            return {
+              ...inv,
+              currentStock: Math.max(0, Number((inv.currentStock - needed).toFixed(2))),
+            };
+          }
+          return inv;
+        });
+      });
+      return updated;
+    });
+
+    const summary = recipe.requirements
+      .map((r) => `${(r.quantityNeeded * quantity).toFixed(2)} ${r.unit} ${r.rawMaterialName}`)
+      .join(", ");
+    toast.success(`Simulated order (${quantity}× ${recipe.itemName}): Decremented ${summary}!`);
+  }, [recipeCostings]);
+
   const recordWastage = useCallback((itemId: string, amount: number, reason: string) => {
     setInventoryItems((prev) =>
       prev.map((item) => {
@@ -1935,21 +2182,21 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     [],
   );
 
-  const redeemLoyaltyPoints = useCallback(
-    (points: number, rewardLabel: string): boolean => {
-      if (loyaltyProfile.points < points) {
-        toast.error(`Insufficient points! You have ${loyaltyProfile.points} points.`);
-        return false;
+  const updateGstBillingConfig = useCallback((config: Partial<GstBillingConfig>) => {
+    setGstBillingConfig((prev) => {
+      const next = { ...prev, ...config };
+      if (
+        config.gstRatePercent !== undefined &&
+        config.cgstPercent === undefined &&
+        config.sgstPercent === undefined
+      ) {
+        next.cgstPercent = Number((config.gstRatePercent / 2).toFixed(2));
+        next.sgstPercent = Number((config.gstRatePercent / 2).toFixed(2));
       }
-      setLoyaltyProfile((prev) => ({
-        ...prev,
-        points: prev.points - points,
-      }));
-      toast.success(`Redeemed ${points} points for ${rewardLabel}!`);
-      return true;
-    },
-    [loyaltyProfile.points],
-  );
+      return next;
+    });
+    toast.success("GST & Billing Settings Updated!");
+  }, []);
 
   const addWalletMoney = useCallback((amount: number) => {
     setCustomerWallet((prev) => ({
@@ -2108,10 +2355,12 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     safeRemoveItem(`${STORAGE_KEY}_auth`);
     safeRemoveItem(`${STORAGE_KEY}_user`);
     safeRemoveItem(`${STORAGE_KEY}_inventory`);
+    safeRemoveItem(`${STORAGE_KEY}_recipe_costings`);
+    safeRemoveItem(`${STORAGE_KEY}_auto_deduction_enabled`);
     safeRemoveItem(`${STORAGE_KEY}_staff`);
     safeRemoveItem(`${STORAGE_KEY}_tickets`);
     safeRemoveItem(`${STORAGE_KEY}_kot`);
-    safeRemoveItem(`${STORAGE_KEY}_loyalty`);
+    safeRemoveItem(`${STORAGE_KEY}_gst_billing_config`);
     safeRemoveItem(`${STORAGE_KEY}_wallet`);
     safeRemoveItem(`${STORAGE_KEY}_whatsapp`);
     safeRemoveItem(`${STORAGE_KEY}_homepage_customization`);
@@ -2126,11 +2375,13 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setSubscriptions(INITIAL_SUBSCRIPTIONS);
     setCustomerProfile(INITIAL_CUSTOMER_PROFILE);
     setInventoryItems(INITIAL_INVENTORY_ITEMS);
+    setRecipeCostings(INITIAL_RECIPE_COSTING);
+    setIsAutoDeductionEnabled(true);
     setStaffList(INITIAL_STAFF_MEMBERS);
     setSupportTickets(INITIAL_SUPPORT_TICKETS);
     setKotTickets(INITIAL_KOT_TICKETS);
     setRushHourMode(false);
-    setLoyaltyProfile(INITIAL_LOYALTY_PROFILE);
+    setGstBillingConfig(DEFAULT_GST_BILLING_CONFIG);
     setCustomerWallet(INITIAL_CUSTOMER_WALLET);
     setUseWalletDiscount(false);
     setHasKitchenPass(false);
@@ -2264,6 +2515,9 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         isWishlisted,
         placeOrder,
         updateOrderStatus,
+        updateOrder,
+        deleteOrder,
+        createCustomOrder,
         assignDeliveryPartner,
         advanceDeliveryStep,
         verifyDeliveryOtp,
@@ -2272,6 +2526,10 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateMenuItem,
         addMenuItem,
         deleteMenuItem,
+        customCategories,
+        allCategories,
+        addCustomCategory,
+        deleteCustomCategory,
         addThaliAddon,
         updateThaliAddon,
         deleteThaliAddon,
@@ -2287,8 +2545,18 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         // Enterprise Cloud Kitchen Values
         inventoryItems,
         updateInventoryStock,
+        setInventoryStockDirect,
         recordWastage,
+        addInventoryItem,
+        updateInventoryItem,
+        deleteInventoryItem,
         recipeCostings,
+        isAutoDeductionEnabled,
+        setIsAutoDeductionEnabled,
+        addRecipeCosting,
+        updateRecipeCosting,
+        deleteRecipeCosting,
+        simulateRecipeDeduction,
         staffList,
         toggleStaffDuty,
         branches,
@@ -2304,8 +2572,8 @@ export const DemoStoreProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updateKotTicketStatus,
         rushHourMode,
         setRushHourMode,
-        loyaltyProfile,
-        redeemLoyaltyPoints,
+        gstBillingConfig,
+        updateGstBillingConfig,
         customerWallet,
         addWalletMoney,
         useWalletDiscount,

@@ -30,6 +30,7 @@ export const LiveTrackingView: React.FC = () => {
   const {
     activeOrder,
     setTrackingViewOpen,
+    setCustomerPage,
     advanceDeliveryStep,
     updateOrderStatus,
     submitOrderReview,
@@ -39,6 +40,11 @@ export const LiveTrackingView: React.FC = () => {
     setAuthModalOpen,
     setAuthModalTab,
   } = useDemoStore();
+
+  const handleBackToMenu = () => {
+    setTrackingViewOpen(false);
+    setCustomerPage("menu");
+  };
 
   const [ratingInput, setRatingInput] = useState(5);
   const [feedbackInput, setFeedbackInput] = useState("");
@@ -51,7 +57,7 @@ export const LiveTrackingView: React.FC = () => {
         <p className="font-display text-2xl">No Active Order Found</p>
         <p className="text-xs text-ink/60 mt-1">Please place an order from our fresh menu.</p>
         <Button
-          onClick={() => setTrackingViewOpen(false)}
+          onClick={handleBackToMenu}
           className="mt-4 rounded-full bg-spice text-cream"
         >
           Return to Menu
@@ -84,12 +90,28 @@ export const LiveTrackingView: React.FC = () => {
       {/* Top Banner Navigation */}
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4 border-b border-ink/10 pb-4">
         <div>
-          <button
-            onClick={() => setTrackingViewOpen(false)}
-            className="text-xs font-mono text-spice hover:underline flex items-center gap-1 mb-1"
-          >
-            ← Back to Home / Menu
-          </button>
+          <div className="flex items-center gap-3 mb-1">
+            <button
+              onClick={handleBackToMenu}
+              className="text-xs font-mono font-bold text-spice hover:underline flex items-center gap-1"
+            >
+              ← Back to Menu
+            </button>
+            {currentUser?.role === "admin" && (
+              <>
+                <span className="text-ink/30">•</span>
+                <button
+                  onClick={() => {
+                    setTrackingViewOpen(false);
+                    setActiveRole("admin");
+                  }}
+                  className="text-xs font-mono font-bold text-ink/60 hover:text-ink hover:underline"
+                >
+                  Return to Admin Orders
+                </button>
+              </>
+            )}
+          </div>
           <div className="flex items-center gap-2.5">
             <h1 className="font-display text-3xl tracking-tight text-ink sm:text-4xl">
               LIVE ORDER TRACKING

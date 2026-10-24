@@ -40,19 +40,23 @@ export interface MenuItemSizeVariant {
   priceOffset: number;
 }
 
+export type MenuCategory =
+  | "Thali"
+  | "Sabzi"
+  | "Paneer & Tandoor"
+  | "Biryani"
+  | "Roti & Rice"
+  | "Desserts"
+  | "Chai & More"
+  | "Combos"
+  | (string & {});
+
 export interface MenuItem {
   id: string;
   name: string;
   description: string;
   price: number;
-  category:
-    | "Thali"
-    | "Paneer & Tandoor"
-    | "Biryani"
-    | "Roti & Rice"
-    | "Desserts"
-    | "Chai & More"
-    | "Combos";
+  category: MenuCategory;
   image: string;
   isVeg: boolean;
   badge?: string | undefined;
@@ -159,6 +163,9 @@ export interface Order {
   itemTotal: number;
   subtotal?: number;
   taxAmount: number;
+  customTaxesTotal?: number;
+  customTaxesBreakdown?: { id: string; name: string; amount: number }[];
+  packagingFee?: number;
   deliveryFee: number;
   discountAmount: number;
   appliedCoupon?: string;
@@ -291,12 +298,30 @@ export interface KOTTicket {
   createdAt: string;
 }
 
-export interface LoyaltyProfile {
-  points: number;
-  tier: "Silver" | "Gold" | "Platinum";
-  referralCode: string;
-  totalReferrals: number;
-  referralEarnings: number;
+export interface CustomBillTax {
+  id: string;
+  name: string; // e.g. "Rain Tax", "Road Tax", "Green Cess", "Night Surcharge"
+  type: "flat" | "percent"; // Flat ₹ or % of subtotal
+  value: number; // e.g. 20 (for ₹20) or 2 (for 2%)
+  isEnabled: boolean;
+}
+
+export interface GstBillingConfig {
+  isGstEnabled: boolean;
+  gstRatePercent: number; // e.g. 5 for 5% GST
+  cgstPercent: number; // e.g. 2.5
+  sgstPercent: number; // e.g. 2.5
+  packagingFee: number; // e.g. 10 (₹)
+  isPackagingFeePerItem: boolean;
+  deliveryFee: number; // e.g. 30 (₹)
+  freeDeliveryThreshold: number; // e.g. 299 (₹)
+  restaurantGstin: string; // e.g. "10AABCA9182C1Z8"
+  fssaiNumber: string; // e.g. "10423000000123"
+  businessLegalName: string;
+  billingAddress: string;
+  hsnSacCode: string;
+  invoicePrefix: string;
+  customTaxes?: CustomBillTax[];
 }
 
 export interface WalletTransaction {

@@ -38,6 +38,7 @@ import {
   ChevronRight,
   ExternalLink,
   Flame,
+  Shield,
   ShieldCheck,
   Send,
   X,
@@ -71,11 +72,13 @@ export type CustomerDashboardTab =
 
 interface CustomerDashboardViewProps {
   onBackToStore?: () => void;
+  onOpenMenu?: () => void;
   onOpenDishPage?: (dishId: string) => void;
 }
 
 export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
   onBackToStore,
+  onOpenMenu,
   onOpenDishPage,
 }) => {
   const {
@@ -89,13 +92,11 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
     menuItems,
     subscriptions,
     customerWallet,
-    loyaltyProfile,
     customerProfile,
     coupons,
     hasKitchenPass,
     setHasKitchenPass,
     addWalletMoney,
-    redeemLoyaltyPoints,
     supportTickets,
     createSupportTicket,
     addToCart,
@@ -106,6 +107,7 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
     advanceDeliveryStep,
     wishlistIds,
     toggleWishlist,
+    setActiveRole,
   } = useDemoStore();
 
   const [activeTab, setActiveTab] = useState<CustomerDashboardTab>("home");
@@ -306,14 +308,27 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
           {/* Brand Header */}
           <div className="flex items-center justify-between pb-5 border-b border-ink/10">
             <div className="flex items-center gap-3">
-              <span className="grid size-10 place-items-center rounded-2xl bg-ink text-cream font-display text-xl shadow-md">
-                A
-              </span>
-              <div>
-                <span className="font-display text-lg font-bold tracking-tight text-ink block leading-none">
-                  ANIMA'S KITCHEN
-                </span>
-                <span className="font-mono text-[10px] text-spice font-bold uppercase tracking-wider block mt-1">
+              <img
+                src="/logo.png"
+                alt="Anima's Kitchen"
+                className="size-11 rounded-full object-contain border border-spice/20 shadow-xs shrink-0"
+              />
+              <div className="leading-none">
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className="text-xl font-bold tracking-tight text-[#186338]"
+                    style={{ fontFamily: "'Kaushan Script', 'Pacifico', cursive" }}
+                  >
+                    Anima's
+                  </span>
+                  <span
+                    className="text-xl font-bold tracking-tight text-[#E45312]"
+                    style={{ fontFamily: "'Kaushan Script', 'Pacifico', cursive" }}
+                  >
+                    Kitchen
+                  </span>
+                </div>
+                <span className="font-mono text-[9px] text-[#186338] font-black uppercase tracking-wider block mt-0.5">
                   Customer Portal
                 </span>
               </div>
@@ -390,8 +405,12 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
                   key={item.id}
                   onClick={() => {
                     setActiveTab(item.id);
-                    if (item.id === "menu" && onBackToStore) {
-                      onBackToStore();
+                    if (item.id === "menu") {
+                      if (onOpenMenu) {
+                        onOpenMenu();
+                      } else if (onBackToStore) {
+                        onBackToStore();
+                      }
                     }
                   }}
                   className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-xs font-semibold transition-all ${
@@ -452,14 +471,27 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
         <header className="sticky top-0 z-30 flex flex-col lg:hidden border-b border-ink/10 bg-frost/95 backdrop-blur-md">
           <div className="flex items-center justify-between p-3.5">
             <div className="flex items-center gap-2.5">
-              <span className="grid size-8 place-items-center rounded-xl bg-ink text-cream font-display text-base font-bold">
-                A
-              </span>
-              <div>
-                <span className="font-display font-bold text-sm block leading-tight">
-                  ANIMA'S CUSTOMER
-                </span>
-                <span className="font-mono text-[9px] uppercase text-spice tracking-wider block">
+              <img
+                src="/logo.png"
+                alt="Anima's Kitchen"
+                className="size-9 rounded-full object-contain border border-spice/20 shadow-xs shrink-0"
+              />
+              <div className="leading-none">
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className="text-base font-bold tracking-tight text-[#186338]"
+                    style={{ fontFamily: "'Kaushan Script', 'Pacifico', cursive" }}
+                  >
+                    Anima's
+                  </span>
+                  <span
+                    className="text-base font-bold tracking-tight text-[#E45312]"
+                    style={{ fontFamily: "'Kaushan Script', 'Pacifico', cursive" }}
+                  >
+                    Kitchen
+                  </span>
+                </div>
+                <span className="font-mono text-[8px] uppercase text-[#186338] font-bold tracking-wider block mt-0.5">
                   Homestyle Food Hub
                 </span>
               </div>
@@ -574,6 +606,43 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
 
         {/* Main View Container */}
         <main className="p-3.5 sm:p-6 md:p-8 max-w-6xl w-full mx-auto space-y-6 sm:space-y-8 pb-24 lg:pb-8">
+          {/* Staff Account Alert Banner: Quick Return to Admin or Rider Portal */}
+          {isAuthenticated &&
+            (currentUser?.role === "admin" ||
+              currentUser?.role === "rider" ||
+              currentUser?.role === "kds") && (
+              <div className="rounded-2xl bg-gradient-to-r from-emerald-900 to-slate-900 text-cream p-4 border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-md animate-in fade-in">
+                <div className="flex items-center gap-3">
+                  <span className="grid size-9 place-items-center rounded-xl bg-emerald-500/20 text-emerald-400 text-lg">
+                    {currentUser.role === "admin" ? "⚙️" : "🛵"}
+                  </span>
+                  <div>
+                    <p className="text-xs font-bold text-white">
+                      Staff Portal Active: Logged in as{" "}
+                      <span className="text-emerald-300 uppercase">
+                        {currentUser.role}
+                      </span>{" "}
+                      ({currentUser.name})
+                    </p>
+                    <p className="text-[11px] text-cream/70">
+                      You are previewing the customer portal. Switch back to your management view anytime.
+                    </p>
+                  </div>
+                </div>
+                <Button
+                  onClick={() => setActiveRole(currentUser.role)}
+                  className="bg-emerald-500 hover:bg-emerald-400 text-emerald-950 font-bold text-xs rounded-xl px-4 h-8 shrink-0 cursor-pointer shadow-sm"
+                >
+                  Return to{" "}
+                  {currentUser.role === "admin"
+                    ? "Admin Dashboard"
+                    : currentUser.role === "rider"
+                    ? "Rider Portal"
+                    : "Kitchen KDS"}{" "}
+                  →
+                </Button>
+              </div>
+            )}
           {/* ===================== TAB: 1. DASHBOARD HOME ===================== */}
           {activeTab === "home" && (
             <div className="space-y-8 animate-in fade-in duration-300">
@@ -1104,6 +1173,24 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
           {activeTab === "track" && (
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="border-b border-ink/10 pb-4">
+                <div className="flex items-center gap-3 mb-1">
+                  <button
+                    onClick={() => {
+                      if (onOpenMenu) onOpenMenu();
+                      else setActiveTab("orders");
+                    }}
+                    className="text-xs font-mono font-bold text-spice hover:underline flex items-center gap-1"
+                  >
+                    ← Back to Menu
+                  </button>
+                  <span className="text-ink/30">•</span>
+                  <button
+                    onClick={() => setActiveTab("orders")}
+                    className="text-xs font-mono font-bold text-ink/60 hover:text-ink hover:underline"
+                  >
+                    View All Orders
+                  </button>
+                </div>
                 <span className="font-mono text-xs font-bold text-spice uppercase tracking-wider">
                   LIVE SATELLITE GPS TRACKING
                 </span>
@@ -1182,10 +1269,13 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
                 <div className="py-16 text-center text-ink/60">
                   <p>No active orders currently out for delivery.</p>
                   <Button
-                    onClick={() => setActiveTab("menu")}
+                    onClick={() => {
+                      if (onOpenMenu) onOpenMenu();
+                      else setActiveTab("menu");
+                    }}
                     className="mt-4 rounded-full bg-spice text-cream"
                   >
-                    Place an Order
+                    View Menu & Order
                   </Button>
                 </div>
               )}
@@ -1564,34 +1654,141 @@ export const CustomerDashboardView: React.FC<CustomerDashboardViewProps> = ({
             <div className="space-y-6 animate-in fade-in duration-300">
               <div className="border-b border-ink/10 pb-4">
                 <h2 className="font-display text-2xl font-black text-ink">
-                  Payment Methods & Billing
+                  Payment Methods &amp; Billing
                 </h2>
-                <p className="text-xs text-ink/60">Saved UPI IDs, cards, and payment history.</p>
+                <p className="text-xs text-ink/60">
+                  Razorpay Secure Gateway, real-time transaction receipts, and order billing history.
+                </p>
               </div>
 
-              <div className="rounded-3xl border border-ink/10 bg-frost/90 p-6 space-y-4">
-                <h3 className="font-display text-base font-bold text-ink">Saved Payment Options</h3>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-cream border border-ink/10">
-                    <div className="flex items-center gap-3">
-                      <span className="font-mono text-xs font-bold text-spice bg-spice/10 px-2 py-1 rounded-md">
-                        UPI
-                      </span>
-                      <span className="text-xs font-bold text-ink">mahendra@okhdfcbank</span>
+              {/* Razorpay Gateway Status */}
+              <div className="rounded-3xl border border-emerald-500/20 bg-gradient-to-br from-emerald-50/80 to-frost p-6 space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div className="flex items-center gap-3">
+                    <div className="size-11 rounded-2xl bg-emerald-600 text-white flex items-center justify-center shadow-sm">
+                      <Shield className="size-6" />
                     </div>
-                    <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5">
-                      VERIFIED
-                    </span>
-                  </div>
-
-                  <div className="flex items-center justify-between p-3.5 rounded-2xl bg-cream border border-ink/10">
-                    <div className="flex items-center gap-3">
-                      <CreditCard className="size-4 text-ink/60" />
-                      <span className="text-xs font-bold text-ink">HDFC Visa Card •••• 4892</span>
+                    <div>
+                      <h3 className="font-display text-base font-bold text-ink flex items-center gap-2">
+                        <span>Razorpay Secured Gateway</span>
+                        <span className="rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2.5 py-0.5 border border-emerald-300">
+                          ACTIVE &amp; VERIFIED
+                        </span>
+                      </h3>
+                      <p className="text-xs text-ink/65">
+                        Official RBI-Authorized &amp; PCI-DSS Level 1 Encrypted Payment Infrastructure
+                      </p>
                     </div>
-                    <span className="text-[11px] text-ink/50 font-mono">Exp 08/28</span>
                   </div>
                 </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+                  <div className="p-3 rounded-2xl bg-white border border-ink/10 flex items-center gap-3">
+                    <span className="text-xl">⚡</span>
+                    <div>
+                      <span className="text-xs font-bold text-ink block">Instant UPI</span>
+                      <span className="text-[10px] text-ink/60">GPay, PhonePe, Paytm, BHIM</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-white border border-ink/10 flex items-center gap-3">
+                    <CreditCard className="size-5 text-spice" />
+                    <div>
+                      <span className="text-xs font-bold text-ink block">Cards &amp; NetBanking</span>
+                      <span className="text-[10px] text-ink/60">Visa, Mastercard, RuPay, All Banks</span>
+                    </div>
+                  </div>
+                  <div className="p-3 rounded-2xl bg-white border border-ink/10 flex items-center gap-3">
+                    <span className="text-xl">🔒</span>
+                    <div>
+                      <span className="text-xs font-bold text-ink block">Zero Card Storage</span>
+                      <span className="text-[10px] text-ink/60">100% Privacy &amp; Tokenized</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="p-3.5 rounded-2xl bg-white/80 border border-emerald-500/20 text-xs text-ink/75 leading-relaxed">
+                  <p>
+                    <strong>Security Notice:</strong> In compliance with RBI tokenization guidelines and PCI-DSS data standards, Anima's Kitchen does not store your debit/credit card numbers or UPI PINs. All online payments are initiated live via <strong>Razorpay's encrypted checkout gateway</strong> during order placement.
+                  </p>
+                </div>
+              </div>
+
+              {/* Order Billing & Payment History */}
+              <div className="rounded-3xl border border-ink/10 bg-frost/90 p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-display text-base font-bold text-ink">
+                    Billing &amp; Payment History
+                  </h3>
+                  <span className="text-xs text-ink/60 font-mono">
+                    {orders.length} Transaction{orders.length === 1 ? "" : "s"}
+                  </span>
+                </div>
+
+                {orders.length === 0 ? (
+                  <div className="text-center py-8 text-ink/50 text-xs space-y-1">
+                    <p className="font-semibold">No payment history yet.</p>
+                    <p>Your Razorpay online receipts and delivery bills will appear here once you place an order.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {orders.map((o) => (
+                      <div
+                        key={o.id}
+                        className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-2xl bg-cream border border-ink/10 gap-3"
+                      >
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-mono text-xs font-bold text-spice">
+                              #{o.orderNumber}
+                            </span>
+                            <span
+                              className={`rounded-full text-[10px] font-bold px-2 py-0.5 ${
+                                o.paymentStatus === "paid"
+                                  ? "bg-emerald-100 text-emerald-800"
+                                  : "bg-amber-100 text-amber-800"
+                              }`}
+                            >
+                              {o.paymentStatus === "paid" ? "PAID" : "PENDING"}
+                            </span>
+                            <span className="font-mono text-[10px] text-ink/50 uppercase">
+                              {o.paymentMethod === "cod"
+                                ? "Cash on Delivery"
+                                : o.paymentMethod === "wallet"
+                                ? "Kitchen Wallet"
+                                : `Razorpay (${o.paymentMethod.toUpperCase()})`}
+                            </span>
+                          </div>
+                          <p className="text-xs text-ink/70">
+                            {o.items?.map((it) => `${it.quantity}x ${it.menuItem?.name || "Thali"}`).join(", ") || "Order meal items"}
+                          </p>
+                          <span className="text-[10px] text-ink/40 font-mono block">
+                            {new Date(o.createdAt).toLocaleString("en-IN", {
+                              day: "numeric",
+                              month: "short",
+                              year: "numeric",
+                              hour: "2-digit",
+                              minute: "2-digit",
+                            })}
+                          </span>
+                        </div>
+
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 border-t sm:border-t-0 pt-2 sm:pt-0 border-ink/10">
+                          <span className="font-display text-base font-black text-ink">
+                            ₹{o.finalTotal}
+                          </span>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setSelectedOrderForInvoice(o)}
+                            className="rounded-xl text-[11px] font-bold h-7 px-3 border-ink/20 hover:bg-spice hover:text-cream hover:border-spice transition-colors cursor-pointer"
+                          >
+                            View Bill / Receipt
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           )}

@@ -10,6 +10,7 @@ import { AnalyticsTab } from "./AnalyticsTab";
 import { InventoryManagerTab } from "./InventoryManagerTab";
 import { FoodCostProfitTab } from "./FoodCostProfitTab";
 import { BillingInvoicesTab } from "./BillingInvoicesTab";
+import { GstTaxManagementTab } from "./GstTaxManagementTab";
 import { StaffManagerTab } from "./StaffManagerTab";
 import { MultiBranchTab } from "./MultiBranchTab";
 import { DeliveryZonesTab } from "./DeliveryZonesTab";
@@ -18,7 +19,6 @@ import { WhatsAppAutomationTab } from "./WhatsAppAutomationTab";
 import { QrMenuGeneratorTab } from "./QrMenuGeneratorTab";
 import {
   AdminCategoriesTab,
-  AdminSuppliersTab,
   AdminCustomersTab,
   AdminSubscriptionsTab,
   AdminReviewsTab,
@@ -36,7 +36,6 @@ import {
   Layers,
   Boxes,
   Percent,
-  Truck,
   Bike,
   Users,
   Calendar,
@@ -49,7 +48,6 @@ import {
   UserCheck,
   LifeBuoy,
   MessageSquare,
-  QrCode,
   Building,
   Navigation,
   Settings,
@@ -59,6 +57,7 @@ import {
   Menu as MenuIcon,
   X,
   Palette,
+  QrCode,
   Home,
   HelpCircle,
   Phone,
@@ -72,14 +71,15 @@ export type AdminTabType =
   | "kds"
   | "menu"
   | "categories"
+  | "qrmenu"
   | "storefront"
   | "inventory"
   | "costing"
-  | "suppliers"
   | "fleet"
   | "zones"
   | "customers"
   | "subscriptions"
+  | "gst-tax"
   | "billing"
   | "coupons"
   | "reviews"
@@ -88,7 +88,6 @@ export type AdminTabType =
   | "staff"
   | "support"
   | "whatsapp"
-  | "qrmenu"
   | "branches"
   | "settings";
 
@@ -108,6 +107,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     branches,
     activeBranchId,
     kotTickets,
+    gstBillingConfig,
     setActiveRole,
     setCustomerPage,
     logout,
@@ -176,6 +176,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     },
     { id: "categories", label: "Combos & Categories", icon: <Layers className="size-4" /> },
     {
+      id: "qrmenu",
+      label: "Digital Menu QR",
+      icon: <QrCode className="size-4" />,
+      badge: "SCAN",
+    },
+    {
       id: "storefront",
       label: "Festival & Storefront CMS",
       icon: <Palette className="size-4" />,
@@ -191,7 +197,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       count: lowStockCount > 0 ? lowStockCount : undefined,
     },
     { id: "costing", label: "Recipes & Food Cost", icon: <Percent className="size-4" /> },
-    { id: "suppliers", label: "Suppliers & Purchase", icon: <Truck className="size-4" /> },
+
     {
       id: "fleet",
       label: "Delivery Fleet (Map)",
@@ -203,7 +209,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
   const customerRetentionTabs = [
     { id: "customers", label: "Customer CRM", icon: <Users className="size-4" /> },
-    { id: "billing", label: "Billing & GST Invoices", icon: <Receipt className="size-4" /> },
+    {
+      id: "gst-tax",
+      label: "GST & Tax Management",
+      icon: <Percent className="size-4" />,
+      badge: gstBillingConfig.isGstEnabled ? `${gstBillingConfig.gstRatePercent}%` : "0%",
+    },
+    { id: "billing", label: "Billing & Invoices Ledger", icon: <Receipt className="size-4" /> },
     { id: "coupons", label: "Coupons & Offers", icon: <Tag className="size-4" /> },
     { id: "reviews", label: "Reviews & Ratings", icon: <Star className="size-4" />, badge: "4.9★" },
     { id: "marketing", label: "Marketing / CRM", icon: <Megaphone className="size-4" /> },
@@ -224,7 +236,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       icon: <MessageSquare className="size-4" />,
       badge: "BOT",
     },
-    { id: "qrmenu", label: "QR Standee Orders", icon: <QrCode className="size-4" /> },
     {
       id: "branches",
       label: "Branches & Hubs",
@@ -246,7 +257,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     { id: "menu", label: "Menu", icon: <Utensils className="size-3.5" /> },
     { id: "fleet", label: "Fleet", icon: <Bike className="size-3.5" /> },
     { id: "customers", label: "CRM", icon: <Users className="size-3.5" /> },
-    { id: "billing", label: "GST Bills", icon: <Receipt className="size-3.5" /> },
+    { id: "gst-tax", label: "GST Tax", icon: <Percent className="size-3.5" /> },
+    { id: "billing", label: "Bills", icon: <Receipt className="size-3.5" /> },
   ];
 
   const renderNavGroup = (title: string, items: AdminNavItem[]) => (
@@ -305,9 +317,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2.5">
               <img
-                src="/logo.jpeg"
+                src="/logo.png"
                 alt="Anima's Kitchen Logo"
-                className="size-10 rounded-2xl object-cover shadow-md border border-cream/20"
+                className="size-11 rounded-full object-contain shadow-md border border-cream/20 bg-white"
               />
               <div>
                 <h2 className="font-display text-sm font-bold leading-tight text-cream">
@@ -388,9 +400,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             </button>
             <div className="flex items-center gap-2">
               <img
-                src="/logo.jpeg"
+                src="/logo.png"
                 alt="Logo"
-                className="size-7 rounded-xl object-cover shadow-sm border border-cream/20"
+                className="size-8 rounded-full object-contain shadow-sm border border-cream/20 bg-white"
               />
               <span className="font-display font-bold text-sm text-cream">ANIMA'S OPS</span>
             </div>
@@ -487,9 +499,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 {activeTab === "kds" && "Kitchen Display System (KDS)"}
                 {activeTab === "menu" && "Menu Catalog & Item Availability"}
                 {activeTab === "categories" && "Categories & Meal Combos"}
+                {activeTab === "qrmenu" && "Digital Menu QR Code & Standee"}
                 {activeTab === "inventory" && "Inventory & Raw Material Stock"}
                 {activeTab === "costing" && "Food Costing & Net Margins"}
-                {activeTab === "suppliers" && "Suppliers & Purchase Orders"}
+
                 {activeTab === "fleet" && "Delivery Fleet & Rider Tracking"}
                 {activeTab === "zones" && "Delivery Zones & Radius"}
                 {activeTab === "customers" && "Customer CRM & Lifetime Value"}
@@ -502,7 +515,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                 {activeTab === "staff" && "Staff Management & Shifts"}
                 {activeTab === "support" && "Customer Grievances & CRM"}
                 {activeTab === "whatsapp" && "WhatsApp Automation Simulator"}
-                {activeTab === "qrmenu" && "QR Menu & Standee Generator"}
                 {activeTab === "storefront" && "Festival & Storefront Customizer (CMS)"}
                 {activeTab === "branches" && "Multi-Branch Cloud Kitchens"}
                 {activeTab === "settings" && "Kitchen & Business Settings"}
@@ -551,15 +563,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           {activeTab === "kds" && <KitchenDisplayView />}
           {activeTab === "menu" && <MenuManagerTab />}
           {activeTab === "categories" && <AdminCategoriesTab />}
+          {activeTab === "qrmenu" && <QrMenuGeneratorTab />}
           {activeTab === "storefront" && <AdminHomepageCustomizerTab />}
           {activeTab === "inventory" && <InventoryManagerTab />}
           {activeTab === "costing" && <FoodCostProfitTab />}
-          {activeTab === "suppliers" && <AdminSuppliersTab />}
+
           {activeTab === "fleet" && <FleetManagerTab />}
           {activeTab === "zones" && <DeliveryZonesTab />}
           {activeTab === "customers" && <AdminCustomersTab />}
           {activeTab === "subscriptions" && <AdminSubscriptionsTab />}
-          {activeTab === "billing" && <BillingInvoicesTab />}
+          {activeTab === "gst-tax" && (
+            <GstTaxManagementTab onNavigateToBilling={() => setActiveTab("billing")} />
+          )}
+          {activeTab === "billing" && (
+            <BillingInvoicesTab onNavigateToGstTax={() => setActiveTab("gst-tax")} />
+          )}
           {activeTab === "coupons" && <CouponsManagerTab />}
           {activeTab === "reviews" && <AdminReviewsTab />}
           {activeTab === "marketing" && <AdminMarketingTab />}
@@ -567,7 +585,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           {activeTab === "staff" && <StaffManagerTab />}
           {activeTab === "support" && <SupportTicketsTab />}
           {activeTab === "whatsapp" && <WhatsAppAutomationTab />}
-          {activeTab === "qrmenu" && <QrMenuGeneratorTab />}
           {activeTab === "branches" && <MultiBranchTab />}
           {activeTab === "settings" && <AdminSettingsTab />}
         </div>

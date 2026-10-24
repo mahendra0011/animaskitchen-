@@ -49,6 +49,7 @@ export const CheckoutModal: React.FC = () => {
     useWalletDiscount,
     setUseWalletDiscount,
     hasKitchenPass,
+    gstBillingConfig,
   } = useDemoStore();
 
   const [selectedAddressId, setSelectedAddressId] = useState<string>(
@@ -61,7 +62,6 @@ export const CheckoutModal: React.FC = () => {
   const [newLabel, setNewLabel] = useState<"Home" | "Office" | "Other">("Home");
 
   const [paymentMethod, setPaymentMethod] = useState<"upi" | "card" | "netbanking" | "cod">("upi");
-  const [upiId, setUpiId] = useState("rahul@okhdfcbank");
   const [isProcessing, setIsProcessing] = useState(false);
   const [agreeTermsCheckout, setAgreeTermsCheckout] = useState(true);
 
@@ -69,8 +69,13 @@ export const CheckoutModal: React.FC = () => {
     customerProfile.savedAddresses.find((a) => a.id === selectedAddressId) ||
     customerProfile.savedAddresses[0];
 
-  // Small Food Startup - Direct transparent pricing with 0% extra GST
-  const tax = 0;
+  const effectiveTaxRate = gstBillingConfig.isGstEnabled ? gstBillingConfig.gstRatePercent : 0;
+  const tax = Math.round((cartTotal * effectiveTaxRate) / 100);
+  const packagingFee = gstBillingConfig.packagingFee > 0
+    ? (gstBillingConfig.isPackagingFeePerItem
+        ? cart.reduce((sum, item) => sum + item.quantity, 0) * gstBillingConfig.packagingFee
+        : gstBillingConfig.packagingFee)
+    : 0;
 
   // Patna Central Kitchen Hub (Kurji) coordinates: 25.6425, 85.1095
   const KITCHEN_HUB = { lat: 25.6425, lng: 85.1095, name: "Kurji Kitchen Central Hub" };
@@ -138,18 +143,38 @@ export const CheckoutModal: React.FC = () => {
       )
     : 3.2;
 
-  const isFreeDeliveryEligible = currentAddressDistance <= 4.0 && cartTotal >= 250;
+  const isFreeDeliveryEligible =
+    orderType === "pickup" ||
+    hasKitchenPass ||
+    (currentAddressDistance <= 4.0 && cartTotal >= gstBillingConfig.freeDeliveryThreshold);
+
   const rawDeliveryFee =
     orderType === "pickup" || hasKitchenPass
       ? 0
       : isFreeDeliveryEligible
         ? 0
         : currentAddressDistance <= 4.0
-          ? 35 // Below min order ₹250
-          : 35 + Math.round((currentAddressDistance - 4.0) * 10); // ₹10 per km extra beyond 4 km
+          ? gstBillingConfig.deliveryFee
+          : gstBillingConfig.deliveryFee + Math.round((currentAddressDistance - 4.0) * 10);
+
+  const customTaxesBreakdown = (gstBillingConfig.customTaxes || [])
+    .filter((t) => t.isEnabled && t.value > 0)
+    .map((t) => ({
+      id: t.id,
+      name: t.name,
+      type: t.type,
+      value: t.value,
+      amount:
+        t.type === "percent"
+          ? Number(((cartTotal * t.value) / 100).toFixed(2))
+          : Number(t.value.toFixed(2)),
+    }));
+  const customTaxesTotal = Number(
+    customTaxesBreakdown.reduce((sum, it) => sum + it.amount, 0).toFixed(2),
+  );
 
   const deliveryFee = rawDeliveryFee;
-  const grandTotal = cartTotal + tax + deliveryFee;
+  const grandTotal = Math.max(0, cartTotal + tax + customTaxesTotal + packagingFee + deliveryFee);
 
   // Handle GPS location detection (Browser native, 100% Free)
   const handleDetectLiveLocation = () => {
@@ -390,7 +415,7 @@ export const CheckoutModal: React.FC = () => {
 
     // Online (UPI/card/netbanking): REAL Razorpay flow. Never mark paid without verify.
     try {
-      const amountPaise = Math.max(1, Math.round(cartTotal * 100));
+      const amountPaise = Math.max(1, Math.round(grandTotal * 100));
       const createRes = await fetch("/api/payments/razorpay/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1101,99 +1126,37 @@ export const CheckoutModal: React.FC = () => {
                   </Badge>
                 </div>
 
-                {paymentMethod === "upi" && (
-                  <div className="space-y-2.5">
-                    <div className="flex flex-col sm:flex-row items-center gap-4 bg-white p-3 rounded-xl border border-ink/10">
-                      {/* Realistic simulated QR Code */}
-                      <div className="flex flex-col items-center bg-frost p-2 rounded-lg border border-ink/10 shrink-0">
-                        <div className="grid grid-cols-4 gap-1 p-1 bg-white rounded border border-ink/10">
-                          <div className="size-4 bg-ink rounded-xs" />
-                          <div className="size-4 bg-ink/70 rounded-xs" />
-                          <div className="size-4 bg-ink rounded-xs" />
-                          <div className="size-4 bg-ink/40 rounded-xs" />
-                          <div className="size-4 bg-ink/60 rounded-xs" />
-                          <div className="size-4 bg-spice rounded-xs" />
-                          <div className="size-4 bg-ink rounded-xs" />
-                          <div className="size-4 bg-ink/80 rounded-xs" />
-                          <div className="size-4 bg-ink rounded-xs" />
-                          <div className="size-4 bg-ink/30 rounded-xs" />
-                          <div className="size-4 bg-ink rounded-xs" />
-                          <div className="size-4 bg-spice rounded-xs" />
-                        </div>
-                        <span className="font-mono text-[9px] text-ink/60 mt-1 font-bold">
-                          SCAN TO PAY
+                {(paymentMethod === "upi" || paymentMethod === "card" || paymentMethod === "netbanking") && (
+                  <div className="bg-white p-3.5 rounded-xl border border-ink/10 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <span className="size-2 rounded-full bg-emerald-500 animate-pulse" />
+                        <span className="text-xs font-bold text-ink">
+                          Official Razorpay Secure Checkout
                         </span>
                       </div>
-                      <div className="space-y-1 text-center sm:text-left flex-1">
-                        <span className="font-mono text-[10px] uppercase font-bold text-ink/60 block">
-                          UPI VPA / Handle:
-                        </span>
-                        <Input
-                          value={upiId}
-                          onChange={(e) => setUpiId(e.target.value)}
-                          placeholder="yourname@okhdfcbank"
-                          className="h-8 rounded-xl border-ink/15 bg-frost text-xs font-mono"
-                        />
-                        <p className="text-[10px] text-ink/60 mt-1">
-                          Scan QR with PhonePe/GPay or confirm with test UPI ID for instant order
-                          approval.
-                        </p>
-                      </div>
+                      <span className="font-mono text-[10px] text-emerald-800 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full font-bold">
+                        100% Encrypted
+                      </span>
                     </div>
-                  </div>
-                )}
 
-                {paymentMethod === "card" && (
-                  <div className="bg-white p-3 rounded-xl border border-ink/10 space-y-2">
-                    <span className="font-mono text-[10px] uppercase font-bold text-ink/60 block">
-                      Demo Test Card (Pre-filled):
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      <div className="col-span-2">
-                        <Input
-                          defaultValue="4242 •••• •••• 4242"
-                          readOnly
-                          className="h-8 rounded-xl border-ink/15 bg-frost text-xs font-mono"
-                        />
-                      </div>
-                      <div>
-                        <Input
-                          defaultValue="12/28"
-                          readOnly
-                          className="h-8 rounded-xl border-ink/15 bg-frost text-xs font-mono text-center"
-                        />
-                      </div>
-                    </div>
-                    <p className="text-[10px] text-emerald-700 font-mono">
-                      ✓ Real Razorpay gateway. Card charged only after you confirm.
+                    <p className="text-[11px] text-ink/70 leading-relaxed">
+                      On clicking <strong>"Pay &amp; Place Order"</strong>, Razorpay&apos;s official RBI-authorized payment sheet will open automatically. You can pay seamlessly via:
                     </p>
-                  </div>
-                )}
 
-                {paymentMethod === "netbanking" && (
-                  <div className="bg-white p-3 rounded-xl border border-ink/10 space-y-1.5">
-                    <span className="font-mono text-[10px] uppercase font-bold text-ink/60 block">
-                      Popular Supported Banks:
-                    </span>
-                    <div className="flex flex-wrap gap-1.5">
-                      {[
-                        "HDFC Bank",
-                        "State Bank of India",
-                        "ICICI Bank",
-                        "Axis Bank",
-                        "Punjab National Bank",
-                      ].map((b, i) => (
-                        <span
-                          key={b}
-                          className={`font-mono text-[10px] px-2 py-1 rounded-lg border ${
-                            i === 0
-                              ? "bg-spice text-cream border-spice font-bold"
-                              : "bg-frost text-ink/70 border-ink/10"
-                          }`}
-                        >
-                          {b}
-                        </span>
-                      ))}
+                    <div className="grid grid-cols-3 gap-1.5 pt-1 text-center font-mono text-[10px]">
+                      <div className="p-2 rounded-lg bg-frost border border-ink/5">
+                        <span className="font-bold text-spice block">Instant UPI</span>
+                        <span className="text-ink/60 text-[9px]">GPay, PhonePe, Paytm</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-frost border border-ink/5">
+                        <span className="font-bold text-spice block">Cards</span>
+                        <span className="text-ink/60 text-[9px]">Visa, Master, RuPay</span>
+                      </div>
+                      <div className="p-2 rounded-lg bg-frost border border-ink/5">
+                        <span className="font-bold text-spice block">NetBanking</span>
+                        <span className="text-ink/60 text-[9px]">50+ Top Indian Banks</span>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -1246,16 +1209,53 @@ export const CheckoutModal: React.FC = () => {
                   <span>Subtotal</span>
                   <span className="font-mono font-semibold text-ink">₹{cartTotal}</span>
                 </div>
+                {packagingFee > 0 && (
+                  <div className="flex justify-between">
+                    <span>Eco Packaging Charge</span>
+                    <span className="font-mono font-semibold text-ink">₹{packagingFee}</span>
+                  </div>
+                )}
+                {gstBillingConfig.isGstEnabled && effectiveTaxRate > 0 ? (
+                  <>
+                    <div className="flex justify-between">
+                      <span>CGST ({gstBillingConfig.cgstPercent}%)</span>
+                      <span className="font-mono font-semibold text-ink">
+                        ₹{Number(((cartTotal * gstBillingConfig.cgstPercent) / 100).toFixed(2))}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>SGST ({gstBillingConfig.sgstPercent}%)</span>
+                      <span className="font-mono font-semibold text-ink">
+                        ₹{Number(((cartTotal * gstBillingConfig.sgstPercent) / 100).toFixed(2))}
+                      </span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between text-emerald-700">
+                    <span>GST & Tax</span>
+                    <span className="font-mono font-semibold">₹0 (Zero GST)</span>
+                  </div>
+                )}
+
+                {/* Additional Custom Taxes (Rain Tax, Road Tax, Cess, etc.) */}
+                {customTaxesBreakdown.map((ct) => (
+                  <div key={ct.id} className="flex justify-between items-center text-spice font-medium">
+                    <span>
+                      {ct.name} {ct.type === "percent" ? `(${ct.value}%)` : ""}
+                    </span>
+                    <span className="font-mono font-semibold">+₹{ct.amount}</span>
+                  </div>
+                ))}
                 <div className="flex justify-between items-center">
                   <div>
                     <span className="block font-medium">Delivery Fee</span>
                     <span className="text-[10px] text-ink/60">
-                      Free under 4 km · Extra beyond 4 km
+                      Free above ₹{gstBillingConfig.freeDeliveryThreshold}
                     </span>
                   </div>
                   <span className="font-mono font-semibold">
                     {deliveryFee === 0 ? (
-                      <span className="text-emerald-700 font-bold">FREE (Under 4km)</span>
+                      <span className="text-emerald-700 font-bold">FREE</span>
                     ) : (
                       `₹${deliveryFee}`
                     )}

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useDemoStore } from "@/context/DemoStoreContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { KitchenVideo } from "@/types/kitchen";
 import {
   Users,
   Calendar,
@@ -22,6 +23,7 @@ import {
   Copy,
   Trash2,
   Edit2,
+  Edit3,
   Check,
   ChevronRight,
   Sparkles,
@@ -190,118 +192,6 @@ export const AdminCategoriesTab: React.FC = () => {
   );
 };
 
-/* =========================================================================
-   2. Supplier & Purchase Management Tab
-   ========================================================================= */
-export const AdminSuppliersTab: React.FC = () => {
-  const [purchaseOrders, setPurchaseOrders] = useState([
-    {
-      id: "PO-8041",
-      supplier: "Nandini Dairy Co-op",
-      item: "Fresh Malai Paneer & Curd",
-      quantity: "35 kg",
-      totalCost: "₹11,200",
-      status: "Delivered & Stocked",
-      date: "17 Sep 2026",
-    },
-    {
-      id: "PO-8042",
-      supplier: "Annapurna Sharbati Flour Mill",
-      item: "Sharbati Wheat Flour (Atta)",
-      quantity: "200 kg",
-      totalCost: "₹8,400",
-      status: "In Transit",
-      date: "17 Sep 2026",
-    },
-    {
-      id: "PO-8043",
-      supplier: "Malnad Pure Desi Ghee Traders",
-      item: "A2 Vedic Gir Cow Bilona Ghee",
-      quantity: "40 Litres",
-      totalCost: "₹34,000",
-      status: "Order Sent",
-      date: "16 Sep 2026",
-    },
-  ]);
-
-  const handleCreatePO = () => {
-    const newPO = {
-      id: `PO-${Math.floor(1000 + Math.random() * 9000)}`,
-      supplier: "Mysore Agro Spices Co.",
-      item: "Guntur Red Chillies & Cumin Seeds",
-      quantity: "15 kg",
-      totalCost: "₹4,850",
-      status: "Order Sent",
-      date: "Today",
-    };
-    setPurchaseOrders([newPO, ...purchaseOrders]);
-    toast.success(`Purchase Order ${newPO.id} generated & dispatched to supplier.`);
-  };
-
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-frost/90 border border-ink/10 p-5 rounded-2xl">
-        <div>
-          <h3 className="font-display text-lg font-bold text-ink">Suppliers & Purchase Orders</h3>
-          <p className="text-xs text-ink/60">
-            Automated restocking workflow: Low Stock Trigger → Purchase Request → Supplier
-            Fulfillment → Direct Inventory Credit.
-          </p>
-        </div>
-        <Button
-          onClick={handleCreatePO}
-          size="sm"
-          className="bg-ink hover:bg-spice text-cream rounded-xl text-xs gap-1.5"
-        >
-          <Plus className="size-3.5" /> Generate Purchase Order
-        </Button>
-      </div>
-
-      <div className="bg-frost/90 border border-ink/10 rounded-2xl overflow-hidden shadow-sm">
-        <div className="p-4 border-b border-ink/10 flex items-center justify-between font-display text-sm font-bold text-ink">
-          <span>Active Purchase Orders & Procurement Flow</span>
-          <span className="font-mono text-xs text-ink/60 font-normal">
-            3 Verified Vendor Partners
-          </span>
-        </div>
-        <div className="divide-y divide-ink/10">
-          {purchaseOrders.map((po) => (
-            <div
-              key={po.id}
-              className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs"
-            >
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="font-mono font-bold text-spice">{po.id}</span>
-                  <span className="font-bold text-ink">{po.supplier}</span>
-                </div>
-                <p className="text-ink/70">
-                  Item: <span className="font-semibold text-ink">{po.item}</span> · Qty:{" "}
-                  {po.quantity}
-                </p>
-                <span className="font-mono text-[10px] text-ink/50">Placed: {po.date}</span>
-              </div>
-              <div className="flex sm:flex-col items-end justify-between gap-1">
-                <span className="font-display text-sm font-bold text-ink">{po.totalCost}</span>
-                <Badge
-                  className={`font-mono text-[10px] border-none ${
-                    po.status.includes("Delivered")
-                      ? "bg-emerald-500/15 text-emerald-700"
-                      : po.status.includes("Transit")
-                        ? "bg-amber-500/15 text-amber-700"
-                        : "bg-blue-500/15 text-blue-700"
-                  }`}
-                >
-                  {po.status}
-                </Badge>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-};
 
 /* =========================================================================
    3. Customer Management & CRM Tab
@@ -1821,7 +1711,7 @@ export const AdminKitchenVideosSection: React.FC = () => {
   const [duration, setDuration] = useState("0:35");
   const [tagsInput, setTagsInput] = useState("Desi Ghee, Live Kitchen");
   const [youtubeApiKey, setYoutubeApiKey] = useState(
-    import.meta.env.VITE_YOUTUBE_API_KEY || "AIzaSyA6pyHfG6mtjsUKzgifkKBDtWIWTSLHQII",
+    (import.meta.env as any).VITE_YOUTUBE_API_KEY || "AIzaSyA6pyHfG6mtjsUKzgifkKBDtWIWTSLHQII",
   );
   const [fetchingYoutube, setFetchingYoutube] = useState(false);
   const [uploadingLocal, setUploadingLocal] = useState(false);

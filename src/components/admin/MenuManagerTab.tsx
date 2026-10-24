@@ -1,5 +1,5 @@
 import React, { useState, useRef } from "react";
-import { useDemoStore } from "@/context/DemoStoreContext";
+import { useDemoStore, DEFAULT_MENU_CATEGORIES } from "@/context/DemoStoreContext";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -24,6 +24,9 @@ import {
   X,
   Loader2,
   Edit3,
+  Tag,
+  Check,
+  FolderPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 import type { MenuItem } from "@/types/kitchen";
@@ -56,10 +59,23 @@ const PRESET_IMAGES = [
 ];
 
 export const MenuManagerTab: React.FC = () => {
-  const { menuItems, toggleMenuItemStock, addMenuItem, updateMenuItem, deleteMenuItem } =
-    useDemoStore();
+  const {
+    menuItems,
+    toggleMenuItemStock,
+    addMenuItem,
+    updateMenuItem,
+    deleteMenuItem,
+    customCategories,
+    allCategories,
+    addCustomCategory,
+    deleteCustomCategory,
+  } = useDemoStore();
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategoryFilter, setSelectedCategoryFilter] = useState("All");
+  const [categoryManagerOpen, setCategoryManagerOpen] = useState(false);
+  const [managerNewCatInput, setManagerNewCatInput] = useState("");
+
   const [addModalOpen, setAddModalOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<MenuItem | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +84,9 @@ export const MenuManagerTab: React.FC = () => {
   const [name, setName] = useState("");
   const [desc, setDesc] = useState("");
   const [price, setPrice] = useState("199");
-  const [category, setCategory] = useState<MenuItem["category"]>("Thali");
+  const [category, setCategory] = useState<string>("Thali");
+  const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+  const [newCategoryName, setNewCategoryName] = useState("");
   const [prepTime, setPrepTime] = useState("20");
   const [image, setImage] = useState(PRESET_IMAGES[0]?.url || "");
   const [badge, setBadge] = useState("BESTSELLER");
@@ -80,11 +98,14 @@ export const MenuManagerTab: React.FC = () => {
   const [carbs, setCarbs] = useState("55g");
   const [fat, setFat] = useState("12g");
 
-  const filtered = menuItems.filter(
-    (m) =>
+  const filtered = menuItems.filter((m) => {
+    const matchesSearch =
       m.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      m.category.toLowerCase().includes(searchTerm.toLowerCase()),
-  );
+      m.category.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCat =
+      selectedCategoryFilter === "All" || m.category === selectedCategoryFilter;
+    return matchesSearch && matchesCat;
+  });
 
   const [isUploading, setIsUploading] = useState(false);
 
@@ -196,10 +217,39 @@ export const MenuManagerTab: React.FC = () => {
     resetForm();
   };
 
+  const handleCreateCustomCategory = () => {
+    const trimmed = newCategoryName.trim();
+    if (!trimmed) {
+      toast.error("Category ka naam daalein");
+      return;
+    }
+    const success = addCustomCategory(trimmed);
+    if (success) {
+      setCategory(trimmed);
+      setNewCategoryName("");
+      setIsCreatingCategory(false);
+    }
+  };
+
+  const handleCreateManagerCategory = () => {
+    const trimmed = managerNewCatInput.trim();
+    if (!trimmed) {
+      toast.error("Category ka naam daalein");
+      return;
+    }
+    const success = addCustomCategory(trimmed);
+    if (success) {
+      setManagerNewCatInput("");
+    }
+  };
+
   const resetForm = () => {
     setName("");
     setDesc("");
     setPrice("199");
+    setCategory("Thali");
+    setIsCreatingCategory(false);
+    setNewCategoryName("");
     setPrepTime("20");
     setImage(PRESET_IMAGES[0]?.url || "");
     setBadge("BESTSELLER");
@@ -224,6 +274,8 @@ export const MenuManagerTab: React.FC = () => {
     setDesc(item.description);
     setPrice(String(item.price));
     setCategory(item.category);
+    setIsCreatingCategory(false);
+    setNewCategoryName("");
     setPrepTime(String(item.preparationTimeMinutes || 20));
     setImage(item.image);
     setBadge(item.badge || "BESTSELLER");
@@ -239,25 +291,87 @@ export const MenuManagerTab: React.FC = () => {
 
   return (
     <div className="space-y-6 text-ink">
-      {/* Top Controls */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="relative min-w-[240px]">
-          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-ink/40" />
-          <Input
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Search dish or category..."
-            className="h-9 rounded-full border-ink/15 bg-frost pl-9 text-xs"
-          />
+      {/* Top Controls & Category Filters */}
+      <div className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="relative min-w-[260px] flex-1 max-w-md">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-3.5 text-ink/40" />
+            <Input
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Search dish, ingredient, or category..."
+              className="h-9 rounded-full border-ink/15 bg-frost pl-9 text-xs"
+            />
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setCategoryManagerOpen(true)}
+              className="rounded-full border-ink/15 bg-frost text-xs font-semibold text-ink hover:border-spice hover:text-spice gap-1.5 h-9 shadow-sm"
+            >
+              <Tag className="size-3.5 text-spice" />
+              <span>Manage Categories ({allCategories.length})</span>
+            </Button>
+
+            <Button
+              onClick={openAddModal}
+              className="rounded-full bg-spice text-xs font-semibold text-cream hover:bg-ink gap-1.5 shadow-sm h-9"
+            >
+              <Plus className="size-3.5" />
+              <span>Add New Food Item</span>
+            </Button>
+          </div>
         </div>
 
-        <Button
-          onClick={() => setAddModalOpen(true)}
-          className="rounded-full bg-spice text-xs font-semibold text-cream hover:bg-ink gap-1.5 shadow-sm"
-        >
-          <Plus className="size-3.5" />
-          <span>Add New Food Item</span>
-        </Button>
+        {/* Category Filter Pills Bar */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 text-xs">
+          <button
+            type="button"
+            onClick={() => setSelectedCategoryFilter("All")}
+            className={`rounded-full px-3 py-1 font-mono text-[11px] font-bold transition-all whitespace-nowrap ${
+              selectedCategoryFilter === "All"
+                ? "bg-ink text-cream shadow-sm"
+                : "bg-frost text-ink/70 hover:bg-cream hover:text-ink border border-ink/10"
+            }`}
+          >
+            All Items ({menuItems.length})
+          </button>
+          {allCategories.map((cat) => {
+            const count = menuItems.filter((m) => m.category === cat).length;
+            const isCustom = !DEFAULT_MENU_CATEGORIES.includes(cat);
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategoryFilter(cat)}
+                className={`rounded-full px-3 py-1 font-mono text-[11px] transition-all whitespace-nowrap flex items-center gap-1.5 ${
+                  selectedCategoryFilter === cat
+                    ? "bg-spice text-cream shadow-sm font-bold"
+                    : "bg-frost text-ink/70 hover:bg-cream hover:text-ink border border-ink/10"
+                }`}
+              >
+                <span>{cat}</span>
+                <span className="opacity-70 text-[10px]">({count})</span>
+                {isCustom && (
+                  <span className="text-[8px] uppercase tracking-wider bg-white/20 text-cream px-1 py-0.2 rounded font-mono font-bold">
+                    Custom
+                  </span>
+                )}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() => setCategoryManagerOpen(true)}
+            className="rounded-full px-2.5 py-1 font-mono text-[11px] font-bold border border-dashed border-spice/40 text-spice hover:bg-spice/10 transition-all whitespace-nowrap flex items-center gap-1"
+            title="Nayi category banayein"
+          >
+            <Plus className="size-3" />
+            <span>+ Category</span>
+          </button>
+        </div>
       </div>
 
       {/* Menu Management Table */}
@@ -312,7 +426,16 @@ export const MenuManagerTab: React.FC = () => {
                   </td>
 
                   {/* Category */}
-                  <td className="p-4 font-mono font-medium text-ink">{item.category}</td>
+                  <td className="p-4">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span className="font-mono font-medium text-ink">{item.category}</span>
+                      {!DEFAULT_MENU_CATEGORIES.includes(item.category) && (
+                        <span className="text-[9px] font-mono font-bold bg-spice/10 text-spice border border-spice/20 px-1.5 py-0.5 rounded-full">
+                          Custom
+                        </span>
+                      )}
+                    </div>
+                  </td>
 
                   {/* Price */}
                   <td className="p-4 font-display text-base text-ink font-bold">₹{item.price}</td>
@@ -536,24 +659,152 @@ export const MenuManagerTab: React.FC = () => {
                 />
               </div>
 
-              <div>
-                <label className="font-mono text-[10px] uppercase font-bold text-ink/60 block mb-1">
-                  Category *
-                </label>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <label className="font-mono text-[10px] uppercase font-bold text-ink/60">
+                    Category *
+                  </label>
+                  <button
+                    type="button"
+                    onClick={() => setIsCreatingCategory(!isCreatingCategory)}
+                    className="text-[10px] font-mono text-spice hover:text-ink font-bold flex items-center gap-1 hover:underline transition-colors"
+                  >
+                    <Plus className="size-3" />
+                    <span>+ Nayi Category Banayein</span>
+                  </button>
+                </div>
+
                 <select
                   value={category}
-                  onChange={(e) => setCategory(e.target.value as MenuItem["category"])}
-                  className="w-full rounded-xl border border-ink/15 bg-cream p-2 text-xs font-medium text-ink"
+                  onChange={(e) => {
+                    if (e.target.value === "__CREATE_NEW__") {
+                      setIsCreatingCategory(true);
+                    } else {
+                      setCategory(e.target.value);
+                      setIsCreatingCategory(false);
+                    }
+                  }}
+                  className="w-full rounded-xl border border-ink/15 bg-cream p-2 text-xs font-medium text-ink focus:border-spice focus:ring-1 focus:ring-spice"
                 >
-                  <option value="Thali">Thali</option>
-                  <option value="Sabzi">Sabzi & Curries</option>
-                  <option value="Paneer & Tandoor">Paneer & Tandoor</option>
-                  <option value="Biryani">Biryani</option>
-                  <option value="Roti & Rice">Roti & Rice</option>
-                  <option value="Desserts">Desserts</option>
-                  <option value="Chai & More">Chai & More</option>
-                  <option value="Combos">Combos</option>
+                  <optgroup label="Standard Categories">
+                    <option value="Thali">Thali</option>
+                    <option value="Sabzi">Sabzi & Curries</option>
+                    <option value="Paneer & Tandoor">Paneer & Tandoor</option>
+                    <option value="Biryani">Biryani</option>
+                    <option value="Roti & Rice">Roti & Rice</option>
+                    <option value="Desserts">Desserts</option>
+                    <option value="Chai & More">Chai & More</option>
+                    <option value="Combos">Combos</option>
+                  </optgroup>
+
+                  {customCategories.length > 0 && (
+                    <optgroup label="Custom Categories (Aapki Banayi Hui)">
+                      {customCategories.map((cat) => (
+                        <option key={cat} value={cat}>
+                          {cat} (Custom)
+                        </option>
+                      ))}
+                    </optgroup>
+                  )}
+
+                  {/* If current dish has a category not in standard or custom */}
+                  {category &&
+                    !DEFAULT_MENU_CATEGORIES.includes(category) &&
+                    !customCategories.includes(category) && (
+                      <optgroup label="Current Selection">
+                        <option value={category}>{category} (Custom)</option>
+                      </optgroup>
+                    )}
+
+                  <option value="__CREATE_NEW__" className="text-spice font-bold">
+                    ✨ + Nayi Custom Category Banayein...
+                  </option>
                 </select>
+
+                {/* Active Category Info Pill if Custom */}
+                {!DEFAULT_MENU_CATEGORIES.includes(category) && (
+                  <div className="flex items-center gap-1.5 text-[11px] text-spice font-mono font-medium bg-spice/10 px-2.5 py-1 rounded-lg border border-spice/20">
+                    <Check className="size-3 text-spice" />
+                    <span>
+                      Selected Custom Category: <strong>{category}</strong>
+                    </span>
+                  </div>
+                )}
+
+                {/* Inline Custom Category Creator */}
+                {isCreatingCategory && (
+                  <div className="rounded-2xl border-2 border-dashed border-spice/40 bg-spice/5 p-3 space-y-2.5 animate-in fade-in slide-in-from-top-1 duration-200">
+                    <div className="flex items-center justify-between">
+                      <span className="font-mono text-[10px] uppercase font-bold text-spice flex items-center gap-1">
+                        <Sparkles className="size-3" />
+                        <span>Nayi Custom Category Banayein</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => setIsCreatingCategory(false)}
+                        className="text-ink/40 hover:text-ink text-xs p-0.5"
+                        title="Band karein"
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </div>
+
+                    <div className="flex gap-1.5">
+                      <Input
+                        value={newCategoryName}
+                        onChange={(e) => setNewCategoryName(e.target.value)}
+                        placeholder="Category naam (e.g. Snacks, Chaat, Beverages, South Indian...)"
+                        className="rounded-xl border-ink/20 text-xs bg-white h-8 font-medium"
+                        autoFocus
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault();
+                            handleCreateCustomCategory();
+                          }
+                        }}
+                      />
+                      <Button
+                        type="button"
+                        onClick={handleCreateCustomCategory}
+                        className="rounded-xl bg-spice text-cream hover:bg-ink text-xs font-semibold h-8 px-3 shrink-0"
+                      >
+                        Add & Select
+                      </Button>
+                    </div>
+
+                    {/* Quick suggestion chips */}
+                    <div>
+                      <span className="text-[9px] font-mono uppercase text-ink/50 block mb-1 font-bold">
+                        Suggested Categories (Click to Add):
+                      </span>
+                      <div className="flex flex-wrap gap-1">
+                        {[
+                          "Snacks & Starters",
+                          "Chaat & Street Food",
+                          "Beverages & Drinks",
+                          "South Indian",
+                          "Rolls & Wraps",
+                          "Healthy Bites",
+                          "Chinese & Indo-Chinese",
+                          "Breakfast Specials",
+                        ].map((sugg) => (
+                          <button
+                            key={sugg}
+                            type="button"
+                            onClick={() => {
+                              addCustomCategory(sugg);
+                              setCategory(sugg);
+                              setIsCreatingCategory(false);
+                            }}
+                            className="rounded-full border border-spice/25 bg-white px-2 py-0.5 text-[10px] font-medium text-spice hover:bg-spice hover:text-white transition-colors"
+                          >
+                            + {sugg}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div>
@@ -677,6 +928,141 @@ export const MenuManagerTab: React.FC = () => {
               {editingItem ? "Save Changes to Dish" : "Add Item to Live Menu"}
             </Button>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Manager Dialog */}
+      <Dialog open={categoryManagerOpen} onOpenChange={setCategoryManagerOpen}>
+        <DialogContent className="max-w-lg rounded-3xl border border-ink/10 bg-frost p-6 text-ink shadow-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-display text-xl text-ink flex items-center gap-2">
+              <Tag className="size-5 text-spice" />
+              <span>Kitchen Menu Categories</span>
+            </DialogTitle>
+            <DialogDescription className="text-xs text-ink/60">
+              Yahan aap nayi custom categories bana sakte hain aur menu categories manage kar sakte hain.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            {/* Create new category box */}
+            <div className="rounded-2xl border border-spice/30 bg-spice/5 p-3.5 space-y-2.5">
+              <label className="font-mono text-[10px] uppercase font-bold text-spice block">
+                Nayi Custom Category Banayein
+              </label>
+              <div className="flex gap-2">
+                <Input
+                  value={managerNewCatInput}
+                  onChange={(e) => setManagerNewCatInput(e.target.value)}
+                  placeholder="e.g. Snacks, Chaat, Beverages, South Indian..."
+                  className="rounded-xl border-ink/20 text-xs bg-white h-9 font-medium"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleCreateManagerCategory();
+                    }
+                  }}
+                />
+                <Button
+                  type="button"
+                  onClick={handleCreateManagerCategory}
+                  className="rounded-xl bg-spice text-cream hover:bg-ink text-xs font-semibold h-9 px-4 shrink-0 gap-1"
+                >
+                  <Plus className="size-3.5" />
+                  <span>Add Category</span>
+                </Button>
+              </div>
+
+              {/* Suggestions */}
+              <div>
+                <span className="text-[9px] font-mono uppercase text-ink/50 block mb-1 font-bold">
+                  Quick Suggestions (Click to Add):
+                </span>
+                <div className="flex flex-wrap gap-1">
+                  {[
+                    "Snacks & Starters",
+                    "Chaat & Street Food",
+                    "Beverages & Drinks",
+                    "South Indian",
+                    "Rolls & Wraps",
+                    "Healthy Bowls",
+                    "Chinese",
+                    "Breakfast Specials",
+                  ].map((sugg) => (
+                    <button
+                      key={sugg}
+                      type="button"
+                      onClick={() => {
+                        addCustomCategory(sugg);
+                      }}
+                      className="rounded-full border border-spice/25 bg-white px-2 py-0.5 text-[10px] font-medium text-spice hover:bg-spice hover:text-white transition-colors"
+                    >
+                      + {sugg}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Existing Categories List */}
+            <div>
+              <span className="font-mono text-[10px] uppercase font-bold text-ink/60 block mb-2">
+                All Active Categories ({allCategories.length})
+              </span>
+              <div className="divide-y divide-ink/10 rounded-2xl border border-ink/10 bg-white max-h-60 overflow-y-auto">
+                {allCategories.map((cat) => {
+                  const isCustom = !DEFAULT_MENU_CATEGORIES.includes(cat);
+                  const dishesInCat = menuItems.filter((m) => m.category === cat);
+                  const count = dishesInCat.length;
+
+                  return (
+                    <div
+                      key={cat}
+                      className="p-3 flex items-center justify-between text-xs hover:bg-cream/40 transition-colors"
+                    >
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-ink">{cat}</span>
+                        {isCustom ? (
+                          <Badge className="bg-spice/15 text-spice border-spice/20 text-[9px] font-mono">
+                            Custom
+                          </Badge>
+                        ) : (
+                          <Badge className="bg-ink/5 text-ink/60 border-ink/10 text-[9px] font-mono">
+                            Standard
+                          </Badge>
+                        )}
+                        <span className="text-[11px] text-ink/50 font-mono">
+                          {count} {count === 1 ? "dish" : "dishes"}
+                        </span>
+                      </div>
+
+                      {isCustom && (
+                        <div>
+                          {count === 0 ? (
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => deleteCustomCategory(cat)}
+                              className="h-7 text-red-600 hover:text-red-700 hover:bg-red-50 text-[11px] px-2 gap-1 rounded-lg"
+                              title="Delete unused category"
+                            >
+                              <Trash2 className="size-3" />
+                              <span>Delete</span>
+                            </Button>
+                          ) : (
+                            <span className="text-[10px] font-mono text-ink/40">
+                              Active in menu
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
         </DialogContent>
       </Dialog>
 

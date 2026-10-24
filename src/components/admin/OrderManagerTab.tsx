@@ -27,6 +27,7 @@ export const OrderManagerTab: React.FC = () => {
     setActiveOrderId,
     setTrackingViewOpen,
     setActiveRole,
+    setCustomerPage,
   } = useDemoStore();
 
   const [filterStatus, setFilterStatus] = useState<string>("all");
@@ -235,6 +236,7 @@ export const OrderManagerTab: React.FC = () => {
                             onClick={() => {
                               setActiveOrderId(ord.id);
                               setActiveRole("customer");
+                              setCustomerPage("menu");
                               setTrackingViewOpen(true);
                             }}
                             className="h-6 text-[10px] text-ink/70 hover:text-spice px-1"
